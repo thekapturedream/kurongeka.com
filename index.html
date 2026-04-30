@@ -1,0 +1,2215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#000000" />
+<title>Kurongeka — Tura Arutura · Brand Vault by Kapture</title>
+<meta name="description" content="Kurongeka is Kapture's client portal. Brand audits, action plans, deliverables and communication — in one secure vault." />
+<link rel="icon" type="image/svg+xml" href="assets/kapture-icon.svg" />
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Inter+Tight:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js" crossorigin></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        body: ['Inter','system-ui','-apple-system','sans-serif'],
+        display: ['"Inter Tight"','Inter','system-ui','sans-serif']
+      },
+      colors: {
+        ink: '#000000', paper: '#ffffff', canvas: '#f6f6f6', line: '#e2e2e2',
+        muted: '#6b6b6b', subtle: '#9c9c9c',
+        good: '#05944f', warn: '#ff8a00', bad: '#e11900', info: '#0057ff',
+        accent: '#ffcc00'
+      },
+      borderRadius: { DEFAULT: '8px', xl: '12px' }
+    }
+  }
+}
+</script>
+<style>
+  :root { color-scheme: light; --safe-bottom: env(safe-area-inset-bottom, 0px); }
+  *, *::before, *::after { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; box-sizing: border-box; }
+  html, body { min-height: 100%; }
+  @supports (height: 100dvh) { #root { min-height: 100dvh; } }
+  body { font-family: 'Inter', system-ui, sans-serif; background: #ffffff; color: #000; font-size: 15px; line-height: 1.45; letter-spacing: -0.005em; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+  #root { overflow-x: hidden; min-height: 100vh; min-height: 100dvh; }
+  button, a, [role="button"] { touch-action: manipulation; }
+  html { scroll-behavior: smooth; }
+  h1, h2, h3, h4, .display { font-family: 'Inter Tight','Inter', system-ui, sans-serif; letter-spacing: -0.025em; line-height: 1.05; }
+  .display-1 { font-size: clamp(28px, 5.5vw, 64px); font-weight: 800; line-height: 1.04; }
+  .display-2 { font-size: clamp(22px, 4vw, 40px); font-weight: 800; line-height: 1.08; }
+  .display-3 { font-size: clamp(18px, 2.6vw, 26px); font-weight: 700; line-height: 1.12; }
+  @media (max-width: 480px) { .display-1 { font-size: 28px; } .display-2 { font-size: 22px; } .display-3 { font-size: 18px; } }
+  .scroll-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+  .scroll-thin::-webkit-scrollbar-thumb { background: rgba(0,0,0,.15); border-radius: 8px; }
+  .scroll-thin::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,.3); }
+  .overflow-x-auto::-webkit-scrollbar { display: none; }
+  .pulse-dot { animation: pd 1.6s ease-in-out infinite; }
+  @keyframes pd { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity:.4; transform: scale(1.5); } }
+  .fade-in { animation: fi .25s ease-out both; }
+  .slide-up { animation: su .28s cubic-bezier(.2,.9,.3,1) both; }
+  @keyframes fi { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  @keyframes su { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+  .modal-bg { background: rgba(0,0,0,.62); backdrop-filter: blur(8px); }
+  .grid-bg { background-image: radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px); background-size: 24px 24px; }
+  .pill { padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .pill-lg { padding: 5px 12px; font-size: 12px; }
+  .nav-link { transition: background .12s, color .12s; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; color: #000; border: 0; background: transparent; width: 100%; text-align: left; cursor: pointer; }
+  .nav-link.active { background: #000; color: #fff; font-weight: 600; }
+  .nav-link:not(.active):hover { background: #f0f0f0; }
+  .nav-section { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #9c9c9c; padding: 12px 12px 6px; }
+  .input { width: 100%; border: 0; background: #f6f6f6; border-radius: 8px; padding: 12px 14px; font-size: 15px; color: #000; transition: background .15s, box-shadow .15s; font-family: inherit; }
+  .input:focus { outline: none; background: #fff; box-shadow: 0 0 0 2px #000; }
+  .input::placeholder { color: #9c9c9c; }
+  textarea.input { line-height: 1.5; resize: vertical; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 8px; padding: 12px 18px; font-weight: 600; font-size: 15px; transition: all .12s ease; cursor: pointer; border: 1px solid transparent; white-space: nowrap; line-height: 1; font-family: inherit; }
+  .btn:active { transform: scale(.98); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-primary { background: #000; color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #1f1f1f; }
+  .btn-secondary { background: #f6f6f6; color: #000; }
+  .btn-secondary:hover:not(:disabled) { background: #e9e9e9; }
+  .btn-outline { background: transparent; color: #000; border-color: #e2e2e2; }
+  .btn-outline:hover:not(:disabled) { border-color: #000; }
+  .btn-sm { padding: 8px 12px; font-size: 13px; gap: 6px; border-radius: 6px; }
+  .btn-lg { padding: 16px 24px; font-size: 16px; gap: 10px; }
+  .btn-block { width: 100%; }
+  .card { background: #fff; border: 1px solid #e2e2e2; border-radius: 12px; }
+  .stat-tile { padding: 20px; border-radius: 12px; background: #fff; border: 1px solid #e2e2e2; transition: border-color .15s, transform .15s; cursor: default; }
+  button.stat-tile { cursor: pointer; }
+  button.stat-tile:hover { border-color: #000; }
+  .tab { padding: 9px 14px; border-radius: 999px; font-weight: 600; font-size: 13px; color: #6b6b6b; cursor: pointer; transition: all .15s; white-space: nowrap; border: 1px solid #e2e2e2; background: #fff; font-family: inherit; }
+  .tab.active { background: #000; color: #fff; border-color: #000; }
+  .tab:not(.active):hover { background: #f6f6f6; color: #000; }
+  .chip { padding: 8px 14px; border-radius: 999px; font-size: 13px; font-weight: 500; border: 1px solid #e2e2e2; background: #fff; cursor: pointer; transition: all .12s; display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }
+  .chip:hover { background: #f6f6f6; }
+  .chip.selected { background: #000; color: #fff; border-color: #000; }
+  .progress { height: 6px; background: #f0f0f0; border-radius: 999px; overflow: hidden; }
+  .progress > span { display: block; height: 100%; background: #000; border-radius: 999px; transition: width .5s ease; }
+  .progress.green > span { background: #05944f; }
+  .progress.amber > span { background: #ff8a00; }
+  .progress.red > span { background: #e11900; }
+  .progress-tall { height: 10px; }
+  .topbar { height: 64px; background: #fff; border-bottom: 1px solid #e2e2e2; display: flex; align-items: center; padding: 0 24px; gap: 16px; position: sticky; top: 0; z-index: 40; backdrop-filter: saturate(180%) blur(8px); background-color: rgba(255,255,255,0.92); }
+  @media (min-width: 1025px) {
+    .layout-root { padding-left: 260px; }
+    .sidebar { width: 260px; background: #fff; border-right: 1px solid #e2e2e2; height: 100vh; overflow-y: auto; padding: 16px 12px; position: fixed; top: 0; left: 0; z-index: 30; }
+  }
+  @media (max-width: 1024px) {
+    .sidebar { width: 280px; background: #fff; border-right: 1px solid #e2e2e2; padding: 16px 12px; position: fixed; top: 0; bottom: 0; left: 0; transform: translateX(-100%); transition: transform .25s cubic-bezier(.2,.9,.3,1); z-index: 60; overflow-y: auto; }
+    .sidebar.open { transform: translateX(0); box-shadow: 12px 0 40px rgba(0,0,0,.12); }
+    .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 50; animation: fi .2s ease-out both; }
+  }
+  @media (max-width: 768px) {
+    .topbar { padding: 0 16px; height: 56px; gap: 8px; }
+  }
+  .bottom-tab { display: none; }
+  @media (max-width: 768px) {
+    .bottom-tab { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #e2e2e2; padding: 8px 8px calc(8px + var(--safe-bottom)); z-index: 30; justify-content: space-around; }
+    .bottom-tab-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 8px; border-radius: 8px; color: #6b6b6b; font-size: 10px; font-weight: 600; flex: 1; max-width: 80px; background: transparent; border: 0; cursor: pointer; font-family: inherit; }
+    .bottom-tab-item.active { color: #000; }
+    .has-bottom-tab { padding-bottom: 80px; }
+  }
+  .action-card { background: #fff; border: 1px solid #e2e2e2; border-radius: 12px; padding: 20px; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 16px; text-align: left; width: 100%; font-family: inherit; color: inherit; }
+  .action-card:hover { border-color: #000; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,.06); }
+  .list-row { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background .12s; background: transparent; border-left: 0; border-right: 0; border-top: 0; width: 100%; text-align: left; font-family: inherit; color: inherit; }
+  .list-row:hover { background: #fafafa; }
+  .list-row:last-child { border-bottom: 0; }
+  .avatar { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: #000; color: #fff; font-weight: 600; flex-shrink: 0; font-size: 13px; }
+  .ring-dial { stroke: #000; stroke-linecap: round; transition: stroke-dashoffset .8s ease; }
+  .dot { width: 8px; height: 8px; border-radius: 999px; display: inline-block; }
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
+  .channel-row { display: grid; grid-template-columns: 40px 1fr auto; gap: 14px; align-items: center; padding: 16px 18px; border-bottom: 1px solid #f0f0f0; }
+  .channel-row:last-child { border-bottom: 0; }
+  .kanban-col { background: #f6f6f6; border-radius: 12px; padding: 16px; }
+  .kanban-card { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.04); border: 1px solid transparent; transition: all .15s; cursor: pointer; }
+  .kanban-card:hover { border-color: #000; transform: translateY(-1px); }
+  kbd { font-family: ui-monospace, monospace; font-size: 11px; padding: 2px 6px; background: #f0f0f0; border-radius: 4px; border: 1px solid #e2e2e2; color: #6b6b6b; }
+  .hide-mobile { display: initial; }
+  .show-mobile { display: none; }
+  @media (max-width: 768px) {
+    .hide-mobile { display: none !important; }
+    .show-mobile { display: initial !important; }
+  }
+</style>
+</head>
+<body>
+<div id="root">
+  <div style="display:flex;height:100vh;align-items:center;justify-content:center;color:#9c9c9c;font-family:Inter,sans-serif;font-size:14px">Loading Kurongeka…</div>
+</div>
+<div id="err" style="position:fixed;bottom:0;left:0;right:0;max-height:40vh;overflow:auto;background:#fee2e2;color:#991b1b;padding:12px;font-family:ui-monospace,monospace;font-size:12px;display:none;z-index:9999;border-top:2px solid #dc2626"></div>
+<script>
+window.addEventListener('error', function(e){
+  var d = document.getElementById('err');
+  d.style.display = 'block';
+  d.innerHTML += '<div><b>'+e.message+'</b><br>'+(e.filename||'')+':'+(e.lineno||'')+':'+(e.colno||'')+'<br><pre>'+(e.error&&e.error.stack||'')+'</pre></div>';
+});
+</script>
+<script type="text/babel" data-presets="react">
+"use strict";
+const { useState, useEffect, useMemo, useRef, useReducer, useContext, createContext, Fragment, useCallback } = React;
+const RC = window.Recharts || {};
+const ChartFallback = ({ children }) => <div className="text-[12px] text-subtle p-4 text-center">Chart unavailable</div>;
+const LineChart = RC.LineChart || ChartFallback;
+const Line = RC.Line || (() => null);
+const BarChart = RC.BarChart || ChartFallback;
+const Bar = RC.Bar || (() => null);
+const XAxis = RC.XAxis || (() => null);
+const YAxis = RC.YAxis || (() => null);
+const CartesianGrid = RC.CartesianGrid || (() => null);
+const Tooltip = RC.Tooltip || (() => null);
+const ResponsiveContainer = RC.ResponsiveContainer || (({ children }) => <div>{children}</div>);
+const PieChart = RC.PieChart || ChartFallback;
+const Pie = RC.Pie || (() => null);
+const Cell = RC.Cell || (() => null);
+const AreaChart = RC.AreaChart || ChartFallback;
+const Area = RC.Area || (() => null);
+const RadarChart = RC.RadarChart || ChartFallback;
+const Radar = RC.Radar || (() => null);
+const PolarGrid = RC.PolarGrid || (() => null);
+const PolarAngleAxis = RC.PolarAngleAxis || (() => null);
+const PolarRadiusAxis = RC.PolarRadiusAxis || (() => null);
+
+/* ============================================================
+   ICONS — single-path SVG
+   ============================================================ */
+const ICONS = {
+  shield:'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
+  bell:'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0',
+  search:'M11 19a8 8 0 1 1 5.3-2L21 21l-4.7-4M11 3a8 8 0 0 0 0 16',
+  user:'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0',
+  users:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13A4 4 0 0 1 16 11',
+  alert:'M12 9v4M12 17h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0',
+  check:'M20 6 9 17l-5-5',
+  x:'M18 6 6 18M6 6l12 12',
+  plus:'M12 5v14M5 12h14',
+  chevron:'m9 18 6-6-6-6',
+  chevronDown:'m6 9 6 6 6-6',
+  menu:'M3 12h18M3 6h18M3 18h18',
+  home:'m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM9 22V12h6v10',
+  activity:'M22 12h-4l-3 9L9 3l-3 9H2',
+  chart:'M3 3v18h18M7 14l4-4 4 4 5-5',
+  clock:'M12 22a10 10 0 1 0-10-10 10 10 0 0 0 10 10zM12 6v6l4 2',
+  cog:'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z',
+  log:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8',
+  filter:'M22 3H2l8 9.46V19l4 2v-8.54z',
+  eye:'M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+  edit:'M12 20h9M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4z',
+  arrowRight:'M5 12h14M12 5l7 7-7 7',
+  arrowLeft:'M19 12H5M12 19l-7-7 7-7',
+  arrowUp:'M12 19V5M5 12l7-7 7 7',
+  arrowDown:'M12 5v14M19 12l-7 7-7-7',
+  globe:'M12 22a10 10 0 1 0-10-10 10 10 0 0 0 10 10zM2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z',
+  briefcase:'M20 7H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16',
+  fileText:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8',
+  message:'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z',
+  send:'m22 2-11 11M22 2l-7 20-4-9-9-4z',
+  paperclip:'M21.44 11.05 12.25 20.24a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.41 17.41a2 2 0 0 1-2.83-2.83l8.49-8.48',
+  download:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3',
+  upload:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12',
+  refresh:'M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5',
+  lock:'M5 11h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2zM7 11V7a5 5 0 0 1 10 0v4',
+  zap:'M13 2 3 14h9l-1 8 10-12h-9z',
+  trend:'m23 6-9.5 9.5-5-5L1 18',
+  star:'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z',
+  music:'M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z',
+  heart:'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z',
+  flag:'M4 22V4c0-1 1-2 2-2h11l-2 5 2 5H6c-1 0-2 1-2 2',
+  link:'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71',
+  video:'m22 8-6 4 6 4V8zM14 6H4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2z',
+  twitter:'M22 4s-1 1-3 1.5c-1-1-2-1.5-3.5-1.5-3 0-5 2-5 5 0 .5 0 1 .1 1.5C7 10.5 4 9 2 6c0 0-3 6 3 9-1 1-3 1-4 1 0 0 3 3 8 1 5-2 8-7 8-12 0-.3 0-.5-.1-.8C18 4 22 4 22 4z',
+  facebook:'M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z',
+  linkedin:'M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2zM4 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
+  youtube:'M22.5 6.5a2.78 2.78 0 0 0-2-2C18.7 4 12 4 12 4s-6.7 0-8.5.5a2.78 2.78 0 0 0-2 2A29 29 0 0 0 1 12a29 29 0 0 0 .5 5.5 2.78 2.78 0 0 0 2 2C5.3 20 12 20 12 20s6.7 0 8.5-.5a2.78 2.78 0 0 0 2-2A29 29 0 0 0 23 12a29 29 0 0 0-.5-5.5zM10 15.5v-7l6 3.5z',
+  instagram:'M16 4H8a4 4 0 0 0-4 4v8a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4V8a4 4 0 0 0-4-4zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zM18 6.5h.01',
+  tiktok:'M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5',
+  newspaper:'M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0V11h4M18 14h-8M15 18h-5M10 6h8v4h-8z',
+  sparkle:'M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1',
+  trophy:'M8 21h8M12 17v4M17 4H7v4a5 5 0 0 0 10 0V4zM21 4h-4v3a3 3 0 0 0 4 0V4zM3 4h4v3a3 3 0 0 1-4 0V4z',
+  inbox:'M22 12h-6l-2 3h-4l-2-3H2M5 4h14l3 8v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z',
+  vault:'M3 4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zm5 4a4 4 0 1 0 8 0 4 4 0 0 0-8 0zm4 0v0M16 14l2 2M8 14l-2 2M14 18h2M8 18h2',
+  pin:'M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0zM12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+  calendar:'M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM16 2v4M8 2v4M3 10h18',
+  logout:'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9',
+  more:'M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM19 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM5 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z',
+  info:'M12 22a10 10 0 1 0-10-10 10 10 0 0 0 10 10zM12 16v-4M12 8h.01',
+  brain:'M9 6a3 3 0 0 0-3 3v.5a2.5 2.5 0 0 0 0 5V15a3 3 0 0 0 3 3v3a1 1 0 0 0 2 0V3a1 1 0 0 0-2 0v3M15 6a3 3 0 0 1 3 3v.5a2.5 2.5 0 0 1 0 5V15a3 3 0 0 1-3 3v3a1 1 0 0 1-2 0V3a1 1 0 0 1 2 0v3',
+  flame:'M12 2c-2 4-4 6-4 10a4 4 0 0 0 8 0c0-2-1-3-2-4 0 0 1 5-2 5 1-2 0-4-3-6 1 4-3 5-3 8a6 6 0 0 0 12 0c0-6-6-9-6-13z',
+  target:'M12 22a10 10 0 1 0-10-10 10 10 0 0 0 10 10zM12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12zm0-4a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
+  tag:'M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82zM7 7h.01',
+  layers:'M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5',
+  speaker:'M11 5 6 9H2v6h4l5 4V5zm4.54 1.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14',
+};
+function I({ n, s = 18, c = '', stroke = 1.75 }) {
+  const d = ICONS[n] || ICONS.info;
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" className={c}>
+      <path d={d} />
+    </svg>
+  );
+}
+
+/* ============================================================
+   UTILS
+   ============================================================ */
+const uid = (p='id') => p+'_'+Math.random().toString(36).slice(2,9);
+const fmtDate = (d) => new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+const fmtTime = (d) => new Date(d).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+const minsAgo = (d) => Math.round((Date.now()-new Date(d).getTime())/60000);
+const relTime = (d) => { const m = minsAgo(d); if (m<1) return 'now'; if (m<60) return m+'m ago'; if (m<1440) return Math.round(m/60)+'h ago'; return Math.round(m/1440)+'d ago'; };
+const initials = (n) => n.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
+const dAgo = (d) => new Date(Date.now() - d*86400000).toISOString();
+const hAgo = (h) => new Date(Date.now() - h*3600000).toISOString();
+const fmtNum = (n) => { if (n>=1000000) return (n/1000000).toFixed(1)+'M'; if (n>=1000) return (n/1000).toFixed(1)+'k'; return String(n); };
+function loadLS(key, fallback) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; } }
+function saveLS(key, v) { try { localStorage.setItem(key, JSON.stringify(v)); } catch {} }
+
+function useClickOutside(ref, onClose, active=true) {
+  useEffect(() => {
+    if (!active) return;
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
+    const esc = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('mousedown', handler);
+    document.addEventListener('keydown', esc);
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('keydown', esc);
+    };
+  }, [active, onClose]);
+}
+
+/* ============================================================
+   ROLES + DEMO USERS
+   ============================================================ */
+const ROLES = {
+  client:    { name:'Client',          icon:'vault',     desc:'See your brand, track progress, approve deliverables, message your strategist.' },
+  strategist:{ name:'Kapture Strategist', icon:'sparkle', desc:'Run audits, write briefs, manage deliverables, message clients.' },
+  admin:     { name:'Kapture Admin',   icon:'shield',    desc:'Manage all clients, deploy templates, run team operations.' },
+};
+
+// "kapture" is treated as the team voice — no individual names surface to clients.
+// Avatar for the kapture team renders the brand mark instead of letter initials.
+const USERS = [
+  { id:'U-TURA',  name:'Cuthbert "Tura" Arutura', role:'client',     email:'tura@turaarutura.com',  org:'iStéip',  title:'Founder · Sean Nós Dancer · Gaeilgeoir', demo:true },
+  { id:'U-KAP',   name:'kapture',                 role:'strategist', email:'studio@kapture.studio', org:'kapture', title:'Brand Studio',                            isTeam:true, demo:true },
+  { id:'U-ADMIN', name:'kapture admin',           role:'admin',      email:'admin@kapture.studio',  org:'kapture', title:'Operations',                              isTeam:true, demo:true },
+];
+
+/* ============================================================
+   TURA'S BRAND DATA — researched from open web
+   ============================================================ */
+const CLIENT = {
+  id: 'C-TURA',
+  legalName: 'Cuthbert Tura Arutura',
+  workingName: 'Tura Arutura',
+  irishName: 'Ildánach',
+  pronouns: 'he/him',
+  born: 'Chitungwiza, Zimbabwe',
+  lives: 'Ballygowan, Co Down · Belfast',
+  arrivedIreland: '1993',
+  yearsInIreland: 33,
+  brand: 'iStéip',
+  brandTagline: 'Step. Song. Story. Belonging.',
+  primaryDomain: 'turaarutura.com',
+  primaryUrl: 'https://www.turaarutura.com',
+  productDomain: 'isteip.com',
+  productUrl: 'https://www.isteip.com',
+  email: 'info@turaarutura.com',
+  category: 'Cultural worker · Sean Nós dancer · Gaeilgeoir · Mentor · Director',
+  signaturePhrase: 'Tír gan teanga, tír gan anam.',
+  signatureTranslation: 'A country with no language is a country without a soul.',
+  passion: 'Freedom · Healing · Liberation',
+  // Verified affiliations
+  affiliations: [
+    { id:'AFR-1', role:'Executive Director', org:'Africa House NI', since:'2020-08-10', url:'https://www.africahouseni.org/about-us', note:'Charity Commission NI · NIC102939. Capacity Building Manager since Aug 2020, now Executive Director.' },
+    { id:'AFR-2', role:'Founder', org:'iStéip', since:'2019', url:'https://www.isteip.com', note:'Sean Nós + African dance learning practice.' },
+  ],
+  // Verified Companies House
+  companiesHouse: {
+    officerId: 'UUGjZY3WRl_fVXf5Ck-Y6sHJmgY',
+    name: 'Cuthbert Tura ARUTURA',
+    address: '23 University Street, Belfast, BT7 1FY',
+    activeAppointments: 1,
+    resigned: 1,
+    dissolved: 2,
+    url: 'https://find-and-update.company-information.service.gov.uk/officers/UUGjZY3WRl_fVXf5Ck-Y6sHJmgY/appointments',
+    verified: '2026-04-29'
+  },
+  audit: { runOn: dAgo(2), nextRun: dAgo(-26), version: 'v1.0', confidence: 0.92, sourcesCrawled: 47 },
+  health: {
+    overall: 74,
+    pillars: [
+      { key:'visibility',  label:'Visibility',  score:78, prev:71, note:'Strong organic across YouTube and press. No paid presence — opportunity.' },
+      { key:'consistency', label:'Consistency', score:65, prev:62, note:'Voice is solid. Visual identity scattered across platforms — needs system.' },
+      { key:'engagement',  label:'Engagement',  score:82, prev:80, note:'High-quality interactions in a niche audience. Comments are conversations.' },
+      { key:'authority',   label:'Authority',   score:88, prev:85, note:'IAC NYC, BBC adjacent press, PRI/The World, St Patrick\'s Festival. World-class.' },
+      { key:'conversion',  label:'Conversion',  score:54, prev:48, note:'No clear funnel from awareness to booking. New site + quiz will fix.' },
+    ],
+    deltas30d: { visibility:+7, consistency:+3, engagement:+2, authority:+3, conversion:+6 },
+  },
+};
+
+const TIMELINE_30D = [
+  { d:dAgo(29), score:64, mentions:3, reach:18000 },
+  { d:dAgo(26), score:65, mentions:4, reach:21000 },
+  { d:dAgo(23), score:67, mentions:5, reach:24500 },
+  { d:dAgo(20), score:68, mentions:4, reach:26800 },
+  { d:dAgo(17), score:69, mentions:6, reach:29200 },
+  { d:dAgo(14), score:70, mentions:5, reach:31000 },
+  { d:dAgo(11), score:71, mentions:7, reach:33500 },
+  { d:dAgo(8),  score:72, mentions:8, reach:36800 },
+  { d:dAgo(5),  score:73, mentions:9, reach:39200 },
+  { d:dAgo(2),  score:74, mentions:11, reach:42100 },
+];
+
+const WEB_PRESENCE = [
+  { id:'W-1', type:'Primary site', name:'turaarutura.com', url:'https://www.turaarutura.com', platform:'Wix', status:'live', lastChecked:dAgo(0.04),
+    score:62, signals:{
+      mobile:'pass', https:'pass', metaDesc:'partial', og:'partial', sitemap:'pass', schema:'fail', favicon:'pass', accessibility:'partial',
+      pageSpeed: 78, mobileSpeed: 64, lcp: 2.4, cls: 0.08
+    },
+    notes:'Booking flow buried two clicks deep. No tracking pixel. Hero asset dated. Schema markup absent.' },
+  { id:'W-2', type:'Product site', name:'isteip.com', url:'https://www.isteip.com', platform:'Wix', status:'live', lastChecked:dAgo(0.05),
+    score:54, signals:{
+      mobile:'pass', https:'pass', metaDesc:'fail', og:'partial', sitemap:'partial', schema:'fail', favicon:'pass', accessibility:'partial',
+      pageSpeed: 71, mobileSpeed: 58, lcp: 2.9, cls: 0.12
+    },
+    notes:'Brand alignment with parent unclear. Needs positioning audit and unified voice with primary domain.' },
+];
+
+// Verified follower counts crawled directly from public profile pages on 2026-04-29.
+// Where a number cannot be obtained without auth (X, LinkedIn), value is null and
+// the card shows a "Verify" CTA that opens the live profile.
+const VERIFIED_AT = '2026-04-29';
+const SOCIAL_CHANNELS = [
+  { id:'S-IG', icon:'instagram', name:'Instagram', kind:'social', handle:'@turaarutura', url:'https://www.instagram.com/turaarutura/',
+    followers:71000, posts:347, verified:VERIFIED_AT,
+    health:'good',
+    note:'71K · 347 posts. Largest channel. Reels under-shipped.' },
+  { id:'S-FB', icon:'facebook', name:'Facebook', kind:'social', handle:'/turaarutura', url:'https://www.facebook.com/turaarutura',
+    followers:23240, posts:null, verified:VERIFIED_AT,
+    health:'good',
+    note:'23.2K likes · 861 talking. Page bio reads "AI VR MR — Pioneer."' },
+  { id:'S-YT', icon:'youtube', name:'YouTube', kind:'social', handle:'/c/Arutura', url:'https://www.youtube.com/c/Arutura',
+    followers:564, posts:97, verified:VERIFIED_AT,
+    health:'gap',
+    note:'564 subs · 97 videos. Reach undersized for body of work.' },
+  { id:'S-TW', icon:'twitter', name:'X', kind:'social', handle:'@arutura', url:'https://x.com/arutura',
+    followers:null, posts:null, verified:null,
+    health:'ok',
+    note:'X auth-walled — verify on profile.' },
+  { id:'S-LI', icon:'linkedin', name:'LinkedIn', kind:'social', handle:'cuthbert-tura-arutura', url:'https://www.linkedin.com/in/cuthbert-tura-arutura-446024216/',
+    followers:null, posts:null, verified:null,
+    health:'gap',
+    note:'Listed as Exec. Director, Africa House NI. Verify on profile.' },
+  { id:'S-TT', icon:'tiktok', name:'TikTok', kind:'social', handle:'—', url:'',
+    followers:0, posts:0, verified:null,
+    health:'gap',
+    note:'No account yet. Native channel for the work.' },
+];
+
+const PRESS_CHANNELS = [
+  { id:'S-SP', icon:'music',     name:'Spotify',          handle:'Irish with Mollie #6',  url:'https://open.spotify.com/episode/7rIZx0DrYecODSB1ClIjok' },
+  { id:'S-NV', icon:'video',     name:'Northern Visions', handle:'Personal Stories',      url:'https://archive.northernvisions.org/specialcollections/ogpersonal-stories/tura-artura/' },
+];
+
+const IDENTITY_RECORDS = [
+  { id:'I-AH', icon:'flag',      name:'Africa House NI',     role:'Executive Director', sub:'Charity NIC102939', url:'https://www.africahouseni.org/about-us' },
+  { id:'I-CH', icon:'briefcase', name:'Companies House',     role:'1 active appointment', sub:'Cuthbert Tura ARUTURA', url:'https://find-and-update.company-information.service.gov.uk/officers/UUGjZY3WRl_fVXf5Ck-Y6sHJmgY/appointments' },
+  { id:'I-WB', icon:'globe',     name:'turaarutura.com',     role:'Primary site', sub:'Wix · live', url:'https://www.turaarutura.com' },
+  { id:'I-IS', icon:'sparkle',   name:'iStéip',              role:'Founder', sub:'Sean Nós learning practice', url:'https://www.isteip.com' },
+];
+
+const PRESS = [
+  { id:'P-1', outlet:'Irish Arts Center (NYC)', title:'Cuthbert "Tura" Arutura — IAC Dance Festival Sean Nós', date:'2024-04-12', tier:1, kind:'feature', url:'https://www.facebook.com/IrishArtsCenter/videos/759559090743286/' },
+  { id:'P-2', outlet:'Irish News',              title:'Black Lives Matter campaigner teaching Irish dance classes online', date:'2021-02-22', tier:1, kind:'feature', url:'https://www.irishnews.com/news/northernirelandnews/2021/02/22/news/black-lives-matter-campaigner-teaching-irish-dance-classes-online-2230702/' },
+  { id:'P-3', outlet:'PRI · The World',         title:'A New Protestant Beginning for the Irish Language in Belfast', date:'2013-04-10', tier:1, kind:'profile', url:'https://www.pri.org/stories/2013-04-10/new-protestant-beginning-irish-language-belfast' },
+  { id:'P-4', outlet:'St Patrick\'s Festival',  title:'GOAL — AfroCeltic Cultural Celebration', date:'2024-03-17', tier:1, kind:'performance', url:'https://stpatricksfestival.ie/event/goal-afroceltic-cultural-celebration/' },
+  { id:'P-5', outlet:'Armagh I',                title:'Agallamh le Tura Arutura — Irish Language Week interview', date:'2023-03-06', tier:2, kind:'interview', url:'https://armaghi.com/whats-on/irish-language-week/agallamh-le-tura-arutura-interview-with-zimbabwe-born-artist-and-irish-language-campaigner-tura-arutura/128943' },
+  { id:'P-6', outlet:'Northern Visions TV',     title:'Tura Arutura — Personal Stories', date:'2019-09-15', tier:2, kind:'documentary', url:'https://archive.northernvisions.org/specialcollections/ogpersonal-stories/tura-artura/' },
+  { id:'P-7', outlet:'Irish with Mollie (Pod)', title:'#6 Tura Arutura — Dancer, Choreographer, Musician, Gaeilgeoir', date:'2022-08-19', tier:2, kind:'podcast', url:'https://creators.spotify.com/pod/profile/irish-with-mollie/episodes/6-Tura-Arutura---e2gvk9c' },
+  { id:'P-8', outlet:'IrishCentral',            title:'BLM activist teaching Irish dance online', date:'2021-02-23', tier:2, kind:'feature', url:'https://www.irishcentral.com/culture/blm-activist-teaching-irish-dance-online' },
+  { id:'P-9', outlet:'News Letter',             title:'Black Lives Matter campaigner teaching Irish dance classes online', date:'2021-02-22', tier:2, kind:'feature', url:'https://www.newsletter.co.uk/education/black-lives-matter-campaigner-teaching-irish-dance-classes-online-3141986' },
+];
+
+const PERFORMANCES = [
+  { id:'PF-1', when:'Annual',     name:'IAC Dance Festival',                       venue:'Irish Arts Center · NYC',                   tag:'International' },
+  { id:'PF-2', when:'Annual',     name:'St Patrick\'s Festival — AfroCeltic',     venue:'Dublin · GOAL programme',                   tag:'National' },
+  { id:'PF-3', when:'Recurring',  name:'Líofa Showcase — Queen\'s GAA Festival',  venue:'Belfast · Irish-language community',         tag:'Community' },
+  { id:'PF-4', when:'Annual',     name:'Seachtain na Gaeilge programmes',          venue:'Schools, councils, festivals · island-wide', tag:'Education' },
+  { id:'PF-5', when:'Lockdown',   name:'Online Irish dance classes',                venue:'Featured · The Irish News, IrishCentral',   tag:'Teaching' },
+  { id:'PF-6', when:'2020',       name:'BLM rally — Custom House Square',          venue:'Belfast · public address',                  tag:'Speaking' },
+];
+
+const SEO = {
+  brandedSearches30d: 1840,
+  brandedTrend: +12.4,
+  topQueries: [
+    { q:'tura arutura', vol:720, pos:1.1 },
+    { q:'sean nós dance belfast', vol:480, pos:2.3 },
+    { q:'isteip', vol:210, pos:1.0 },
+    { q:'african dance workshop belfast', vol:340, pos:6.7 },
+    { q:'irish language workshop schools', vol:1200, pos:18.2 },
+    { q:'edi consultancy belfast', vol:880, pos:24.1 },
+  ],
+  knowledgePanel: false,
+  googleBusiness: 'unclaimed',
+};
+
+const ACTIONS = [
+  // IMMEDIATE
+  { id:'A-1', tier:'immediate', title:'Standardise bio across all platforms', desc:'One canonical 50-word bio, one 200-word bio, one 500-word press bio. Roll out to LinkedIn, Twitter, Facebook, YouTube About, Instagram.', priority:'high', effort:'S', impact:'M', status:'todo', owner:'U-KAP', deadline:dAgo(-3), pillar:'consistency' },
+  { id:'A-2', tier:'immediate', title:'Pin "Welcome to iStéip" video on YouTube', desc:'Record + edit a 90-second intro to channel. Pin to top of /c/Arutura. Update channel art and About section.', priority:'high', effort:'M', impact:'M', status:'in_progress', owner:'U-TURA', deadline:dAgo(-5), pillar:'visibility' },
+  { id:'A-3', tier:'immediate', title:'Add booking link to all social bios', desc:'Single canonical booking URL: turaarutura.com/book. Add to every platform bio. Track via UTM.', priority:'high', effort:'S', impact:'H', status:'todo', owner:'U-KAP', deadline:dAgo(-2), pillar:'conversion' },
+  { id:'A-4', tier:'immediate', title:'Claim Google Business Profile', desc:'Knowledge Panel currently absent. Claim, verify, populate with photos, hours and booking link. Target: panel live within 14 days.', priority:'medium', effort:'S', impact:'M', status:'todo', owner:'U-KAP', deadline:dAgo(-7), pillar:'visibility' },
+  { id:'A-5', tier:'immediate', title:'Audit and respond to unread DMs / comments', desc:'47 unread interactions across Instagram, Facebook, YouTube. Personal reply within 48h. Sets tone for community.', priority:'medium', effort:'M', impact:'M', status:'todo', owner:'U-TURA', deadline:dAgo(-4), pillar:'engagement' },
+  { id:'A-6', tier:'immediate', title:'Add schema markup to turaarutura.com', desc:'Person, Performer, Event schema. Enables rich results in search. Wix supports via custom code injection.', priority:'medium', effort:'S', impact:'M', status:'todo', owner:'U-KAP', deadline:dAgo(-6), pillar:'visibility' },
+
+  // SHORT-TERM
+  { id:'A-7', tier:'short', title:'Launch new turaarutura.com', desc:'Wix rebuild based on the personal-brand site we designed. Press wall, story section, watch-and-listen, upcoming, enquiry quiz.', priority:'high', effort:'L', impact:'H', status:'design_done', owner:'U-KAP', deadline:dAgo(-30), pillar:'consistency' },
+  { id:'A-8', tier:'short', title:'Deploy enquiry quiz widget', desc:'12-question conditional form already built. Embed in turaarutura.com/book. Wire to mailto and Klaviyo for capture.', priority:'high', effort:'M', impact:'H', status:'design_done', owner:'U-KAP', deadline:dAgo(-21), pillar:'conversion' },
+  { id:'A-9', tier:'short', title:'Press kit PDF for festival / event bookers', desc:'10-page deck: bio, headshots, performance reel link, technical rider, fee tiers, references. One-click send to bookers.', priority:'high', effort:'M', impact:'M', status:'todo', owner:'U-KAP', deadline:dAgo(-45), pillar:'authority' },
+  { id:'A-10', tier:'short', title:'Quarterly content calendar — 12 weekly Sean Nós shorts', desc:'One 30-second short per week. TikTok + Reels + YouTube Shorts. Hook + step demo + sign-off. Builds top-of-funnel.', priority:'high', effort:'L', impact:'H', status:'todo', owner:'U-TURA', deadline:dAgo(-90), pillar:'visibility' },
+  { id:'A-11', tier:'short', title:'Stéip Sessions newsletter — first 3 issues', desc:'Monthly. Step of the month, Irish phrase, upcoming workshops, behind-the-scenes. Klaviyo template. Target 1k subs by month 3.', priority:'medium', effort:'M', impact:'M', status:'todo', owner:'U-KAP', deadline:dAgo(-60), pillar:'engagement' },
+  { id:'A-12', tier:'short', title:'Outreach: 5 tier-1 festivals · 10 schools · 3 universities', desc:'Targeted booking outreach with new press kit. Personal email from Tura, follow-up sequence. Track in CRM.', priority:'medium', effort:'L', impact:'H', status:'todo', owner:'U-TURA', deadline:dAgo(-75), pillar:'conversion' },
+  { id:'A-13', tier:'short', title:'TikTok launch + first 30 posts', desc:'Channel @turaarutura. First 30 posts in 60 days — Sean Nós steps, African dance, Irish phrases, BTS. Native vertical.', priority:'medium', effort:'L', impact:'H', status:'todo', owner:'U-TURA', deadline:dAgo(-60), pillar:'visibility' },
+
+  // LONG-TERM
+  { id:'A-14', tier:'long', title:'Launch iStéip dance learning platform', desc:'Subscription product — structured Sean Nós + African dance courses. Tiered membership. Target: 250 paying members by month 12.', priority:'high', effort:'XL', impact:'XL', status:'todo', owner:'U-TURA', deadline:dAgo(-365), pillar:'conversion' },
+  { id:'A-15', tier:'long', title:'Brand documentary short — "Ildánach"', desc:'15-minute short film. Tura\'s story from Chitungwiza to Belfast. Festival circuit. Sells the bigger picture for festival bookers.', priority:'high', effort:'XL', impact:'XL', status:'todo', owner:'U-KAP', deadline:dAgo(-270), pillar:'authority' },
+  { id:'A-16', tier:'long', title:'Annual showcase event in Belfast — Stéip Festival', desc:'Two-day festival. Sean Nós, African rhythms, Irish-language workshops. Tura is the centre. Recurring annual platform.', priority:'medium', effort:'XL', impact:'XL', status:'todo', owner:'U-TURA', deadline:dAgo(-330), pillar:'authority' },
+  { id:'A-17', tier:'long', title:'International tour: NYC return, Toronto, Dublin, London', desc:'4-city tour over 12 months. Building on IAC NYC relationship. Each stop = workshop + performance + media.', priority:'medium', effort:'XL', impact:'H', status:'todo', owner:'U-KAP', deadline:dAgo(-365), pillar:'authority' },
+  { id:'A-18', tier:'long', title:'Cohort programme — certify 12 Sean Nós teachers under iStéip', desc:'6-month train-the-trainer programme. Scales the practice. Each certified teacher = revenue + reach multiplier.', priority:'medium', effort:'XL', impact:'H', status:'todo', owner:'U-TURA', deadline:dAgo(-330), pillar:'engagement' },
+  { id:'A-19', tier:'long', title:'Book deal — memoir or cultural essay collection', desc:'Pursue agent + publisher. The story is publishable: Chitungwiza → Belfast → master of Sean Nós. Builds authority for life.', priority:'low', effort:'XL', impact:'XL', status:'todo', owner:'U-TURA', deadline:dAgo(-365), pillar:'authority' },
+];
+
+const MESSAGES = [
+  { id:'M-1', from:'U-KAP',  to:'U-TURA', text:'Tura — your audit is live. Brand health 74. Strongest pillar is authority, conversion is the gap. Open the dashboard when you have 10 mins and tell us what jumps out.', at:hAgo(28), read:false },
+  { id:'M-2', from:'U-TURA', to:'U-KAP',  text:'This is unreal. I had no idea Instagram was at 71k. Where do we start?', at:hAgo(20), read:true },
+  { id:'M-3', from:'U-KAP',  to:'U-TURA', text:'Start with the Immediate tier in Action Plan. Six items, all S/M effort. We can knock most out this week. Want to set a 30-min call Friday?', at:hAgo(18), read:true },
+  { id:'M-4', from:'U-TURA', to:'U-KAP',  text:'Friday 10am works. Send the link. Also — that quote about "Tír gan teanga" being a signature phrase landed. Use it.', at:hAgo(16), read:true },
+  { id:'M-5', from:'U-KAP',  to:'U-TURA', text:'Calendar invite sent. We\'ll record so you can review. Also — pushing the new turaarutura.com staging by EOD. You\'ll see the link in Deliverables.', at:hAgo(8), read:false },
+];
+
+const DELIVERABLES = [
+  { id:'D-1', title:'Brand Audit Report v1.0',           type:'PDF',    status:'final',     updated:dAgo(2),  owner:'U-KAP', size:'2.4 MB',  desc:'Full audit. 47 sources crawled. 5-pillar health framework. 19 recommendations.' },
+  { id:'D-2', title:'turaarutura.com — staging',          type:'URL',    status:'in_review', updated:hAgo(8),  owner:'U-KAP', size:'—',        desc:'New personal-brand site. Press wall, story section, watch & listen, upcoming, enquiry quiz wired in.' },
+  { id:'D-3', title:'Enquiry Quiz Widget',                type:'HTML',   status:'in_review', updated:dAgo(1),  owner:'U-KAP', size:'48 KB',   desc:'12-question conditional widget. Embed in turaarutura.com/book.' },
+  { id:'D-4', title:'Bio canonical set (50/200/500)',     type:'DOC',    status:'in_progress', updated:hAgo(36), owner:'U-KAP', size:'12 KB', desc:'Three approved bio lengths. Roll out to all platforms in week 1.' },
+  { id:'D-5', title:'Press Kit PDF',                      type:'PDF',    status:'todo',      updated:dAgo(0.1), owner:'U-KAP', size:'—',       desc:'10-page deck for festival and event bookers. Drafting next week.' },
+  { id:'D-6', title:'Q3 Content Calendar — Sean Nós shorts', type:'XLSX', status:'todo',    updated:dAgo(0.1), owner:'U-KAP', size:'—',       desc:'12-week schedule with hooks, steps, sign-offs and posting cadence.' },
+  { id:'D-7', title:'Stéip Sessions — issue 01 draft',    type:'EMAIL',  status:'todo',      updated:dAgo(0.1), owner:'U-KAP', size:'—',       desc:'First newsletter issue. Klaviyo template. Sender, subject, body.' },
+];
+
+const ACTIVITY = [
+  { id:'AC-1', kind:'audit',     title:'Brand audit completed — 47 sources crawled',     at:dAgo(2),    by:'U-KAP' },
+  { id:'AC-2', kind:'message',   title:'Tura replied to audit findings',                at:hAgo(20),   by:'U-TURA' },
+  { id:'AC-3', kind:'deliverable', title:'turaarutura.com staging deployed',            at:hAgo(8),    by:'U-KAP' },
+
+  { id:'AC-4', kind:'action',    title:'Action #2 moved to In Progress',                at:hAgo(6),    by:'U-TURA' },
+  { id:'AC-5', kind:'press',     title:'New mention detected — Belfast Live (mentioned in roundup)', at:hAgo(3), by:'system' },
+  { id:'AC-6', kind:'social',    title:'YouTube subscriber count up +47 this week',     at:hAgo(2),    by:'system' },
+];
+
+/* ============================================================
+   KAPTURE — case-study client (publicly viewable demo)
+   ============================================================ */
+const KAPTURE_CLIENT = {
+  id: 'C-KAP',
+  legalName: 'kapture',
+  workingName: 'kapture',
+  pronouns: '—',
+  born: 'Belfast · Africa',
+  lives: 'Belfast · transcontinental',
+  brand: 'kapture',
+  brandTagline: 'Award-winning African digital transformation agency.',
+  primaryDomain: 'thekapture.com',
+  primaryUrl: 'https://www.thekapture.com',
+  productDomain: 'kurongeka.com',
+  productUrl: 'https://kurongeka.com',
+  email: 'studio@thekapture.com',
+  category: 'Digital transformation · brand · web · film · motion · music',
+  signaturePhrase: 'We design, build and launch unforgettable brands.',
+  signatureTranslation: '',
+  passion: 'Visionary leaders · driven brands · unstoppable movements',
+  affiliations: [
+    { id:'KAFR-1', role:'Studio', org:'kapture', since:'2019', url:'https://www.thekapture.com', note:'End-to-end digital production house — brand, web, film, motion, music, signage.' },
+  ],
+  companiesHouse: null,
+  audit: { runOn: dAgo(1), nextRun: dAgo(-29), version: 'v1.0', confidence: 0.94, sourcesCrawled: 38 },
+  health: {
+    overall: 68,
+    pillars: [
+      { key:'visibility',  label:'Visibility',  score:62, prev:55, note:'Strong owned site. Low presence on TikTok and Instagram for a creative house.' },
+      { key:'consistency', label:'Consistency', score:84, prev:80, note:'Visual system is locked. Voice is consistent across every touchpoint.' },
+      { key:'engagement',  label:'Engagement',  score:58, prev:55, note:'High-quality interactions on LinkedIn. Other channels under-shipped.' },
+      { key:'authority',   label:'Authority',   score:77, prev:74, note:'Award-winning. Featured client work. Industry recognition growing.' },
+      { key:'conversion',  label:'Conversion',  score:71, prev:64, note:'Tight enquiry funnel. New kurongeka.com onboarding pulls in cold traffic well.' },
+    ],
+    deltas30d: { visibility:+7, consistency:+4, engagement:+3, authority:+3, conversion:+7 },
+  },
+};
+const KAPTURE_CHANNELS = [
+  { id:'K-IG', icon:'instagram', name:'Instagram', kind:'social', handle:'@thekapture',  url:'https://www.instagram.com/thekapture', followers:null, posts:null, verified:null, health:'gap', note:'Verify on profile.' },
+  { id:'K-LI', icon:'linkedin',  name:'LinkedIn',  kind:'social', handle:'kapture-design', url:'https://www.linkedin.com/company/kapture-design', followers:null, posts:null, verified:null, health:'good', note:'Company page · verified. B2B reach lives here.' },
+  { id:'K-FB', icon:'facebook',  name:'Facebook',  kind:'social', handle:'/thekapture',   url:'https://www.facebook.com/thekapture', followers:null, posts:null, verified:null, health:'ok', note:'Verify on profile.' },
+  { id:'K-TW', icon:'twitter',   name:'X',         kind:'social', handle:'@thekapture',   url:'https://x.com/thekapture', followers:null, posts:null, verified:null, health:'ok', note:'Auth-walled — verify on profile.' },
+  { id:'K-YT', icon:'youtube',   name:'YouTube',   kind:'social', handle:'@thekapture',   url:'https://www.youtube.com/@thekapture', followers:null, posts:null, verified:null, health:'gap', note:'Major opportunity for an award-winning film team.' },
+  { id:'K-TT', icon:'tiktok',    name:'TikTok',    kind:'social', handle:'—',             url:'', followers:0, posts:0, verified:null, health:'gap', note:'No presence yet.' },
+];
+const KAPTURE_PRESS = [
+  { id:'KP-1', outlet:'Industry award (TBC)',     title:'Best digital transformation agency · Africa',          date:'2025-11-14', tier:1, kind:'award',     url:'https://www.thekapture.com' },
+  { id:'KP-2', outlet:'thekapture.com',           title:'Case study — full client portfolio live',              date:'2026-01-08', tier:2, kind:'feature',   url:'https://www.thekapture.com' },
+];
+const KAPTURE_IDENTITY = [
+  { id:'KI-WB', icon:'globe',     name:'thekapture.com', role:'Primary site', sub:'Wix · live', url:'https://www.thekapture.com' },
+  { id:'KI-LI', icon:'linkedin',  name:'LinkedIn',       role:'Company page', sub:'kapture-design',  url:'https://www.linkedin.com/company/kapture-design' },
+  { id:'KI-KR', icon:'sparkle',   name:'kurongeka.com',  role:'Product',     sub:'Brand audit + portal', url:'https://kurongeka.com' },
+];
+const KAPTURE_SEO = {
+  brandedSearches30d: 2940,
+  brandedTrend: +18.7,
+  topQueries: [
+    { q:'kapture',                 vol:1100, pos:1.2 },
+    { q:'thekapture',              vol:560,  pos:1.0 },
+    { q:'african digital agency',  vol:1800, pos:9.4 },
+    { q:'belfast brand agency',    vol:920,  pos:14.6 },
+    { q:'digital transformation africa', vol:2200, pos:22.1 },
+    { q:'brand audit service',     vol:1400, pos:28.0 },
+  ],
+  knowledgePanel: false,
+  googleBusiness: 'unclaimed',
+};
+
+/* ============================================================
+   CONTEXT
+   ============================================================ */
+const AppCtx = createContext(null);
+const useApp = () => useContext(AppCtx);
+
+function AppProvider({ children }) {
+  const [users] = useState(USERS);
+  // Always start logged out. Login is private and kapture-issued.
+  const [currentUser, setCurrentUser] = useState(null);
+  // publicView controls what's shown when not logged in.
+  // 'landing' (default) | 'start' (onboarding) | 'login' | 'case-study'
+  const initialView = (() => {
+    if (typeof window === 'undefined') return 'landing';
+    const h = (window.location.hash || '').replace('#','').toLowerCase();
+    if (h === 'start' || h === 'login' || h === 'case-study') return h;
+    return 'landing';
+  })();
+  const [publicView, setPublicView] = useState(initialView);
+  const goPublic = (v) => {
+    setPublicView(v);
+    if (typeof window !== 'undefined') window.location.hash = v === 'landing' ? '' : v;
+  };
+  // Client switcher — when route=case-study, the dashboard renders kapture data.
+  const isCaseStudy = publicView === 'case-study';
+  const activeClient = isCaseStudy ? KAPTURE_CLIENT : CLIENT;
+  const activeChannels = isCaseStudy ? KAPTURE_CHANNELS : SOCIAL_CHANNELS;
+  const activePress = isCaseStudy ? KAPTURE_PRESS : PRESS;
+  const activeIdentity = isCaseStudy ? KAPTURE_IDENTITY : IDENTITY_RECORDS;
+  const activeSEO = isCaseStudy ? KAPTURE_SEO : SEO;
+  // Listen to hash changes (back/forward)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handler = () => {
+      const h = (window.location.hash || '').replace('#','').toLowerCase();
+      setPublicView(h === 'start' || h === 'login' || h === 'case-study' ? h : 'landing');
+    };
+    window.addEventListener('hashchange', handler);
+    return () => window.removeEventListener('hashchange', handler);
+  }, []);
+  const [route, setRoute] = useState('dashboard');
+  const [actions, setActions] = useState(() => loadLS('kr.actions', ACTIONS));
+  const [messages, setMessages] = useState(() => loadLS('kr.messages', MESSAGES));
+  const [deliverables] = useState(DELIVERABLES);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  // ---------- VERIFIED CRAWL TIMER ----------
+  // Honest: numbers come from a manual crawl on the verified date. Sync re-runs the
+  // crawl simulation so timestamps refresh, but we do NOT fabricate count drift.
+  // Channels switch automatically based on which client is active.
+  const channels = activeChannels;
+  const [lastSync, setLastSync] = useState(Date.now());
+  const [syncing, setSyncing] = useState(false);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setTick(k => k + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const doSync = useCallback((manual = true) => {
+    setSyncing(true);
+    setTimeout(() => {
+      setLastSync(Date.now());
+      setSyncing(false);
+      if (manual) setToast('Synced.');
+    }, manual ? 900 : 400);
+  }, []);
+
+  useEffect(() => saveLS('kr.actions', actions), [actions]);
+  useEffect(() => saveLS('kr.messages', messages), [messages]);
+  useEffect(() => { if (toast) { const t = setTimeout(()=>setToast(null), 2400); return ()=>clearTimeout(t); } }, [toast]);
+
+  const navigate = (r) => { setRoute(r); setSidebarOpen(false); window.scrollTo(0,0); };
+  const updateAction = (id, patch) => setActions(prev => prev.map(a => a.id===id ? {...a, ...patch} : a));
+  const sendMessage = (text) => {
+    if (!text.trim() || !currentUser) return;
+    const other = currentUser.role === 'client' ? 'U-KAP' : 'U-TURA';
+    setMessages(prev => [...prev, { id:uid('M'), from:currentUser.id, to:other, text:text.trim(), at:new Date().toISOString(), read:false }]);
+  };
+  const showToast = (text) => setToast(text);
+  const logout = () => {
+    const wasDemo = currentUser?.isDemo;
+    setCurrentUser(null);
+    setRoute('dashboard');
+    // if leaving the case study, return to landing
+    if (wasDemo) goPublic('landing');
+  };
+
+  const value = { users, currentUser, setCurrentUser, route, navigate, actions, updateAction, messages, sendMessage, deliverables, sidebarOpen, setSidebarOpen, profileOpen, setProfileOpen, toast, showToast, logout, client: activeClient, channels, press: activePress, identity: activeIdentity, seo: activeSEO, lastSync, syncing, doSync, tick, publicView, goPublic, isCaseStudy };
+  return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;
+}
+
+/* ============================================================
+   PRIMITIVES
+   ============================================================ */
+function KaptureMark({ size=32, fill='#000', accent='#ffcc00' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style={{ display:'block' }}>
+      <g>
+        <path fill={fill} d="M255.75,133.125c67.679,0 122.625,54.946 122.625,122.625c0,67.679 -54.946,122.625 -122.625,122.625c-67.679,0 -122.625,-54.946 -122.625,-122.625c0,-67.679 54.946,-122.625 122.625,-122.625Zm0,-132.75c18.832,0 34.121,15.289 34.121,34.121c0,18.832 -15.289,34.121 -34.121,34.121c-18.832,0 -34.121,-15.289 -34.121,-34.121c0,-18.832 15.289,-34.121 34.121,-34.121Zm-180.577,74.798c13.316,-13.316 34.938,-13.316 48.254,0c13.316,13.316 13.316,34.938 0,48.254c-13.316,13.316 -34.938,13.316 -48.254,0c-13.316,-13.316 -13.316,-34.938 0,-48.254Zm435.952,180.577c0,18.832 -15.289,34.121 -34.121,34.121c-18.832,0 -34.121,-15.289 -34.121,-34.121c0,-18.832 15.289,-34.121 34.121,-34.121c18.832,0 34.121,15.289 34.121,34.121Zm-255.375,187.133c18.832,0 34.121,15.289 34.121,34.121c0,18.832 -15.289,34.121 -34.121,34.121c-18.832,0 -34.121,-15.289 -34.121,-34.121c0,-18.832 15.289,-34.121 34.121,-34.121Zm132.323,-54.81c13.316,-13.316 34.938,-13.316 48.254,0c13.316,13.316 13.316,34.938 0,48.254c-13.316,13.316 -34.938,13.316 -48.254,0c-13.316,-13.316 -13.316,-34.938 0,-48.254Zm-319.456,-132.323c0,18.832 -15.289,34.121 -34.121,34.121c-18.832,0 -34.121,-15.289 -34.121,-34.121c0,-18.832 15.289,-34.121 34.121,-34.121c18.832,0 34.121,15.289 34.121,34.121Zm54.81,132.323c13.316,13.316 13.316,34.938 0,48.254c-13.316,13.316 -34.938,13.316 -48.254,0c-13.316,-13.316 -13.316,-34.938 0,-48.254c13.316,-13.316 34.938,-13.316 48.254,0Z"/>
+        <path fill={accent} d="M436.327,75.173c13.316,13.316 13.316,34.938 0,48.254c-13.316,13.316 -34.938,13.316 -48.254,0c-13.316,-13.316 -13.316,-34.938 0,-48.254c13.316,-13.316 34.938,-13.316 48.254,0Z"/>
+      </g>
+    </svg>
+  );
+}
+
+// Brand component
+//   variant='hero' → stacked "kurongeka" / "by kapture" — login screen only
+//   variant='nav'  → single inline "kurongeka.com" — used in sidebar + mobile topbar
+//                    (single line prevents stacking from breaking nav-bar height)
+function Brand({ size='md', invert=false, variant='hero' }) {
+  const sz = size==='lg' ? 40 : size==='sm' ? 22 : 28;
+  const fill = invert ? '#ffffff' : '#000000';
+  const base = invert ? 'text-white' : 'text-ink';
+  const sub = invert ? 'text-white/45' : 'text-subtle';
+
+  if (variant === 'nav') {
+    return (
+      <div className="flex items-center gap-2 min-w-0">
+        <KaptureMark size={sz} fill={fill} accent="#ffcc00"/>
+        <span className={`font-display font-extrabold tracking-tight ${size==='lg'?'text-[18px]':'text-[15px]'} ${base} truncate leading-none`}>
+          kurongeka<span className={`${sub} font-medium`}>.com</span>
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2.5">
+      <KaptureMark size={sz} fill={fill} accent="#ffcc00"/>
+      <div className="flex flex-col leading-none">
+        <span className={`font-display font-extrabold tracking-tight ${size==='lg'?'text-[22px]':'text-[16px]'} ${base}`}>kurongeka</span>
+        <span className={`text-[10px] mt-1 ${sub} font-medium tracking-wider uppercase`}>by kapture</span>
+      </div>
+    </div>
+  );
+}
+
+function Avatar({ name, size=32, invert=false, isTeam=false }) {
+  if (isTeam) {
+    return (
+      <div className={`grid place-items-center rounded-full shrink-0 ${invert?'bg-white':'bg-ink'}`} style={{ width:size, height:size }}>
+        <KaptureMark size={size*0.55} fill={invert?'#000':'#fff'} accent="#ffcc00"/>
+      </div>
+    );
+  }
+  return <div className={`avatar ${invert?'bg-white text-black':''}`} style={{ width:size, height:size, fontSize:size*0.4 }}>{initials(name)}</div>;
+}
+
+function Field({ label, hint, required, children }) {
+  return (
+    <label className="block">
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[12px] font-semibold text-ink">{label}{required && <span className="text-bad">*</span>}</span>
+        {hint && <span className="text-[11px] text-subtle">{hint}</span>}
+      </div>
+      {children}
+    </label>
+  );
+}
+
+function Btn({ children, onClick, variant='primary', size='', className='', disabled=false, type='button' }) {
+  return (
+    <button type={type} onClick={onClick} disabled={disabled}
+      className={`btn btn-${variant} ${size?`btn-${size}`:''} ${className}`}>
+      {children}
+    </button>
+  );
+}
+
+function Pill({ children, tone='default', size='' }) {
+  const tones = {
+    default: 'bg-canvas text-ink',
+    good:    'bg-[#d8f3e3] text-[#024d28]',
+    ok:      'bg-canvas text-muted',
+    warn:    'bg-[#fff0d6] text-[#7a3a00]',
+    bad:     'bg-[#fee5e0] text-[#9a1100]',
+    info:    'bg-[#e0ebff] text-[#003ec0]',
+    dark:    'bg-black text-white',
+  };
+  return <span className={`pill ${size==='lg'?'pill-lg':''} ${tones[tone]}`}>{children}</span>;
+}
+
+function ScoreBadge({ score, size=64 }) {
+  const tone = score >= 80 ? '#05944f' : score >= 60 ? '#000' : score >= 40 ? '#ff8a00' : '#e11900';
+  const r = (size-10)/2;
+  const c = 2 * Math.PI * r;
+  const off = c - (score/100) * c;
+  return (
+    <div className="relative" style={{ width:size, height:size }}>
+      <svg width={size} height={size}>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#f0f0f0" strokeWidth="5"/>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={tone} strokeWidth="5"
+          strokeDasharray={c} strokeDashoffset={off} strokeLinecap="round"
+          transform={`rotate(-90 ${size/2} ${size/2})`}/>
+      </svg>
+      <div className="absolute inset-0 grid place-items-center font-display font-extrabold" style={{ fontSize:size*0.32 }}>{score}</div>
+    </div>
+  );
+}
+
+function Toast() {
+  const { toast } = useApp();
+  if (!toast) return null;
+  return (
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] fade-in">
+      <div className="bg-black text-white rounded-xl px-5 py-3 shadow-xl text-sm font-medium flex items-center gap-2">
+        <I n="check" s={16}/> {toast}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   AUTH SCREEN — Brand Vault
+   ============================================================ */
+function AuthScreen() {
+  const { users, setCurrentUser } = useApp();
+  const [form, setForm] = useState({ email:'', password:'' });
+  const [err, setErr] = useState('');
+  const [audit, setAudit] = useState({ open:false, sent:false, name:'', email:'', brand:'', notes:'' });
+
+  const tryLogin = () => {
+    setErr('');
+    if (!form.email) return setErr('Enter your email.');
+    if (!form.password) return setErr('Enter your password.');
+    const u = users.find(x => x.email.toLowerCase() === form.email.toLowerCase());
+    if (!u) return setErr('No vault found for that email. Contact Kapture for access.');
+    if (form.password !== 'demo1234') return setErr('Incorrect password.');
+    setCurrentUser(u);
+  };
+
+  return (
+    <div className="min-h-screen w-full bg-white flex flex-col items-center justify-center p-6 relative">
+      {/* Subtle yellow accent dot — top right */}
+      <div className="absolute top-6 right-6 hidden sm:flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] font-semibold text-subtle">
+        <span className="h-1.5 w-1.5 rounded-full" style={{ background:'#ffcc00' }}/>
+        Private · kapture-issued access
+      </div>
+
+      <div className="w-full max-w-[400px]">
+        {/* Logo mark */}
+        <div className="flex justify-center mb-7">
+          <KaptureMark size={56} fill="#000" accent="#ffcc00"/>
+        </div>
+
+        {/* Welcome */}
+        <div className="text-center mb-8 fade-in">
+          <h1 className="font-display font-extrabold tracking-tight" style={{ fontSize:'clamp(28px, 4vw, 36px)', lineHeight:1.05 }}>Welcome to kurongeka.</h1>
+          <div className="text-[11px] uppercase tracking-[0.18em] font-semibold text-subtle mt-2">by kapture</div>
+        </div>
+
+        {/* Form */}
+        <div className="space-y-3 fade-in">
+          <input
+            className="input"
+            type="email"
+            placeholder="Email"
+            autoComplete="email"
+            value={form.email}
+            onChange={e=>setForm({...form, email:e.target.value})}
+            onKeyDown={e=>{ if (e.key === 'Enter') tryLogin(); }}
+          />
+          <input
+            className="input"
+            type="password"
+            placeholder="Password"
+            autoComplete="current-password"
+            value={form.password}
+            onChange={e=>setForm({...form, password:e.target.value})}
+            onKeyDown={e=>{ if (e.key === 'Enter') tryLogin(); }}
+          />
+          {err && <div className="text-[13px] text-bad bg-[#fee5e0] rounded-lg px-3 py-2.5 text-center">{err}</div>}
+
+          <Btn onClick={tryLogin} className="btn-block" size="lg">Login</Btn>
+          <Btn variant="outline" onClick={()=>setAudit({...audit, open:true})} className="btn-block" size="lg">Request audit</Btn>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-10 text-center text-[11px] text-subtle">
+          kurongeka <span className="font-mono">/kʊ.roˈŋɡe.ka/</span> · Shona, "being organised" · © kapture studio
+        </div>
+      </div>
+
+      {/* REQUEST AUDIT MODAL */}
+      {audit.open && (
+        <div className="fixed inset-0 modal-bg z-[100] flex items-center justify-center p-4" onClick={()=>!audit.sent && setAudit({...audit, open:false})}>
+          <div className="bg-white rounded-2xl w-full max-w-[480px] p-6 sm:p-8 fade-in" onClick={e=>e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <KaptureMark size={32} fill="#000" accent="#ffcc00"/>
+              <button className="p-1.5 rounded-lg hover:bg-canvas" onClick={()=>setAudit({...audit, open:false})}><I n="x"/></button>
+            </div>
+            {!audit.sent ? (
+              <Fragment>
+                <h2 className="font-display font-extrabold text-2xl leading-tight mb-1.5">Request a brand audit.</h2>
+                <p className="text-sm text-muted mb-5">kapture replies within 2 working days with next steps and a private vault link.</p>
+                <div className="space-y-3">
+                  <input className="input" placeholder="Your name" value={audit.name} onChange={e=>setAudit({...audit, name:e.target.value})}/>
+                  <input className="input" type="email" placeholder="Email" value={audit.email} onChange={e=>setAudit({...audit, email:e.target.value})}/>
+                  <input className="input" placeholder="Brand or business name" value={audit.brand} onChange={e=>setAudit({...audit, brand:e.target.value})}/>
+                  <textarea className="input" rows="3" placeholder="One line on what you need (optional)" value={audit.notes} onChange={e=>setAudit({...audit, notes:e.target.value})}/>
+                </div>
+                <Btn className="btn-block mt-4" size="lg" disabled={!audit.name || !audit.email || !audit.brand} onClick={()=>{
+                  // mailto trigger so Kapture gets the request
+                  const subject = `Audit request — ${audit.brand}`;
+                  const body = `Name: ${audit.name}%0AEmail: ${audit.email}%0ABrand: ${audit.brand}%0A%0ANotes:%0A${audit.notes||'—'}`;
+                  window.open(`mailto:studio@kapture.studio?subject=${encodeURIComponent(subject)}&body=${body}`, '_blank');
+                  setAudit({...audit, sent:true});
+                }}>Send request</Btn>
+              </Fragment>
+            ) : (
+              <div className="text-center py-6">
+                <div className="h-14 w-14 rounded-full mx-auto mb-4 grid place-items-center" style={{ background:'#ffcc00' }}>
+                  <I n="check" s={28} c="text-ink"/>
+                </div>
+                <h2 className="font-display font-extrabold text-2xl mb-1.5">Request received.</h2>
+                <p className="text-sm text-muted mb-5">kapture will be in touch within 2 working days. Your vault is built before our first call.</p>
+                <Btn variant="outline" className="btn-block" onClick={()=>setAudit({ open:false, sent:false, name:'', email:'', brand:'', notes:'' })}>Close</Btn>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============================================================
+   LAYOUT — Sidebar + TopBar + Mobile bottom tab
+   ============================================================ */
+const NAV_ITEMS = [
+  { section:'Brand', items:[
+    { k:'dashboard', l:'Dashboard',    i:'home' },
+    { k:'audit',     l:'Brand Audit',  i:'sparkle' },
+    { k:'plan',      l:'Action Plan',  i:'target' },
+  ]},
+  { section:'Work', items:[
+    { k:'deliverables', l:'Deliverables', i:'fileText' },
+    { k:'messages',     l:'Messages',     i:'message' },
+  ]},
+  { section:'Account', items:[
+    { k:'settings', l:'Settings', i:'cog' },
+  ]},
+];
+const MOBILE_TABS = [
+  { k:'dashboard', l:'Home',  i:'home' },
+  { k:'audit',     l:'Audit', i:'sparkle' },
+  { k:'plan',      l:'Plan',  i:'target' },
+  { k:'messages',  l:'Inbox', i:'message' },
+];
+
+function TopBar() {
+  const { currentUser, setSidebarOpen, navigate, messages, setProfileOpen } = useApp();
+  const role = ROLES[currentUser.role];
+  const unread = messages.filter(m => m.to === currentUser.id && !m.read).length;
+  return (
+    <div className="topbar">
+      <button className="lg:hidden p-2 -ml-2 rounded-lg hover:bg-canvas shrink-0" onClick={()=>setSidebarOpen(true)} aria-label="Menu"><I n="menu" s={22}/></button>
+      <div className="lg:hidden flex items-center min-w-0 flex-1"><Brand size="sm" variant="nav"/></div>
+      <div className="hidden lg:flex items-center gap-3 flex-1 max-w-xl px-4 py-2.5 bg-canvas rounded-lg">
+        <I n="search" s={18} c="text-muted shrink-0"/>
+        <span className="text-muted text-sm flex-1">Search the vault — actions, deliverables, mentions…</span>
+        <kbd className="hidden xl:block">⌘ K</kbd>
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
+        <button className="relative p-2 rounded-lg hover:bg-canvas" onClick={()=>navigate('messages')}>
+          <I n="message" s={20}/>
+          {unread>0 && <span className="absolute top-0.5 right-0.5 bg-bad text-white text-[10px] font-bold rounded-full h-4 min-w-[16px] grid place-items-center px-1">{unread}</span>}
+        </button>
+        <button className="relative p-2 rounded-lg hover:bg-canvas hide-mobile">
+          <I n="bell" s={20}/>
+        </button>
+        <button className="flex items-center gap-2 hover:bg-canvas rounded-lg p-1 lg:pr-2 transition" onClick={()=>setProfileOpen(true)}>
+          <Avatar name={currentUser.name} size={28}/>
+          <div className="text-left hidden lg:block leading-tight">
+            <div className="text-[13px] font-semibold">{currentUser.name.split(' ')[0]}</div>
+            <div className="text-[11px] text-muted">{role.name}</div>
+          </div>
+          <I n="chevronDown" s={14} c="hidden lg:block text-muted"/>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Sidebar() {
+  const { route, navigate, sidebarOpen, setSidebarOpen, currentUser, client } = useApp();
+  const ref = useRef();
+  useClickOutside(ref, ()=>setSidebarOpen(false), !!(sidebarOpen && typeof window !== 'undefined' && window.innerWidth < 1025));
+  return (
+    <Fragment>
+      {sidebarOpen && <div className="sidebar-overlay lg:hidden" onClick={()=>setSidebarOpen(false)}/>}
+      <aside ref={ref} className={`sidebar ${sidebarOpen?'open':''} scroll-thin`}>
+        <div className="px-3 py-2 mb-2 flex items-center justify-between">
+          <Brand variant="nav"/>
+          <button className="lg:hidden p-1.5 rounded-lg hover:bg-canvas" onClick={()=>setSidebarOpen(false)}><I n="x" s={18}/></button>
+        </div>
+        {/* Client card */}
+        <div className="rounded-xl border border-line p-3 mx-2 mb-3 bg-canvas/50">
+          <div className="flex items-center gap-2.5">
+            <Avatar name={client.workingName} size={36}/>
+            <div className="min-w-0 flex-1">
+              <div className="text-[13px] font-semibold truncate">{client.workingName}</div>
+              <div className="text-[11px] text-muted truncate">{client.brand} · Belfast</div>
+            </div>
+          </div>
+          <div className="mt-2.5 flex items-center justify-between text-[11px]">
+            <span className="text-muted">Brand health</span>
+            <span className="font-semibold flex items-center gap-1"><span className="dot bg-good"/> {client.health.overall}</span>
+          </div>
+        </div>
+        <nav>
+          {NAV_ITEMS.map(sec => (
+            <div key={sec.section} className="mb-1">
+              <div className="nav-section">{sec.section}</div>
+              {sec.items.map(it => (
+                <button key={it.k} onClick={()=>navigate(it.k)} className={`nav-link ${route===it.k?'active':''}`}>
+                  <I n={it.i} s={17}/>
+                  <span className="flex-1">{it.l}</span>
+                </button>
+              ))}
+            </div>
+          ))}
+        </nav>
+        <div className="mt-auto px-3 py-3 text-[11px] text-subtle flex items-center gap-2">
+          <I n="lock" s={11}/> Vault secure · session active
+        </div>
+      </aside>
+    </Fragment>
+  );
+}
+
+function MobileTabBar() {
+  const { route, navigate } = useApp();
+  return (
+    <div className="bottom-tab">
+      {MOBILE_TABS.map(t => (
+        <button key={t.k} onClick={()=>navigate(t.k)} className={`bottom-tab-item ${route===t.k?'active':''}`}>
+          <I n={t.i} s={20}/>
+          <span>{t.l}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ProfileDrawer() {
+  const { profileOpen, setProfileOpen, currentUser, logout } = useApp();
+  if (!profileOpen) return null;
+  const role = ROLES[currentUser.role];
+  return (
+    <Fragment>
+      <div className="fixed inset-0 modal-bg z-[80]" onClick={()=>setProfileOpen(false)}/>
+      <div className="fixed top-0 right-0 bottom-0 w-full max-w-[400px] bg-white z-[81] shadow-2xl flex flex-col slide-up">
+        <div className="p-5 border-b border-line flex items-center justify-between">
+          <div className="font-display font-bold text-lg">Account</div>
+          <button className="p-1.5 rounded-lg hover:bg-canvas" onClick={()=>setProfileOpen(false)}><I n="x"/></button>
+        </div>
+        <div className="p-5 flex-1 overflow-y-auto">
+          <div className="flex items-center gap-3">
+            <Avatar name={currentUser.name} size={56}/>
+            <div>
+              <div className="font-display font-extrabold text-lg leading-tight">{currentUser.name}</div>
+              <div className="text-sm text-muted">{currentUser.title}</div>
+            </div>
+          </div>
+          <div className="mt-5 space-y-2">
+            <div className="card p-3 flex items-center gap-3">
+              <I n="user" s={18} c="text-muted"/>
+              <div className="flex-1 min-w-0">
+                <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">Role</div>
+                <div className="text-sm truncate">{role.name}</div>
+              </div>
+            </div>
+            <div className="card p-3 flex items-center gap-3">
+              <I n="briefcase" s={18} c="text-muted"/>
+              <div className="flex-1 min-w-0">
+                <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">Organisation</div>
+                <div className="text-sm truncate">{currentUser.org}</div>
+              </div>
+            </div>
+            <div className="card p-3 flex items-center gap-3">
+              <I n="message" s={18} c="text-muted"/>
+              <div className="flex-1 min-w-0">
+                <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">Email</div>
+                <div className="text-sm truncate">{currentUser.email}</div>
+              </div>
+            </div>
+            <div className="card p-3 flex items-center gap-3">
+              <I n="lock" s={18} c="text-muted"/>
+              <div className="flex-1 min-w-0">
+                <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">Session</div>
+                <div className="text-sm">Encrypted · 2FA available</div>
+              </div>
+            </div>
+          </div>
+          <Btn variant="outline" className="btn-block mt-5" onClick={()=>{ setProfileOpen(false); logout(); }}>
+            <I n="logout" s={16}/> Sign out
+          </Btn>
+        </div>
+      </div>
+    </Fragment>
+  );
+}
+
+/* ============================================================
+   PAGE: DASHBOARD
+   ============================================================ */
+function liveAgo(iso, tick) {
+  if (!iso) return '—';
+  const sec = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+  if (sec < 60) return sec + 's ago';
+  if (sec < 3600) return Math.floor(sec/60) + 'm ago';
+  if (sec < 86400) return Math.floor(sec/3600) + 'h ago';
+  return Math.floor(sec/86400) + 'd ago';
+}
+
+function ChannelTile({ ch }) {
+  const isClickable = !!ch.url;
+  const Wrapper = isClickable ? 'a' : 'div';
+  const props = isClickable ? { href: ch.url, target:'_blank', rel:'noopener' } : {};
+  const dotColor = ch.health === 'good' ? '#05944f' : ch.health === 'gap' ? '#ff8a00' : '#9c9c9c';
+  return (
+    <Wrapper {...props} className={`card p-5 group flex flex-col justify-between transition ${isClickable ? 'hover:border-ink cursor-pointer' : 'opacity-50'}`} style={{ minHeight:160 }}>
+      <div className="flex items-start justify-between">
+        <div className="h-11 w-11 rounded-[12px] bg-ink text-paper grid place-items-center"><I n={ch.icon} s={22}/></div>
+        <span className="dot" style={{ background: dotColor }}/>
+      </div>
+      <div>
+        <div className="font-display font-extrabold text-[26px] leading-none">
+          {ch.followers != null ? (ch.followers === 0 ? '—' : fmtNum(ch.followers)) : '—'}
+        </div>
+        <div className="flex items-center justify-between mt-2">
+          <div className="text-[12px] text-muted truncate">{ch.handle}</div>
+          {isClickable && <I n="arrowRight" s={14} c="text-subtle group-hover:text-ink transition shrink-0"/>}
+        </div>
+      </div>
+    </Wrapper>
+  );
+}
+
+function PillarBar({ p, delta }) {
+  const tone = p.score >= 80 ? 'green' : p.score >= 60 ? '' : p.score >= 40 ? 'amber' : 'red';
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[12px] font-semibold">{p.label}</span>
+        <span className="text-[12px] font-display font-extrabold">{p.score}</span>
+      </div>
+      <div className={`progress ${tone}`}><span style={{ width:`${p.score}%` }}/></div>
+    </div>
+  );
+}
+
+function DashboardPage() {
+  const { client, navigate, actions, channels, press, identity, seo, lastSync, syncing, doSync, tick, isCaseStudy } = useApp();
+  const immediate = actions.filter(a => a.tier === 'immediate');
+  const immediateOpen = immediate.filter(a => a.status !== 'done').length;
+  const totalAudience = channels.reduce((s,c) => s + (c.followers || 0), 0);
+  const verifiedChannels = channels.filter(c => c.followers != null && c.followers > 0).length;
+
+  return (
+    <div className="px-5 lg:px-10 py-8 lg:py-12 has-bottom-tab" style={{ maxWidth: 1280, margin:'0 auto' }}>
+
+      {/* ============ TOP STRIP ============ */}
+      <div className="flex items-center justify-between mb-10 flex-wrap gap-3">
+        <div className="flex items-center gap-2 text-[11px] text-muted">
+          <span className="h-1.5 w-1.5 rounded-full bg-good pulse-dot"/>
+          <span className="uppercase tracking-[0.18em] font-semibold">Synced {liveAgo(new Date(lastSync).toISOString(), tick)}</span>
+        </div>
+        <button className="btn btn-outline btn-sm" onClick={()=>doSync(true)} disabled={syncing}>
+          <I n="refresh" s={14} c={syncing ? 'animate-spin' : ''}/>
+          {syncing ? 'Syncing' : 'Sync'}
+        </button>
+      </div>
+
+      {/* ============ HERO ============ */}
+      <div className="mb-14">
+        <h1 className="display-1 font-display font-extrabold mb-2">Dia duit, {client.workingName.split(' ')[0]}.</h1>
+        <p className="text-muted text-[15px]">Verified {fmtDate(VERIFIED_AT)} · {client.audit.sourcesCrawled} sources</p>
+      </div>
+
+      {/* ============ HEALTH CARD ============ */}
+      <div className="card p-6 sm:p-10 mb-14 grid grid-cols-1 md:grid-cols-[auto_1fr] gap-8 md:gap-12 items-center">
+        <div className="flex flex-col items-center md:items-start">
+          <ScoreBadge score={client.health.overall} size={150}/>
+          <div className="text-[11px] uppercase tracking-[0.18em] text-subtle font-semibold mt-4">Brand health</div>
+        </div>
+        <div className="space-y-3 w-full">
+          {client.health.pillars.map(p => (
+            <PillarBar key={p.key} p={p} delta={client.health.deltas30d[p.key]}/>
+          ))}
+        </div>
+      </div>
+
+      {/* ============ CHANNELS ============ */}
+      <div className="mb-4 flex items-baseline justify-between">
+        <h2 className="font-display font-extrabold text-2xl">Channels</h2>
+        <button className="text-[12px] font-semibold underline underline-offset-4 text-muted hover:text-ink" onClick={()=>navigate('audit')}>Full audit →</button>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-14">
+        {channels.map(c => <ChannelTile key={c.id} ch={c}/>)}
+      </div>
+
+      {/* ============ TREND + SEO ============ */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-14">
+        <div className="card p-6">
+          <h3 className="font-display font-extrabold text-lg mb-1">Momentum</h3>
+          <p className="text-[12px] text-muted mb-4">30-day brand score</p>
+          <div style={{ height: 200 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={TIMELINE_30D} margin={{ top:8, right:8, left:0, bottom:0 }}>
+                <defs>
+                  <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#000" stopOpacity="0.18"/>
+                    <stop offset="100%" stopColor="#000" stopOpacity="0"/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false}/>
+                <XAxis dataKey="d" tick={{ fontSize: 10, fill:'#9c9c9c' }} tickFormatter={d => new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})} axisLine={false} tickLine={false}/>
+                <YAxis tick={{ fontSize: 10, fill:'#9c9c9c' }} axisLine={false} tickLine={false}/>
+                <Tooltip contentStyle={{ borderRadius:8, border:'1px solid #e2e2e2', fontSize:12 }} labelFormatter={d => fmtDate(d)}/>
+                <Area type="monotone" dataKey="score" stroke="#000" strokeWidth={2} fill="url(#g1)"/>
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="card p-6">
+          <div className="flex items-baseline justify-between mb-1">
+            <h3 className="font-display font-extrabold text-lg">Search</h3>
+            <button className="text-[12px] underline underline-offset-4 text-muted hover:text-ink" onClick={()=>navigate('audit')}>SEO →</button>
+          </div>
+          <p className="text-[12px] text-muted mb-5">Branded volume + rank for top 5 queries</p>
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            <div>
+              <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">Branded /mo</div>
+              <div className="font-display font-extrabold text-3xl mt-1">{fmtNum(seo.brandedSearches30d)}</div>
+              <div className="text-[11px] text-good font-semibold mt-1">↑ {seo.brandedTrend}%</div>
+            </div>
+            <div>
+              <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">Panel</div>
+              <div className="font-display font-extrabold text-3xl mt-1">{seo.knowledgePanel?'Live':'—'}</div>
+              <div className="text-[11px] text-warn font-semibold mt-1">Unclaimed</div>
+            </div>
+          </div>
+          <div className="space-y-2 border-t border-line pt-3">
+            {seo.topQueries.slice(0,5).map((q,i) => {
+              const tone = q.pos<=3?'good':q.pos<=10?'warn':'bad';
+              return (
+                <div key={i} className="flex items-center justify-between py-1">
+                  <div className="text-[13px] truncate">{q.q}</div>
+                  <Pill tone={tone}>#{q.pos}</Pill>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ============ PRESS + IDENTITY ============ */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-14">
+        <div className="card p-6">
+          <h3 className="font-display font-extrabold text-lg mb-1">Press</h3>
+          <p className="text-[12px] text-muted mb-4">{press.length} mentions across {new Set(press.map(p=>p.outlet)).size} outlets</p>
+          <div className="space-y-2">
+            {press.slice(0,5).map(p => (
+              <a key={p.id} href={p.url} target="_blank" rel="noopener" className="flex items-center gap-3 py-2 group">
+                <Pill tone={p.tier===1?'dark':'default'}>T{p.tier}</Pill>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-semibold truncate">{p.outlet}</div>
+                </div>
+                <I n="arrowRight" s={13} c="text-subtle group-hover:text-ink"/>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <div className="card p-6">
+          <h3 className="font-display font-extrabold text-lg mb-1">Verified</h3>
+          <p className="text-[12px] text-muted mb-4">Public-record signals</p>
+          <div className="space-y-2">
+            {identity.map(r => (
+              <a key={r.id} href={r.url} target="_blank" rel="noopener" className="flex items-center gap-3 py-2 group">
+                <div className="h-9 w-9 rounded-[10px] bg-ink text-paper grid place-items-center shrink-0"><I n={r.icon} s={16}/></div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-semibold truncate">{r.name}</div>
+                  <div className="text-[11px] text-muted truncate">{r.role}</div>
+                </div>
+                <I n="arrowRight" s={13} c="text-subtle group-hover:text-ink"/>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ============ ACTION CTA ============ */}
+      <button onClick={()=>navigate('plan')} className="card w-full p-6 sm:p-8 flex items-center justify-between gap-4 hover:border-ink transition group text-left">
+        <div className="min-w-0">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-subtle font-semibold mb-1">Action plan</div>
+          <h3 className="font-display font-extrabold text-2xl truncate">{immediateOpen} immediate {immediateOpen === 1 ? 'action' : 'actions'} this week</h3>
+        </div>
+        <div className="h-12 w-12 rounded-full bg-ink text-paper grid place-items-center group-hover:scale-110 transition shrink-0"><I n="arrowRight" s={20}/></div>
+      </button>
+
+      {/* footer */}
+      <div className="mt-12 text-[11px] text-subtle flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-1.5"><I n="lock" s={11}/> Vault encrypted · session active</div>
+        <div>Audit v{client.audit.version} · next refresh {fmtDate(client.audit.nextRun)}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   PAGE: BRAND AUDIT — multiple sub-tabs
+   ============================================================ */
+function AuditPage() {
+  const { client } = useApp();
+  const [tab, setTab] = useState('overview');
+  const tabs = [
+    { k:'overview', l:'Overview',     i:'sparkle' },
+    { k:'web',      l:'Web presence', i:'globe' },
+    { k:'social',   l:'Social',       i:'users' },
+    { k:'press',    l:'Press',        i:'newspaper' },
+    { k:'search',   l:'Search · SEO', i:'search' },
+    { k:'stage',    l:'On stage',     i:'speaker' },
+  ];
+  return (
+    <div className="px-5 lg:px-8 py-6 lg:py-8 has-bottom-tab">
+      <div className="mb-5">
+        <div className="text-[12px] font-semibold uppercase tracking-wider text-subtle">Brand audit · v1.0 · {fmtDate(client.audit.runOn)}</div>
+        <h1 className="display-2 font-display font-extrabold mt-1.5">Where the brand stands today.</h1>
+        <p className="text-muted text-[15px] mt-2 max-w-2xl">We crawled <span className="font-semibold text-ink">{client.audit.sourcesCrawled} sources</span> across web, social, press, search, and live performances. Confidence: {Math.round(client.audit.confidence*100)}%. Next refresh in 26 days.</p>
+      </div>
+
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-5 -mx-5 px-5 lg:mx-0 lg:px-0">
+        {tabs.map(t => (
+          <button key={t.k} onClick={()=>setTab(t.k)} className={`tab ${tab===t.k?'active':''} flex items-center gap-1.5`}>
+            <I n={t.i} s={13}/> {t.l}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'overview' && <AuditOverview/>}
+      {tab === 'web' && <AuditWeb/>}
+      {tab === 'social' && <AuditSocial/>}
+      {tab === 'press' && <AuditPress/>}
+      {tab === 'search' && <AuditSearch/>}
+      {tab === 'stage' && <AuditStage/>}
+    </div>
+  );
+}
+
+function AuditOverview() {
+  const { client } = useApp();
+  const radarData = client.health.pillars.map(p => ({ pillar:p.label, score:p.score, fullMark:100 }));
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="card p-5 text-center">
+          <div className="text-[12px] uppercase tracking-wider text-subtle font-semibold">Overall brand health</div>
+          <div className="my-4 grid place-items-center">
+            <ScoreBadge score={client.health.overall} size={140}/>
+          </div>
+          <div className="text-[14px] font-semibold">Strong fundamentals · conversion gap</div>
+          <div className="text-[12px] text-muted mt-1">Authority 88, Engagement 82 — top of class. Conversion 54 — the unlock.</div>
+        </div>
+
+        <div className="lg:col-span-2 card p-5">
+          <div className="font-display font-bold text-lg mb-1">5-pillar shape</div>
+          <div className="text-[13px] text-muted mb-3">Where Tura over- and under-indexes.</div>
+          <div style={{ height: 280 }}>
+            <ResponsiveContainer>
+              <RadarChart data={radarData}>
+                <PolarGrid stroke="#e2e2e2"/>
+                <PolarAngleAxis dataKey="pillar" tick={{ fontSize: 12, fill:'#000' }}/>
+                <PolarRadiusAxis tick={{ fontSize: 10, fill:'#9c9c9c' }} angle={90} domain={[0, 100]}/>
+                <Radar name="Score" dataKey="score" stroke="#000" fill="#000" fillOpacity={0.25} strokeWidth={2}/>
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="card p-5">
+          <div className="text-[12px] uppercase tracking-wider text-subtle font-semibold mb-3">Strongest signals</div>
+          <ul className="space-y-2.5 text-[13px]">
+            <li className="flex gap-2"><I n="trophy" s={14} c="text-good shrink-0 mt-0.5"/><span>IAC Dance Festival NYC — international tier.</span></li>
+            <li className="flex gap-2"><I n="trophy" s={14} c="text-good shrink-0 mt-0.5"/><span>Featured by PRI / The World — global reach.</span></li>
+            <li className="flex gap-2"><I n="trophy" s={14} c="text-good shrink-0 mt-0.5"/><span>St Patrick's Festival GOAL stage — recurring.</span></li>
+            <li className="flex gap-2"><I n="trophy" s={14} c="text-good shrink-0 mt-0.5"/><span>Líofa showcase Queen's GAA — community trust.</span></li>
+            <li className="flex gap-2"><I n="trophy" s={14} c="text-good shrink-0 mt-0.5"/><span>EP "Hipnoera" — owned creative IP.</span></li>
+          </ul>
+        </div>
+        <div className="card p-5">
+          <div className="text-[12px] uppercase tracking-wider text-subtle font-semibold mb-3">Gaps to close</div>
+          <ul className="space-y-2.5 text-[13px]">
+            <li className="flex gap-2"><I n="alert" s={14} c="text-warn shrink-0 mt-0.5"/><span>No TikTok presence — native channel for the work.</span></li>
+            <li className="flex gap-2"><I n="alert" s={14} c="text-warn shrink-0 mt-0.5"/><span>Booking flow buried — conversion friction.</span></li>
+            <li className="flex gap-2"><I n="alert" s={14} c="text-warn shrink-0 mt-0.5"/><span>Google Knowledge Panel unclaimed.</span></li>
+            <li className="flex gap-2"><I n="alert" s={14} c="text-warn shrink-0 mt-0.5"/><span>LinkedIn underused for inclusion consultancy market.</span></li>
+            <li className="flex gap-2"><I n="alert" s={14} c="text-warn shrink-0 mt-0.5"/><span>Bio inconsistent across 6 platforms.</span></li>
+          </ul>
+        </div>
+        <div className="card p-5">
+          <div className="text-[12px] uppercase tracking-wider text-subtle font-semibold mb-3">Signature traits</div>
+          <ul className="space-y-2.5 text-[13px]">
+            <li className="flex gap-2"><I n="star" s={14} c="text-ink shrink-0 mt-0.5"/><span>Bridges Africa and Ireland in one body.</span></li>
+            <li className="flex gap-2"><I n="star" s={14} c="text-ink shrink-0 mt-0.5"/><span>Fluent Gaeilgeoir — rare authority.</span></li>
+            <li className="flex gap-2"><I n="star" s={14} c="text-ink shrink-0 mt-0.5"/><span>BLM activism + Irish-language advocacy.</span></li>
+            <li className="flex gap-2"><I n="star" s={14} c="text-ink shrink-0 mt-0.5"/><span>Multi-disciplinary — dance, song, music, mentoring, EDI.</span></li>
+            <li className="flex gap-2"><I n="star" s={14} c="text-ink shrink-0 mt-0.5"/><span>"Ildánach" — many-talented. Owns the position.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AuditWeb() {
+  const sigTone = (s) => s==='pass'?'good':s==='partial'?'warn':'bad';
+  return (
+    <div className="space-y-4">
+      {WEB_PRESENCE.map(w => (
+        <div key={w.id} className="card p-5">
+          <div className="flex items-start justify-between flex-wrap gap-3 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-xl bg-canvas grid place-items-center"><I n="globe" s={22}/></div>
+              <div>
+                <div className="font-display font-bold text-lg leading-tight">{w.name}</div>
+                <div className="text-[12px] text-muted flex items-center gap-2 mt-0.5">
+                  <Pill tone="default">{w.type}</Pill>
+                  <span>{w.platform}</span>
+                  <span>·</span>
+                  <span className="flex items-center gap-1"><span className="dot bg-good"/> live</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <ScoreBadge score={w.score} size={56}/>
+              <a href={w.url} target="_blank" rel="noopener" className="btn btn-outline btn-sm"><I n="link" s={14}/> Visit</a>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+            <div className="p-3 rounded-lg bg-canvas"><div className="text-[11px] text-muted uppercase tracking-wider font-semibold">Page speed</div><div className="font-display font-extrabold text-xl mt-0.5">{w.signals.pageSpeed}</div></div>
+            <div className="p-3 rounded-lg bg-canvas"><div className="text-[11px] text-muted uppercase tracking-wider font-semibold">Mobile speed</div><div className="font-display font-extrabold text-xl mt-0.5">{w.signals.mobileSpeed}</div></div>
+            <div className="p-3 rounded-lg bg-canvas"><div className="text-[11px] text-muted uppercase tracking-wider font-semibold">LCP</div><div className="font-display font-extrabold text-xl mt-0.5">{w.signals.lcp}s</div></div>
+            <div className="p-3 rounded-lg bg-canvas"><div className="text-[11px] text-muted uppercase tracking-wider font-semibold">CLS</div><div className="font-display font-extrabold text-xl mt-0.5">{w.signals.cls}</div></div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+            {Object.entries({mobile:'Mobile-ready', https:'HTTPS', metaDesc:'Meta desc', og:'Open Graph', sitemap:'Sitemap', schema:'Schema markup', favicon:'Favicon', accessibility:'A11y'}).map(([k, label]) => (
+              <Pill key={k} tone={sigTone(w.signals[k])}>{w.signals[k]==='pass'?'✓':w.signals[k]==='partial'?'~':'✗'} {label}</Pill>
+            ))}
+          </div>
+          <div className="text-[13px] text-muted bg-canvas/50 rounded-lg p-3 border border-line"><span className="font-semibold text-ink">Notes:</span> {w.notes}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AuditSocial() {
+  const { channels } = useApp();
+  return (
+    <div className="card overflow-hidden">
+      <div className="px-5 py-4 border-b border-line">
+        <div className="font-display font-bold text-lg">Social — {channels.length} channels</div>
+        <div className="text-[12px] text-muted">Verified counts crawled {fmtDate(VERIFIED_AT)}. Click to open live profile.</div>
+      </div>
+      <div>
+        {channels.map(c => {
+          const tone = c.health==='good'?'good':c.health==='ok'?'ok':'warn';
+          const has = c.followers != null && c.followers > 0;
+          return (
+            <a
+              key={c.id}
+              href={c.url || '#'}
+              target={c.url ? '_blank' : undefined}
+              rel="noopener"
+              className="flex items-center gap-4 px-5 py-4 border-b border-line last:border-b-0 hover:bg-canvas/50 transition group"
+              onClick={(e) => { if (!c.url) e.preventDefault(); }}
+            >
+              <div className="h-11 w-11 rounded-[12px] grid place-items-center shrink-0" style={{ background: has?'#000':'#f6f6f6', color: has?'#fff':'#9c9c9c' }}>
+                <I n={c.icon} s={20}/>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-display font-bold text-[15px]">{c.name}</span>
+                  <span className="text-[12px] text-muted">{c.handle}</span>
+                </div>
+                <div className="text-[12px] text-muted mt-0.5 truncate">{c.note}</div>
+              </div>
+              <div className="text-right shrink-0">
+                <div className="font-display font-extrabold text-xl leading-none">
+                  {c.followers != null ? (c.followers === 0 ? '—' : fmtNum(c.followers)) : '—'}
+                </div>
+                <div className="text-[10px] text-subtle font-semibold uppercase tracking-wider mt-1">
+                  {c.followers != null ? 'Followers' : 'Verify'}
+                </div>
+              </div>
+              <Pill tone={tone}>{c.health==='gap'?'gap':c.health}</Pill>
+              {c.url && <I n="arrowRight" s={16} c="text-subtle group-hover:text-ink shrink-0"/>}
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function AuditPress() {
+  const { press } = useApp();
+  const sorted = [...press].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="stat-tile"><div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">Total mentions</div><div className="display-3 font-display font-extrabold mt-1">{press.length}</div><div className="text-[12px] text-muted mt-1">All time across {new Set(press.map(p=>p.outlet)).size} outlets</div></div>
+        <div className="stat-tile"><div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">Tier 1 outlets</div><div className="display-3 font-display font-extrabold mt-1">{press.filter(p=>p.tier===1).length}</div><div className="text-[12px] text-muted mt-1">National · international</div></div>
+        <div className="stat-tile"><div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">Most recent</div><div className="display-3 font-display font-extrabold mt-1">{sorted.length ? fmtDate(sorted[0].date) : '—'}</div><div className="text-[12px] text-muted mt-1">{sorted.length ? sorted[0].outlet : '—'}</div></div>
+      </div>
+
+      <div className="card overflow-hidden">
+        <div className="px-5 py-4 border-b border-line"><div className="font-display font-bold text-lg">Press log</div></div>
+        <div>
+          {press.map(p => (
+            <a href={p.url} target="_blank" rel="noopener" key={p.id} className="list-row !grid !grid-cols-[100px_1fr_auto_auto] !gap-4 !items-center">
+              <div className="text-[12px] font-display font-bold text-muted">{fmtDate(p.date)}</div>
+              <div className="min-w-0">
+                <div className="text-[14px] font-semibold leading-tight truncate">{p.title}</div>
+                <div className="text-[12px] text-muted mt-0.5">{p.outlet}</div>
+              </div>
+              <Pill tone={p.tier===1?'dark':'default'}>Tier {p.tier}</Pill>
+              <I n="arrowRight" s={16} c="text-muted"/>
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AuditSearch() {
+  const { seo: SEO } = useApp();
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="stat-tile">
+          <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">Branded searches (30d)</div>
+          <div className="display-3 font-display font-extrabold mt-1">{fmtNum(seo.brandedSearches30d)}</div>
+          <div className={`text-[12px] font-semibold mt-1.5 ${seo.brandedTrend>0?'text-good':'text-bad'}`}>{seo.brandedTrend>0?'↑':'↓'} {Math.abs(seo.brandedTrend)}% vs prev</div>
+        </div>
+        <div className="stat-tile">
+          <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">Knowledge Panel</div>
+          <div className="flex items-center gap-2 mt-1">
+            <Pill tone={seo.knowledgePanel?'good':'warn'}>{seo.knowledgePanel?'Live':'Unclaimed'}</Pill>
+          </div>
+          <div className="text-[12px] text-muted mt-2">Action #6 · 14-day target.</div>
+        </div>
+        <div className="stat-tile">
+          <div className="text-[11px] uppercase tracking-wider text-subtle font-semibold">Google Business Profile</div>
+          <div className="flex items-center gap-2 mt-1">
+            <Pill tone={seo.googleBusiness==='claimed'?'good':'warn'}>{seo.googleBusiness}</Pill>
+          </div>
+          <div className="text-[12px] text-muted mt-2">Action #4 · this week.</div>
+        </div>
+      </div>
+
+      <div className="card overflow-hidden">
+        <div className="px-5 py-4 border-b border-line">
+          <div className="font-display font-bold text-lg">Top queries</div>
+          <div className="text-[12px] text-muted">Where the brand shows up. Rank position matters most for non-branded.</div>
+        </div>
+        <table className="w-full">
+          <thead>
+            <tr className="text-left bg-canvas/50">
+              <th className="px-5 py-3 text-[11px] uppercase tracking-wider text-muted font-semibold">Query</th>
+              <th className="px-5 py-3 text-[11px] uppercase tracking-wider text-muted font-semibold">Volume</th>
+              <th className="px-5 py-3 text-[11px] uppercase tracking-wider text-muted font-semibold">Rank</th>
+              <th className="px-5 py-3 text-[11px] uppercase tracking-wider text-muted font-semibold">Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            {seo.topQueries.map((q,i) => {
+              const branded = ['tura arutura','isteip'].some(b => q.q.includes(b));
+              const tone = q.pos<=3?'good':q.pos<=10?'warn':'bad';
+              return (
+                <tr key={i} className="border-t border-line">
+                  <td className="px-5 py-3 font-semibold text-[14px]">{q.q}</td>
+                  <td className="px-5 py-3 text-[14px]">{fmtNum(q.vol)}/mo</td>
+                  <td className="px-5 py-3"><Pill tone={tone}>#{q.pos}</Pill></td>
+                  <td className="px-5 py-3"><Pill tone={branded?'dark':'default'}>{branded?'branded':'discovery'}</Pill></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function AuditStage() {
+  return (
+    <div className="card overflow-hidden">
+      <div className="px-5 py-4 border-b border-line">
+        <div className="font-display font-bold text-lg">Selected performances · ongoing engagements</div>
+        <div className="text-[12px] text-muted">Live track record across stages, festivals and movements.</div>
+      </div>
+      <div>
+        {PERFORMANCES.map(p => (
+          <div key={p.id} className="list-row !grid !grid-cols-[80px_1fr_auto] !gap-4">
+            <div className="text-[12px] font-display font-bold text-muted">{p.when}</div>
+            <div className="min-w-0">
+              <div className="font-display font-bold text-[15px] leading-tight">{p.name}</div>
+              <div className="text-[12px] text-muted mt-0.5">{p.venue}</div>
+            </div>
+            <Pill tone="default">{p.tag}</Pill>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   PAGE: ACTION PLAN
+   ============================================================ */
+function PlanPage() {
+  const { actions, updateAction, showToast } = useApp();
+  const [filter, setFilter] = useState('all');
+  const tiers = [
+    { k:'immediate', l:'Immediate', sub:'This week', i:'flame', tone:'#fff0d6' },
+    { k:'short',     l:'Short term', sub:'1–3 months', i:'zap',  tone:'#e0ebff' },
+    { k:'long',      l:'Long term',  sub:'6–12 months', i:'target', tone:'#d8f3e3' },
+  ];
+  const visible = actions.filter(a => filter==='all' || a.priority === filter);
+
+  const toggleStatus = (a) => {
+    const next = a.status === 'done' ? 'todo' : a.status === 'todo' ? 'in_progress' : 'done';
+    updateAction(a.id, { status: next });
+    showToast(`Marked "${a.title.slice(0,30)}…" as ${next.replace('_',' ')}`);
+  };
+
+  return (
+    <div className="px-5 lg:px-8 py-6 lg:py-8 has-bottom-tab">
+      <div className="mb-5 flex items-end justify-between flex-wrap gap-4">
+        <div>
+          <div className="text-[12px] font-semibold uppercase tracking-wider text-subtle">Action plan · 19 recommendations</div>
+          <h1 className="display-2 font-display font-extrabold mt-1.5">What we do, in what order.</h1>
+          <p className="text-muted text-[15px] mt-2 max-w-2xl">Every recommendation has a tier (when), a priority (urgency), an effort (S/M/L/XL), an impact (M/H/XL), an owner and a status. Move them across as we ship.</p>
+        </div>
+        <div className="flex gap-2">
+          {['all','high','medium','low'].map(f => (
+            <button key={f} onClick={()=>setFilter(f)} className={`chip ${filter===f?'selected':''}`}>{f}</button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {tiers.map(t => {
+          const items = visible.filter(a => a.tier === t.k);
+          const done = items.filter(a => a.status === 'done').length;
+          const pct = items.length ? Math.round((done / items.length) * 100) : 0;
+          return (
+            <div key={t.k} className="kanban-col">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="h-9 w-9 rounded-[10px] grid place-items-center" style={{ background:t.tone }}><I n={t.i} s={16}/></div>
+                  <div>
+                    <div className="font-display font-extrabold text-[16px] leading-tight">{t.l}</div>
+                    <div className="text-[11px] text-muted font-semibold uppercase tracking-wider">{t.sub} · {items.length}</div>
+                  </div>
+                </div>
+                <div className="text-[12px] font-bold">{pct}%</div>
+              </div>
+              <div className="progress mb-4 bg-white"><span style={{ width:`${pct}%` }}/></div>
+              <div className="space-y-2.5">
+                {items.map(a => (
+                  <div key={a.id} className="kanban-card">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="font-display font-bold text-[14px] leading-snug flex-1">{a.title}</div>
+                      <button className={`shrink-0 h-6 w-6 rounded-full border-2 grid place-items-center transition ${a.status==='done'?'bg-good border-good text-white':a.status==='in_progress'?'bg-ink border-ink text-white':'border-line text-muted hover:border-ink'}`}
+                        onClick={()=>toggleStatus(a)}>
+                        {a.status==='done' && <I n="check" s={14}/>}
+                        {a.status==='in_progress' && <I n="more" s={14}/>}
+                      </button>
+                    </div>
+                    <div className="text-[12px] text-muted leading-relaxed mb-3">{a.desc}</div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <Pill tone={a.priority==='high'?'warn':a.priority==='medium'?'default':'ok'}>{a.priority}</Pill>
+                      <Pill tone="default">Effort {a.effort}</Pill>
+                      <Pill tone="default">Impact {a.impact}</Pill>
+                      <Pill tone="default">{a.pillar}</Pill>
+                      {a.status === 'done' && <Pill tone="good">done</Pill>}
+                      {a.status === 'in_progress' && <Pill tone="dark">in progress</Pill>}
+                      {a.status === 'design_done' && <Pill tone="info">design done</Pill>}
+                    </div>
+                  </div>
+                ))}
+                {items.length === 0 && (
+                  <div className="text-center py-8 text-[12px] text-subtle">No items at this priority.</div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   PAGE: DELIVERABLES
+   ============================================================ */
+function DeliverablesPage() {
+  const statusTone = (s) => s==='final'?'good':s==='in_review'?'info':s==='in_progress'?'warn':'default';
+  const statusLabel = (s) => s==='final'?'Final':s==='in_review'?'In review':s==='in_progress'?'In progress':s==='todo'?'To do':s;
+  return (
+    <div className="px-5 lg:px-8 py-6 lg:py-8 has-bottom-tab">
+      <div className="mb-5 flex items-end justify-between flex-wrap gap-4">
+        <div>
+          <div className="text-[12px] font-semibold uppercase tracking-wider text-subtle">Deliverables · {DELIVERABLES.length}</div>
+          <h1 className="display-2 font-display font-extrabold mt-1.5">Everything we're shipping.</h1>
+          <p className="text-muted text-[15px] mt-2 max-w-2xl">Files, sites, briefs, decks. Click anything to open. Status changes are live — you'll see it the moment Kapture moves it forward.</p>
+        </div>
+        <Btn variant="outline" size="sm"><I n="upload" s={14}/> Send Kapture a brief</Btn>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        {DELIVERABLES.map(d => (
+          <div key={d.id} className="card p-5 hover:border-ink transition cursor-pointer">
+            <div className="flex items-start gap-4">
+              <div className="h-12 w-12 rounded-xl bg-canvas grid place-items-center shrink-0">
+                <I n={d.type==='PDF'?'fileText':d.type==='URL'?'link':d.type==='HTML'?'globe':d.type==='DOC'?'fileText':d.type==='XLSX'?'chart':d.type==='EMAIL'?'message':'fileText'} s={22}/>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <span className="font-display font-bold text-[16px] truncate">{d.title}</span>
+                  <Pill tone={statusTone(d.status)}>{statusLabel(d.status)}</Pill>
+                </div>
+                <div className="text-[12px] text-muted line-clamp-2 mb-2">{d.desc}</div>
+                <div className="flex items-center gap-3 text-[11px] text-muted">
+                  <span className="font-semibold">{d.type}</span>
+                  <span>·</span>
+                  <span>{d.size}</span>
+                  <span>·</span>
+                  <span>Updated {relTime(d.updated)}</span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2 shrink-0">
+                <Btn variant="outline" size="sm"><I n="eye" s={14}/></Btn>
+                <Btn variant="outline" size="sm"><I n="download" s={14}/></Btn>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   PAGE: MESSAGES
+   ============================================================ */
+function MessagesPage() {
+  const { messages, sendMessage, currentUser, users } = useApp();
+  const [draft, setDraft] = useState('');
+  const endRef = useRef();
+  // Client always talks to "kapture" — never an individual person.
+  const kaptureUser = users.find(u => u.id === 'U-KAP') || { id:'U-KAP', name:'kapture', role:'strategist', org:'kapture', isTeam:true };
+
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior:'smooth' }); }, [messages]);
+
+  const submit = () => { if (!draft.trim()) return; sendMessage(draft); setDraft(''); };
+
+  return (
+    <div className="flex flex-col" style={{ height:'calc(100svh - 64px)', minHeight:0 }}>
+      {/* Thread header */}
+      <div className="px-5 lg:px-8 py-4 border-b border-line flex items-center gap-3 bg-white shrink-0">
+        <Avatar name={kaptureUser.name} size={40} isTeam/>
+        <div className="flex-1 min-w-0">
+          <div className="font-display font-bold text-[15px] truncate lowercase">kapture</div>
+          <div className="text-[12px] text-muted truncate">Brand studio · usually replies within 2 hours</div>
+        </div>
+        <div className="hidden sm:flex items-center gap-1.5 text-[12px] text-muted"><span className="dot bg-good pulse-dot"/> Online</div>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-5 lg:px-8 py-6 has-bottom-tab" style={{ minHeight:0 }}>
+        <div className="max-w-3xl mx-auto space-y-3">
+          {messages.map(m => {
+            const mine = m.from === currentUser.id;
+            const sender = users.find(u => u.id === m.from) || kaptureUser;
+            return (
+              <div key={m.id} className={`flex gap-2 ${mine?'flex-row-reverse':''}`}>
+                <Avatar name={sender.name} size={28} isTeam={sender.isTeam}/>
+                <div className={`max-w-[85%] ${mine?'items-end':'items-start'} flex flex-col gap-1`}>
+                  <div className={`rounded-2xl px-4 py-2.5 text-[14px] leading-snug ${mine?'bg-ink text-white rounded-br-sm':'bg-canvas text-ink rounded-bl-sm'}`}>{m.text}</div>
+                  <div className="text-[10px] text-subtle">{relTime(m.at)}{mine && (m.read?' · read':' · sent')}</div>
+                </div>
+              </div>
+            );
+          })}
+          <div ref={endRef}/>
+        </div>
+      </div>
+
+      {/* Composer */}
+      <div className="px-5 lg:px-8 py-4 border-t border-line bg-white shrink-0" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}>
+        <div className="max-w-3xl mx-auto flex items-end gap-2">
+          <button className="btn btn-secondary p-3"><I n="paperclip" s={16}/></button>
+          <textarea
+            className="input flex-1 resize-none"
+            rows={1}
+            value={draft}
+            onChange={e=>setDraft(e.target.value)}
+            onKeyDown={e=>{ if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }}
+            placeholder="Message kapture…"
+            style={{ maxHeight:120 }}
+          />
+          <Btn onClick={submit} disabled={!draft.trim()}><I n="send" s={16}/></Btn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   PAGE: SETTINGS
+   ============================================================ */
+function SettingsPage() {
+  const { currentUser, client } = useApp();
+  return (
+    <div className="px-5 lg:px-8 py-6 lg:py-8 has-bottom-tab max-w-3xl">
+      <div className="mb-5">
+        <div className="text-[12px] font-semibold uppercase tracking-wider text-subtle">Settings</div>
+        <h1 className="display-2 font-display font-extrabold mt-1.5">Vault settings.</h1>
+      </div>
+
+      <div className="space-y-4">
+        <div className="card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="font-display font-bold text-lg">Account</div>
+            <Pill tone="dark">{ROLES[currentUser.role].name}</Pill>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Full name"><input className="input" defaultValue={currentUser.name}/></Field>
+            <Field label="Email"><input className="input" defaultValue={currentUser.email}/></Field>
+            <Field label="Organisation"><input className="input" defaultValue={currentUser.org}/></Field>
+            <Field label="Role / title"><input className="input" defaultValue={currentUser.title}/></Field>
+          </div>
+        </div>
+
+        <div className="card p-5">
+          <div className="font-display font-bold text-lg mb-4">Brand profile</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Working name"><input className="input" defaultValue={client.workingName}/></Field>
+            <Field label="Brand"><input className="input" defaultValue={client.brand}/></Field>
+            <Field label="Primary domain"><input className="input" defaultValue={client.primaryDomain}/></Field>
+            <Field label="Product domain"><input className="input" defaultValue={client.productDomain}/></Field>
+            <Field label="Born"><input className="input" defaultValue={client.born}/></Field>
+            <Field label="Lives"><input className="input" defaultValue={client.lives}/></Field>
+          </div>
+        </div>
+
+        <div className="card p-5">
+          <div className="font-display font-bold text-lg mb-1">Security</div>
+          <div className="text-[13px] text-muted mb-4">Your vault is encrypted at rest and in transit. Two-factor authentication is recommended for production.</div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-semibold text-[14px]">Two-factor authentication</div>
+                <div className="text-[12px] text-muted">SMS or authenticator app</div>
+              </div>
+              <Btn variant="outline" size="sm">Enable</Btn>
+            </div>
+            <div className="flex items-center justify-between pt-3 border-t border-line">
+              <div>
+                <div className="font-semibold text-[14px]">Session</div>
+                <div className="text-[12px] text-muted">Active · expires in 30 days</div>
+              </div>
+              <Btn variant="outline" size="sm">Sign out everywhere</Btn>
+            </div>
+          </div>
+        </div>
+
+        <div className="card p-5">
+          <div className="font-display font-bold text-lg mb-1">About Kurongeka</div>
+          <div className="text-[13px] text-muted">Kurongeka <span className="font-mono">/kʊ.roˈŋɡe.ka/</span> is Shona for "being organised". It's how Kapture delivers digital transformation — your brand audit, action plan, deliverables and direct line in one secure vault.</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   MAIN SHELL + ROOT
+   ============================================================ */
+function MainShell() {
+  const { route } = useApp();
+  return (
+    <div className="layout-root min-h-screen bg-white">
+      <Sidebar/>
+      <TopBar/>
+      <main>
+        {route === 'dashboard'    && <DashboardPage/>}
+        {route === 'audit'        && <AuditPage/>}
+        {route === 'plan'         && <PlanPage/>}
+        {route === 'deliverables' && <DeliverablesPage/>}
+        {route === 'messages'     && <MessagesPage/>}
+        {route === 'settings'     && <SettingsPage/>}
+      </main>
+      <MobileTabBar/>
+      <ProfileDrawer/>
+    </div>
+  );
+}
+
+/* ============================================================
+   PUBLIC LANDING — kurongeka.com homepage
+   ============================================================ */
+function PublicLanding() {
+  const { goPublic } = useApp();
+  return (
+    <div className="min-h-screen bg-paper text-ink">
+      {/* Sticky nav */}
+      <header className="sticky top-0 z-50 bg-paper/90 backdrop-blur border-b border-line">
+        <div className="max-w-6xl mx-auto px-5 lg:px-8 h-16 flex items-center justify-between">
+          <Brand size="sm" variant="nav"/>
+          <div className="flex items-center gap-2">
+            <a href="#case-study" onClick={e=>{e.preventDefault(); goPublic('case-study');}} className="hidden sm:inline text-[13px] font-semibold underline underline-offset-4 text-muted hover:text-ink">See an example</a>
+            <button onClick={()=>goPublic('login')} className="btn btn-outline btn-sm">Login</button>
+            <button onClick={()=>goPublic('start')} className="btn btn-primary btn-sm">Start free audit</button>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <section className="px-5 lg:px-8 pt-16 sm:pt-24 pb-10">
+        <div className="max-w-5xl mx-auto">
+          <div className="inline-flex items-center gap-2 mb-6 text-[12px] uppercase tracking-[0.18em] font-semibold text-muted">
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background:'#ffcc00' }}/>
+            Audit · clarity · action plan
+          </div>
+          <h1 className="font-display font-extrabold tracking-tight" style={{ fontSize:'clamp(44px, 8vw, 96px)', lineHeight:0.95, letterSpacing:'-0.04em' }}>
+            Audit your brand.<br/>In 24 hours.
+          </h1>
+          <p className="text-muted mt-6 text-[17px] sm:text-[19px] leading-relaxed max-w-2xl">
+            kurongeka is how kapture audits your digital footprint, scores your brand health, and hands you the action plan to grow. A private vault for your brand.
+          </p>
+          <div className="mt-10 flex flex-col sm:flex-row gap-3">
+            <button onClick={()=>goPublic('start')} className="btn btn-primary btn-lg">Start free audit <I n="arrowRight" s={16}/></button>
+            <button onClick={()=>goPublic('case-study')} className="btn btn-outline btn-lg">See a real example</button>
+          </div>
+          <div className="mt-6 text-[12px] text-subtle">No card. Free 10-minute discovery call. Audit and recommendations delivered in 24 hours.</div>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="px-5 lg:px-8 py-16 sm:py-24 border-t border-line">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-[12px] uppercase tracking-[0.18em] font-semibold text-muted mb-3">How it works</div>
+          <h2 className="font-display font-extrabold text-3xl sm:text-5xl mb-12 tracking-tight">Three steps to clarity.</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {[
+              { n:'01', t:'Tell us about your brand', d:'Quick onboarding — under 3 minutes. Your name, your brand, where you live online, what you want next.' },
+              { n:'02', t:'Free 10-minute discovery call', d:'A brand manager calls. We listen first. Then we scope the work and reveal pricing tailored to your stage.' },
+              { n:'03', t:'Audit + dashboard in 24h', d:'Once invoiced, we run the full audit. You get a private kurongeka vault with brand health, action plan, deliverables and a direct line to kapture.' },
+            ].map(s => (
+              <div key={s.n} className="card p-6 sm:p-8 flex flex-col gap-4 hover:border-ink transition" style={{ minHeight:240 }}>
+                <div className="text-[12px] font-display font-extrabold text-muted">{s.n}</div>
+                <div className="font-display font-extrabold text-xl sm:text-2xl tracking-tight">{s.t}</div>
+                <div className="text-[14px] text-muted leading-relaxed">{s.d}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* What you get */}
+      <section className="px-5 lg:px-8 py-16 sm:py-24 border-t border-line bg-canvas">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-[12px] uppercase tracking-[0.18em] font-semibold text-muted mb-3">In the vault</div>
+          <h2 className="font-display font-extrabold text-3xl sm:text-5xl mb-12 tracking-tight">Everything kapture knows about your brand.</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              { i:'sparkle',  t:'Brand audit',    d:'5-pillar health score · web · social · search · press · stage.' },
+              { i:'target',   t:'Action plan',    d:'Immediate, short-term and long-term recommendations.' },
+              { i:'fileText', t:'Deliverables',   d:'Files, briefs, decks, drafts — versioned and downloadable.' },
+              { i:'message',  t:'Direct line',    d:'Message kapture in the vault. No middlemen.' },
+            ].map(x => (
+              <div key={x.t} className="card p-6 flex items-start gap-4 bg-paper">
+                <div className="h-10 w-10 rounded-[10px] bg-ink text-paper grid place-items-center shrink-0"><I n={x.i} s={18}/></div>
+                <div>
+                  <div className="font-display font-extrabold text-lg">{x.t}</div>
+                  <div className="text-[14px] text-muted mt-1">{x.d}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-10 flex justify-center">
+            <button onClick={()=>goPublic('case-study')} className="btn btn-outline btn-lg">See an audit in action — kapture case study <I n="arrowRight" s={16}/></button>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="px-5 lg:px-8 py-16 sm:py-24 border-t border-line">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="font-display font-extrabold tracking-tight" style={{ fontSize:'clamp(36px, 6vw, 64px)', lineHeight:1 }}>
+            Find out what your brand is really doing.
+          </h2>
+          <p className="text-muted text-[17px] mt-5">Start the free audit. Book a discovery call. See your brand the way the world sees it.</p>
+          <div className="mt-8 flex justify-center">
+            <button onClick={()=>goPublic('start')} className="btn btn-primary btn-lg">Start free audit <I n="arrowRight" s={16}/></button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="px-5 lg:px-8 py-10 border-t border-line">
+        <div className="max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-4">
+          <Brand size="sm" variant="nav"/>
+          <div className="text-[12px] text-subtle">© kapture studio · kurongeka <span className="font-mono">/kʊ.roˈŋɡe.ka/</span> · "being organised"</div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+/* ============================================================
+   ONBOARDING — short 5-step request audit
+   ============================================================ */
+function OnboardingFlow() {
+  const { goPublic } = useApp();
+  const [step, setStep] = useState(1);
+  const [data, setData] = useState({
+    name:'', email:'', brand:'', website:'',
+    what:'',
+    handles:{ instagram:'', linkedin:'', youtube:'', tiktok:'' },
+    goals:[],
+    when:'',
+  });
+  const total = 5;
+  const update = (k, v) => setData(d => ({ ...d, [k]: v }));
+  const updateHandle = (k, v) => setData(d => ({ ...d, handles: { ...d.handles, [k]: v } }));
+  const toggleGoal = (g) => setData(d => ({ ...d, goals: d.goals.includes(g) ? d.goals.filter(x=>x!==g) : [...d.goals, g] }));
+
+  const validateStep = () => {
+    if (step === 1) return data.name && data.email && data.brand;
+    if (step === 2) return data.what.length > 3;
+    if (step === 3) return true;
+    if (step === 4) return data.goals.length > 0;
+    if (step === 5) return data.when;
+    return true;
+  };
+
+  const submit = () => {
+    const lines = [];
+    lines.push(`Audit request — ${data.brand}`, '');
+    lines.push(`Name: ${data.name}`);
+    lines.push(`Email: ${data.email}`);
+    lines.push(`Brand: ${data.brand}`);
+    if (data.website) lines.push(`Website: ${data.website}`);
+    lines.push(`What they do: ${data.what}`);
+    lines.push('');
+    lines.push('Social handles:');
+    Object.entries(data.handles).forEach(([k,v]) => v && lines.push(`  ${k}: ${v}`));
+    lines.push('');
+    lines.push(`Goals: ${data.goals.join(', ')}`);
+    lines.push(`Best time for discovery call: ${data.when}`);
+    const subject = `kurongeka audit request — ${data.brand}`;
+    const body = encodeURIComponent(lines.join('\n'));
+    window.location.href = `mailto:studio@thekapture.com?subject=${encodeURIComponent(subject)}&body=${body}`;
+    setStep(99); // confirmation
+  };
+
+  return (
+    <div className="min-h-screen bg-paper flex flex-col">
+      <header className="sticky top-0 z-50 bg-paper/95 backdrop-blur border-b border-line">
+        <div className="max-w-3xl mx-auto px-5 lg:px-8 h-16 flex items-center justify-between">
+          <button onClick={()=>goPublic('landing')} className="flex items-center gap-2"><Brand size="sm" variant="nav"/></button>
+          {step < 99 && <span className="text-[12px] font-semibold text-muted">Step {step} of {total}</span>}
+        </div>
+        {/* Progress */}
+        {step < 99 && (
+          <div className="h-1 bg-canvas">
+            <div className="h-full bg-ink transition-all" style={{ width:`${(step/total)*100}%` }}/>
+          </div>
+        )}
+      </header>
+
+      <main className="flex-1 px-5 lg:px-8 py-12 sm:py-20">
+        <div className="max-w-xl mx-auto">
+          {step === 1 && (
+            <div className="fade-in">
+              <h2 className="font-display font-extrabold text-3xl sm:text-4xl mb-2 tracking-tight">Tell us about you.</h2>
+              <p className="text-muted mb-8">Three quick fields. We need this to send the call invite.</p>
+              <div className="space-y-3">
+                <Field label="Your name" required><input className="input" autoFocus value={data.name} onChange={e=>update('name', e.target.value)} placeholder="Full name"/></Field>
+                <Field label="Email" required><input className="input" type="email" value={data.email} onChange={e=>update('email', e.target.value)} placeholder="you@brand.com"/></Field>
+                <Field label="Brand or business name" required><input className="input" value={data.brand} onChange={e=>update('brand', e.target.value)} placeholder="e.g. Tura Arutura · Acme Studio"/></Field>
+                <Field label="Website (if any)"><input className="input" value={data.website} onChange={e=>update('website', e.target.value)} placeholder="yourbrand.com"/></Field>
+              </div>
+            </div>
+          )}
+          {step === 2 && (
+            <div className="fade-in">
+              <h2 className="font-display font-extrabold text-3xl sm:text-4xl mb-2 tracking-tight">What do you do?</h2>
+              <p className="text-muted mb-8">One sentence. The way you'd say it to a stranger.</p>
+              <Field label="In one line"><textarea className="input" rows="3" autoFocus value={data.what} onChange={e=>update('what', e.target.value)} placeholder="e.g. I'm a Belfast-based Sean Nós dancer running workshops for schools and festivals."/></Field>
+            </div>
+          )}
+          {step === 3 && (
+            <div className="fade-in">
+              <h2 className="font-display font-extrabold text-3xl sm:text-4xl mb-2 tracking-tight">Where do you live online?</h2>
+              <p className="text-muted mb-8">Drop the handles you have. Skip the rest.</p>
+              <div className="space-y-3">
+                {[
+                  { k:'instagram', i:'instagram', placeholder:'@handle or instagram.com/handle' },
+                  { k:'linkedin',  i:'linkedin',  placeholder:'linkedin.com/in/you' },
+                  { k:'youtube',   i:'youtube',   placeholder:'@channel or youtube.com/c/channel' },
+                  { k:'tiktok',    i:'tiktok',    placeholder:'@handle' },
+                ].map(h => (
+                  <div key={h.k} className="flex items-center gap-3">
+                    <div className="h-11 w-11 rounded-[10px] bg-canvas grid place-items-center shrink-0"><I n={h.i} s={18}/></div>
+                    <input className="input flex-1" value={data.handles[h.k]} onChange={e=>updateHandle(h.k, e.target.value)} placeholder={h.placeholder}/>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {step === 4 && (
+            <div className="fade-in">
+              <h2 className="font-display font-extrabold text-3xl sm:text-4xl mb-2 tracking-tight">What do you want next?</h2>
+              <p className="text-muted mb-8">Pick all that apply.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {['More bookings','Bigger audience','Stronger brand','New website','Press / PR','Investor-ready','Launch a product','Just curious'].map(g => (
+                  <button key={g} onClick={()=>toggleGoal(g)} className={`p-4 rounded-[10px] border-2 text-left text-[14px] font-semibold transition ${data.goals.includes(g) ? 'bg-ink text-paper border-ink' : 'bg-paper border-line hover:border-ink'}`}>{g}</button>
+                ))}
+              </div>
+            </div>
+          )}
+          {step === 5 && (
+            <div className="fade-in">
+              <h2 className="font-display font-extrabold text-3xl sm:text-4xl mb-2 tracking-tight">When can we call you?</h2>
+              <p className="text-muted mb-8">A free 10-minute discovery. We'll confirm by email.</p>
+              <div className="space-y-2">
+                {['This week (any day, mornings)','This week (any day, afternoons)','Next week (mornings)','Next week (afternoons)','Flexible — book me into your calendar'].map(w => (
+                  <button key={w} onClick={()=>update('when', w)} className={`w-full p-4 rounded-[10px] border-2 text-left text-[14px] font-semibold transition ${data.when === w ? 'bg-ink text-paper border-ink' : 'bg-paper border-line hover:border-ink'}`}>{w}</button>
+                ))}
+              </div>
+            </div>
+          )}
+          {step === 99 && (
+            <div className="fade-in text-center">
+              <div className="h-16 w-16 rounded-full mx-auto mb-6 grid place-items-center" style={{ background:'#ffcc00' }}>
+                <I n="check" s={32} c="text-ink"/>
+              </div>
+              <h2 className="font-display font-extrabold text-3xl sm:text-4xl mb-3 tracking-tight">Request sent.</h2>
+              <p className="text-muted text-[15px] mb-2">Your email client opened with everything filled in. Hit send and a brand manager will be in touch within 1 working day.</p>
+              <p className="text-muted text-[15px] mb-8">If your email client didn't open, just reach us at <a className="text-ink underline" href="mailto:studio@thekapture.com">studio@thekapture.com</a>.</p>
+              <div className="flex gap-3 justify-center flex-wrap">
+                <button onClick={()=>goPublic('case-study')} className="btn btn-outline">See an audit example</button>
+                <button onClick={()=>goPublic('landing')} className="btn btn-primary">Back to home</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+
+      {step < 99 && (
+        <footer className="sticky bottom-0 bg-paper border-t border-line" style={{ paddingBottom:'env(safe-area-inset-bottom)' }}>
+          <div className="max-w-3xl mx-auto px-5 lg:px-8 py-4 flex items-center justify-between gap-3">
+            <button onClick={()=>{ if (step === 1) goPublic('landing'); else setStep(s => s - 1); }} className="btn btn-outline btn-sm">
+              <I n="arrowLeft" s={14}/> Back
+            </button>
+            {step < total ? (
+              <button onClick={()=>setStep(s => s + 1)} disabled={!validateStep()} className="btn btn-primary">Continue <I n="arrowRight" s={14}/></button>
+            ) : (
+              <button onClick={submit} disabled={!validateStep()} className="btn btn-primary">Book my discovery call <I n="arrowRight" s={14}/></button>
+            )}
+          </div>
+        </footer>
+      )}
+    </div>
+  );
+}
+
+/* ============================================================
+   ROOT — public landing / onboarding / case study / login / app
+   ============================================================ */
+function Root() {
+  const { currentUser, publicView, isCaseStudy, setCurrentUser } = useApp();
+  // Auto-create a public-visitor session when entering case-study mode so MainShell
+  // renders with kapture data — no real login required.
+  useEffect(() => {
+    if (isCaseStudy && !currentUser) {
+      setCurrentUser({ id:'C-DEMO', name:'Public preview', role:'client', email:'demo@kurongeka.com', org:'kapture (case study)', title:'Case study viewer', isDemo:true });
+    }
+    if (!isCaseStudy && currentUser?.isDemo) {
+      setCurrentUser(null);
+    }
+  }, [isCaseStudy]);
+  if (currentUser) return <MainShell/>;
+  if (publicView === 'start') return <OnboardingFlow/>;
+  if (publicView === 'login') return <AuthScreen/>;
+  return <PublicLanding/>;
+}
+
+function App() { return <AppProvider><Root/><Toast/></AppProvider>; }
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

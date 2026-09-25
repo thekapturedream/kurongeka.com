@@ -32,8 +32,8 @@ Set up on the `kurongeka.com` Wix site today:
 - Headless client **kurongeka.com web**, client ID `e7d4a9a8-c38f-459a-8960-e755c0c82b95`; redirect domains kurongeka.com and www.kurongeka.com.
 - Wix Forms installed; form **Kurongeka Check** (`e7b244fb-0bc2-411c-98d1-4bd29e40a3c8`), which creates CRM contacts. Tested end to end, then the test lead was deleted.
 - CMS collections: LaunchPackages, BusinessModels (9 seeded), Faqs (10 seeded), DirectoryListings (empty).
-- Pricing Plans: Run Care £39, Run Grow £119, Run Partner £319 (monthly). Slugs are `run-care-1`, `run-grow-1` and `run-partner-1` because they replaced earlier USD versions; rename in the dashboard if you like.
-- Site payment currency changed from USD to GBP. The one old Wix Stores product on this site ("Starlink V2") now shows its old number in pounds; review or delete it.
+- Pricing Plans: Run Care £39, Run Grow £119, Run Partner £319 (monthly). Slugs are `run-care-1`, `run-grow-1` and `run-partner-1` because they replaced earlier plans that are now deleted; rename in the dashboard if you like.
+- Site payment currency is GBP. The one old Wix Stores product on this site ("Starlink V2") now shows its old number in pounds; review or delete it.
 
 ## Domains and email
 

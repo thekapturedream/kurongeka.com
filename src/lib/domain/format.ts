@@ -3,7 +3,7 @@ export const CURRENCY = 'GBP';
 
 const formatters = new Map<string, Intl.NumberFormat>();
 
-/** Locale per currency so symbols read naturally ("$1,290", not "US$1,290"). */
+/** Locale per currency so symbols read naturally. Run plans show the currency Wix charges in (GBP). */
 const CURRENCY_LOCALE: Record<string, string> = { USD: 'en-US', GBP: 'en-GB', ZAR: 'en-ZA', EUR: 'en-IE' };
 
 /** A price in the business currency, e.g. formatPrice(990) -> "£990". */

@@ -11,7 +11,7 @@ Kurongeka has been six different things in two years. None of them has earned mo
 | Jun 2024 | Wix site "Kurongeka", Instagram @kurongekadotcom, LinkedIn page | Wix `Kurongeka` (ZA) | Empty store, free plan |
 | Sep 2025 | "Africa's first engineered e-commerce platform", a B2B ERP beating SAP and Odoo | Drive: *Introduction to kurongeka.com*; Wix `kurongeka.com` | Every Wix app installed, no content; Premium lapsed Nov 2025 (card declined) |
 | Sep 2025 | Service matrix: Shopps (shopping-centre systems), Konnect (SME digital transformation, local news, delivery, property, compliance) | Drive: *kurongeka.com.md*; Arundel Village proposal | Proposal only |
-| Dec 2025 | Kurongeka Personal Ops: an ADHD productivity template at $49 / $97 / $297 | Drive: *Yes* | Sales copy only |
+| Dec 2025 | Kurongeka Personal Ops: an ADHD productivity template in three tiers | Drive: *Yes* | Sales copy only |
 | Apr–May 2026 | £350 brand audit, then a client cockpit, template store, supplier micro-sites and a patent log | GitHub `kurongeka` (live on Vercel), `kurongeka.com` (single HTML file) | Live, but with demo data presented as real and no leads; Supabase paused |
 | Jul 2026 | Kurongeka OS: an internal command centre for Rodney's own sites | GitHub `kurongeka-os`, Vercel `kurongeka-os` | Internal tool |
 
@@ -37,7 +37,7 @@ There is also a lot of ready inventory: about twenty vertical "Studio" template 
 
 ### Why this wins
 
-- **It sells what already works.** Kapture has delivered dozens of these sites. Productising removes the sales cycle that stalls the $2,080 module.
+- **It sells what already works.** Kapture has delivered dozens of these sites. Productising removes the long sales cycle that stalls the bespoke Brand Transformation Module.
 - **Proven models cut delivery cost.** Starting from a model for the business type makes a launch a configuration job, not a design project.
 - **Recurring revenue makes it a business.** Launches pay the bills; Run plans build value.
 - **The directory becomes the marketplace later.** Every launched business can be listed (with consent). The "real businesses, real legal entities" marketplace from the 2025 notes grows from customers instead of being built before them.

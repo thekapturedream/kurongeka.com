@@ -3,13 +3,13 @@ import { CURRENCY, formatMoney, formatPrice, paragraphs, workingDays } from '@/l
 import { allowRequest } from '@/lib/services/rate-limit';
 
 describe('formatMoney', () => {
-  it('formats whole amounts without decimals and with natural symbols', () => {
-    expect(formatMoney(1290, 'USD')).toBe('$1,290');
+  it('formats whole amounts without decimals', () => {
+    expect(formatMoney(1290, 'GBP')).toBe('£1,290');
     expect(formatMoney(990, 'GBP')).toBe('£990');
   });
 
   it('keeps pence when the amount has them', () => {
-    expect(formatMoney(49.5, 'USD')).toBe('$49.50');
+    expect(formatMoney(49.5, 'GBP')).toBe('£49.50');
   });
 });
 

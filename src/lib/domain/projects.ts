@@ -16,7 +16,7 @@ export const PROJECT_STAGES = [
   {
     value: 'in_progress',
     label: 'Building',
-    client: 'Your launch is being built. We will share a preview link here when it is ready.',
+    client: 'We are building your launch. Your preview link appears here as soon as there is something to see.',
   },
   {
     value: 'review',

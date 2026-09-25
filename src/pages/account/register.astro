@@ -1,0 +1,112 @@
+---
+import Field from '@/components/forms/Field.astro';
+import Button from '@/components/ui/Button.astro';
+import AuthLayout from '@/layouts/AuthLayout.astro';
+import { signUp, type AuthError } from '@/lib/auth/login';
+import { hasSession } from '@/lib/auth/session';
+import { signUpSchema } from '@/lib/domain/projects';
+import { fieldErrors } from '@/lib/domain/validation';
+import { clientKey, formValues, noStore, readForm, safeNextPath } from '@/lib/http';
+import { allowAuthAttempt } from '@/lib/services/rate-limit';
+
+export const prerender = false;
+noStore(Astro);
+
+const next = safeNextPath(Astro.url.searchParams.get('next'), '/account/brief');
+if (Astro.request.method === 'GET' && hasSession(Astro.cookies)) return Astro.redirect('/account');
+
+const MESSAGES: Partial<Record<AuthError | 'limited', string>> = {
+  'email-exists': 'There is already an account with this email.',
+  'invalid-email': 'Enter a valid email address.',
+  captcha: 'We could not confirm the sign-up. Please try again in a few minutes.',
+  unavailable: 'Creating accounts is not working right now. Please try again shortly.',
+  limited: 'Too many attempts. Please wait a few minutes and try again.',
+};
+
+let values = { firstName: '', lastName: '', email: '', password: '' };
+let errors: Record<string, string> = {};
+let message: string | null = null;
+let emailExists = false;
+let pendingApproval = false;
+
+if (Astro.request.method === 'POST') {
+  const form = await readForm(Astro.request);
+  values = form ? formValues(form, ['firstName', 'lastName', 'email', 'password'] as const) : values;
+  const postedNext = safeNextPath(typeof form?.get('next') === 'string' ? String(form?.get('next')) : null, '/account/brief');
+  const parsed = signUpSchema.safeParse(values);
+  if (!allowAuthAttempt(clientKey(Astro.request, () => Astro.clientAddress))) {
+    message = MESSAGES.limited ?? null;
+  } else if (!parsed.success) {
+    errors = fieldErrors(parsed.error);
+  } else {
+    const outcome = await signUp(parsed.data, { cookies: Astro.cookies, url: Astro.url });
+    if (outcome.kind === 'signed-in') return Astro.redirect(postedNext, 303);
+    if (outcome.kind === 'redirect') return Astro.redirect(outcome.url, 303);
+    if (outcome.kind === 'verify') return Astro.redirect(`/account/verify?next=${encodeURIComponent(postedNext)}`, 303);
+    if (outcome.kind === 'pending-approval') pendingApproval = true;
+    if (outcome.kind === 'error') {
+      emailExists = outcome.error === 'email-exists';
+      message = MESSAGES[outcome.error] ?? MESSAGES.unavailable ?? null;
+    }
+  }
+  values.password = '';
+  if (message || Object.keys(errors).length) Astro.response.status = 400;
+}
+---
+
+<AuthLayout
+  title="Create an account"
+  heading="Create your account."
+  lead="Start your launch brief and follow your project from brief to live. It takes a minute."
+>
+  {
+    message && (
+      <p class="notice notice-error" role="alert">
+        {message}
+        {emailExists && (
+          <span>
+            {' '}
+            <a href="/account/login">Log in</a> or <a href="/account/reset">reset your password</a>.
+          </span>
+        )}
+      </p>
+    )
+  }
+  {
+    pendingApproval && (
+      <p class="notice notice-info" role="status">
+        Thank you. Your account is waiting for approval, and we will email you when it is ready.
+      </p>
+    )
+  }
+
+  <form method="post" class="form-card" novalidate>
+    <input type="hidden" name="next" value={next} />
+    <div class="fields">
+      <div class="field-row">
+        <Field name="firstName" label="First name" autocomplete="given-name" required maxlength={60} value={values.firstName} error={errors['firstName']} />
+        <Field name="lastName" label="Last name" autocomplete="family-name" optional maxlength={60} value={values.lastName} error={errors['lastName']} />
+      </div>
+      <Field name="email" label="Email" type="email" autocomplete="email" required maxlength={254} value={values.email} error={errors['email']} />
+      <Field
+        name="password"
+        label="Password"
+        type="password"
+        autocomplete="new-password"
+        required
+        minlength={8}
+        maxlength={100}
+        hint="At least 8 characters, with a number or symbol."
+        error={errors['password']}
+      />
+    </div>
+    <div class="form-actions">
+      <Button type="submit" size="lg" block track="account_register_submit">Create account</Button>
+    </div>
+    <p class="small muted">
+      By creating an account you agree to our <a href="/terms">terms</a>. We handle your details as our
+      <a href="/privacy">privacy notice</a> describes.
+    </p>
+    <p class="small">Already have an account? <a href="/account/login">Log in</a></p>
+  </form>
+</AuthLayout>

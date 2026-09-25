@@ -1,8 +1,8 @@
 ---
 interface Props {
-  eyebrow?: string;
+  eyebrow?: string | undefined;
   title: string;
-  lead?: string;
+  lead?: string | undefined;
 }
 const { eyebrow, title, lead } = Astro.props;
 ---

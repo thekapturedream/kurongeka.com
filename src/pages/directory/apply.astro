@@ -1,0 +1,224 @@
+---
+import { z } from 'astro/zod';
+import Field from '@/components/forms/Field.astro';
+import PageIntro from '@/components/layout/PageIntro.astro';
+import Button from '@/components/ui/Button.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { whatsappUrl } from '@/config/site';
+import { COUNTRIES } from '@/lib/domain/check';
+import { enquirySchema } from '@/lib/domain/enquiry';
+import { fieldErrors, requiredText } from '@/lib/domain/validation';
+import { clientKey, formValues, noStore, readForm } from '@/lib/http';
+import { breadcrumbLd } from '@/lib/seo';
+import { getBusinessModels } from '@/lib/services/catalog';
+import {
+  ENQUIRY_FIELDS,
+  emptyEnquiry,
+  handleEnquiryForm,
+  type EnquiryFormState,
+  type EnquiryValues,
+} from '@/lib/services/enquiry-form';
+
+export const prerender = false;
+noStore(Astro);
+
+const models = await getBusinessModels();
+const categories = [...models.data.map((m) => ({ value: m.title, label: m.title })), { value: 'Other', label: 'Something else' }];
+const countries = COUNTRIES.filter((c) => c.value !== 'OTHER').map((c) => ({ value: c.label, label: c.label }));
+
+const listingSchema = z.object({
+  company: requiredText(120, 'Enter the business name'),
+  city: requiredText(80, 'Enter the town or city'),
+  country: requiredText(80, 'Choose a country'),
+  category: requiredText(80, 'Choose what the business does'),
+  message: requiredText(300, 'Describe the business in a sentence or two'),
+  consent: z.literal('true', { message: 'Please confirm you can list this business' }),
+});
+
+const LISTING_FIELDS = ['company', 'city', 'country', 'category', 'message', 'consent'] as const;
+
+let listing = { company: '', city: '', country: 'United Kingdom', category: '', message: '', consent: '' };
+let listingErrors: Record<string, string> = {};
+let state: EnquiryFormState = { status: 'idle', values: emptyEnquiry({ topic: 'directory' }), errors: {} };
+
+if (Astro.request.method === 'POST') {
+  const form = await readForm(Astro.request);
+  if (form) listing = formValues(form, LISTING_FIELDS);
+  const fixed: Partial<EnquiryValues> = {
+    topic: 'directory',
+    sourcePage: '/directory/apply',
+    company: listing.company,
+    message: listing.message,
+    details: `Category: ${listing.category}. Location: ${listing.city}, ${listing.country}. Owner confirmed consent to be listed.`,
+  };
+  const parsed = listingSchema.safeParse(listing);
+  if (form && parsed.success) {
+    state = await handleEnquiryForm(form, clientKey(Astro.request, () => Astro.clientAddress), fixed);
+  } else {
+    // Show every problem at once: listing fields and contact fields.
+    listingErrors = parsed.success ? {} : fieldErrors(parsed.error);
+    const values = { ...(form ? formValues(form, ENQUIRY_FIELDS) : emptyEnquiry()), subscribe: false, ...fixed };
+    const contact = enquirySchema.safeParse(values);
+    state = { status: 'invalid', values, errors: contact.success ? {} : fieldErrors(contact.error) };
+  }
+  if (state.status !== 'sent') Astro.response.status = 400;
+}
+
+const errors = { ...state.errors, ...listingErrors };
+const values = state.values;
+---
+
+<BaseLayout
+  title="List your business"
+  description="Apply to list your business in the Kurongeka directory. Free for businesses we launch."
+  noindex
+  jsonLd={[
+    breadcrumbLd([
+      { name: 'Home', path: '/' },
+      { name: 'Directory', path: '/directory' },
+      { name: 'List your business', path: '/directory/apply' },
+    ]),
+  ]}
+>
+  <PageIntro
+    eyebrow="Directory"
+    title="List your business."
+    lead="The directory lists real businesses, with their owner's consent. We check every application before it goes live."
+  />
+
+  <section class="section">
+    <div class="container-narrow">
+      {
+        state.status === 'sent' ? (
+          <div class="form-card" data-track-view="directory_application_submitted" role="status">
+            <h2 class="h3">Application received.</h2>
+            <p>
+              We will check the details and email you before anything is published. Businesses launched with Kurongeka are
+              listed free.
+            </p>
+            <div class="form-actions">
+              <Button href="/directory" variant="secondary">
+                Back to the directory
+              </Button>
+              <Button href="/check" icon="arrow-right">
+                Take the free check
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <form method="post" class="form-card" novalidate>
+            {Object.keys(errors).length > 0 && (
+              <p class="notice notice-error" role="alert">
+                Please check the highlighted fields.
+              </p>
+            )}
+            {(state.status === 'failed' || state.status === 'limited') && (
+              <p class="notice notice-error" role="alert">
+                We could not send your application just now. Please try again, or message us on{' '}
+                <a href={whatsappUrl('Hi Kurongeka, I would like to list my business in the directory.')}>WhatsApp</a>.
+              </p>
+            )}
+
+            <fieldset class="field-inline group">
+              <legend class="h4">The business</legend>
+              <div class="fields">
+                <Field name="company" label="Business name" required maxlength={120} value={listing.company} error={errors['company']} />
+                <div class="field-row">
+                  <Field
+                    name="category"
+                    label="What the business does"
+                    as="select"
+                    emptyOption="Choose one"
+                    options={categories}
+                    value={listing.category}
+                    error={errors['category']}
+                  />
+                  <Field name="website" label="Website" type="url" optional maxlength={200} value={values.website} error={errors['website']} />
+                </div>
+                <div class="field-row">
+                  <Field name="city" label="Town or city" required maxlength={80} value={listing.city} error={errors['city']} />
+                  <Field name="country" label="Country" as="select" options={countries} value={listing.country} error={errors['country']} />
+                </div>
+                <Field
+                  name="message"
+                  label="Describe the business in a sentence or two"
+                  as="textarea"
+                  rows={3}
+                  required
+                  maxlength={300}
+                  hint="This appears on your listing. Up to 300 characters."
+                  value={listing.message}
+                  error={errors['message']}
+                />
+              </div>
+            </fieldset>
+
+            <fieldset class="field-inline group">
+              <legend class="h4">You</legend>
+              <div class="fields">
+                <div class="field-row">
+                  <Field name="name" label="Your name" autocomplete="name" required maxlength={80} value={values.name} error={errors['name']} />
+                  <Field
+                    name="email"
+                    label="Email"
+                    type="email"
+                    autocomplete="email"
+                    required
+                    maxlength={254}
+                    value={values.email}
+                    error={errors['email']}
+                  />
+                </div>
+                <Field
+                  name="phone"
+                  label="Phone or WhatsApp"
+                  type="tel"
+                  autocomplete="tel"
+                  optional
+                  maxlength={32}
+                  value={values.phone}
+                  error={errors['phone']}
+                />
+                <label class="consent">
+                  <input type="checkbox" name="consent" value="true" checked={listing.consent === 'true'} />
+                  <span>I own or manage this business, and I agree to it being listed publicly on kurongeka.com.</span>
+                </label>
+                {errors['consent'] && <p class="field-error">{errors['consent']}</p>}
+              </div>
+            </fieldset>
+
+            <div class="honeypot" aria-hidden="true">
+              <label>
+                Leave this empty <input type="text" name="company_website" tabindex="-1" autocomplete="off" />
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <Button type="submit" size="lg" icon="arrow-right" track="directory_apply_submit">
+                Send application
+              </Button>
+              <p class="small muted">
+                <a href="/privacy">Privacy notice</a>
+              </p>
+            </div>
+          </form>
+        )
+      }
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .section {
+    padding-block: var(--space-8) var(--section-pad);
+  }
+
+  .group {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .group legend {
+    margin-bottom: var(--space-4);
+  }
+</style>

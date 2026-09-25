@@ -1,0 +1,55 @@
+---
+import Field from '@/components/forms/Field.astro';
+import Button from '@/components/ui/Button.astro';
+import AuthLayout from '@/layouts/AuthLayout.astro';
+import { hasPendingVerification, verifyEmailCode } from '@/lib/auth/login';
+import { clientKey, noStore, readForm, safeNextPath } from '@/lib/http';
+import { allowAuthAttempt } from '@/lib/services/rate-limit';
+
+export const prerender = false;
+noStore(Astro);
+
+const next = safeNextPath(Astro.url.searchParams.get('next'));
+if (!hasPendingVerification(Astro.cookies)) return Astro.redirect('/account/login?notice=session-ended');
+
+let error: string | undefined;
+let message: string | null = null;
+
+if (Astro.request.method === 'POST') {
+  const form = await readForm(Astro.request);
+  const code = String(form?.get('code') ?? '').replace(/\s+/g, '');
+  const postedNext = safeNextPath(String(form?.get('next') ?? ''));
+  if (!allowAuthAttempt(clientKey(Astro.request, () => Astro.clientAddress))) {
+    message = 'Too many attempts. Please wait a few minutes and try again.';
+  } else if (!/^\d{4,8}$/.test(code)) {
+    error = 'Enter the code from the email.';
+  } else {
+    const outcome = await verifyEmailCode(code, { cookies: Astro.cookies, url: Astro.url });
+    if (outcome.kind === 'signed-in') return Astro.redirect(postedNext, 303);
+    if (outcome.kind === 'redirect') return Astro.redirect(outcome.url, 303);
+    if (outcome.kind === 'error' && outcome.error === 'expired') return Astro.redirect('/account/login?notice=session-ended', 303);
+    error = 'That code is not right. Check the latest email from us and try again.';
+  }
+  Astro.response.status = 400;
+}
+---
+
+<AuthLayout title="Confirm your email" heading="Check your email." lead="We sent you a code to confirm it is really you. Enter it below.">
+  {message && <p class="notice notice-error" role="alert">{message}</p>}
+  <form method="post" class="form-card" novalidate>
+    <input type="hidden" name="next" value={next} />
+    <Field
+      name="code"
+      label="Confirmation code"
+      inputmode="numeric"
+      autocomplete="one-time-code"
+      required
+      maxlength={8}
+      error={error}
+      hint="It can take a minute to arrive. Check your spam folder too."
+    />
+    <div class="form-actions">
+      <Button type="submit" size="lg" block track="account_verify_submit">Confirm</Button>
+    </div>
+  </form>
+</AuthLayout>

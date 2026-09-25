@@ -1,0 +1,81 @@
+---
+import PageIntro from '@/components/layout/PageIntro.astro';
+import CtaBand from '@/components/sections/CtaBand.astro';
+import ToolCards from '@/components/sections/ToolCards.astro';
+import SectionHeader from '@/components/ui/SectionHeader.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { site } from '@/config/site';
+import { tools } from '@/config/tools';
+import { breadcrumbLd, ORG_ID } from '@/lib/seo';
+
+interface Props {
+  slug: string;
+  title: string;
+  lead: string;
+  description: string;
+  noindex?: boolean;
+  ctaTitle?: string;
+  ctaBody?: string;
+}
+
+const { slug, title, lead, description, noindex = false, ctaTitle, ctaBody } = Astro.props;
+const tool = tools.find((t) => t.slug === slug);
+const path = `/tools/${slug}`;
+
+const appLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: tool?.name ?? title,
+  description,
+  url: `${site.url}${path}`,
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: 0, priceCurrency: 'GBP' },
+  provider: { '@id': ORG_ID },
+};
+---
+
+<BaseLayout
+  title={title}
+  {description}
+  {noindex}
+  jsonLd={[
+    breadcrumbLd([
+      { name: 'Home', path: '/' },
+      { name: 'Free tools', path: '/tools' },
+      { name: tool?.name ?? title, path },
+    ]),
+    appLd,
+  ]}
+>
+  <PageIntro eyebrow="Free tool" title={title} lead={lead} />
+
+  <section class="tool-section">
+    <div class="container">
+      <slot />
+    </div>
+  </section>
+
+  <section class="more surface-alt" aria-labelledby="more-tools">
+    <div class="container stack" style="--stack-gap: var(--space-7); --tool-columns: 3">
+      <SectionHeader id="more-tools" title="More free tools." />
+      <ToolCards exclude={slug} />
+    </div>
+  </section>
+
+  <CtaBand
+    title={ctaTitle ?? 'Want it done properly, for you?'}
+    body={ctaBody ?? 'A Kurongeka launch covers your domain, website, brand, payments and Google listing, at a fixed price in pounds.'}
+    track={`cta_tool_${slug}`}
+  />
+</BaseLayout>
+
+<style>
+  .tool-section {
+    padding-block: var(--space-8) var(--section-pad);
+  }
+
+  .more {
+    padding-block: var(--section-pad);
+  }
+</style>

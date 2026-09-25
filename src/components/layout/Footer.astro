@@ -25,6 +25,7 @@ const year = new Date().getFullYear();
         <li><a href="/business-types">Business types</a></li>
         <li><a href="/pricing">Pricing</a></li>
         <li><a href="/check">Free check</a></li>
+        <li><a href="/tools">Free tools</a></li>
       </ul>
     </nav>
 
@@ -32,7 +33,9 @@ const year = new Date().getFullYear();
       <p class="label">Company</p>
       <ul>
         <li><a href="/about">About</a></li>
+        <li><a href="/contact">Contact</a></li>
         <li><a href="/directory">Directory</a></li>
+        <li><a href="/account">Client log in</a></li>
         <li>
           <a href={site.parent.url} rel="noopener">Kapture<span class="visually-hidden"> (our parent studio)</span></a>
         </li>
@@ -62,7 +65,7 @@ const year = new Date().getFullYear();
   </div>
 
   <div class="container footer-base">
-    <p>© {year} Kurongeka. A Kapture company. {site.locations.join(' · ')}.</p>
+    <p>© {year} Kurongeka. A Kapture company. Based in the {site.base}.</p>
     <ul>
       <li><a href="/privacy">Privacy</a></li>
       <li><a href="/terms">Terms</a></li>

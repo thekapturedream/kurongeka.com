@@ -4,7 +4,22 @@ import { getBusinessModels, getDirectoryListings } from '@/lib/services/catalog'
 
 export const prerender = false;
 
-const STATIC_PATHS = ['/', '/how-it-works', '/business-types', '/pricing', '/check', '/about', '/privacy', '/terms'];
+const STATIC_PATHS = [
+  '/',
+  '/how-it-works',
+  '/business-types',
+  '/pricing',
+  '/check',
+  '/tools',
+  '/tools/website-check',
+  '/tools/domain-check',
+  '/tools/brand-colours',
+  '/tools/email-signature',
+  '/contact',
+  '/about',
+  '/privacy',
+  '/terms',
+];
 
 export const GET: APIRoute = async () => {
   const [models, listings] = await Promise.all([getBusinessModels(), getDirectoryListings()]);

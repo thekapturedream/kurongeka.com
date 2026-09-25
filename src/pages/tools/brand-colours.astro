@@ -1,0 +1,641 @@
+---
+import Button from '@/components/ui/Button.astro';
+import Icon from '@/components/ui/Icon.astro';
+import ToolLayout from '@/layouts/ToolLayout.astro';
+import {
+  PRESETS,
+  cssVariables,
+  derivePalette,
+  normaliseHex,
+  paletteChecks,
+  textOn,
+  type ContrastGrade,
+  type Palette,
+} from '@/lib/domain/colour';
+import { cachePage } from '@/lib/http';
+
+export const prerender = false;
+cachePage(Astro, { maxAge: 86400 });
+
+const params = Astro.url.searchParams;
+const customHex = normaliseHex(params.get('colour') ?? '');
+const presetName = params.get('preset');
+const preset = PRESETS.find((p) => p.name === presetName) ?? (customHex ? null : PRESETS[0]);
+const palette: Palette = (customHex ? derivePalette(customHex) : null) ?? preset ?? PRESETS[0]!;
+const checks = paletteChecks(palette);
+const onAccent = textOn(palette.accent, palette.ink);
+
+const SWATCHES = [
+  { key: 'ink', name: 'Ink', use: 'Headings, body text, dark sections' },
+  { key: 'accent', name: 'Brand colour', use: 'Buttons and highlights, used sparingly' },
+  { key: 'surface', name: 'Background', use: 'Page and card backgrounds' },
+  { key: 'muted', name: 'Secondary', use: 'Supporting text and fine print' },
+] as const;
+
+const gradeTone = (grade: ContrastGrade) => (grade === 'Fails' ? 'fail' : grade === 'Large text only' ? 'warn' : 'pass');
+const style = `--p-ink: ${palette.ink}; --p-accent: ${palette.accent}; --p-surface: ${palette.surface}; --p-muted: ${palette.muted}; --p-on-accent: ${onAccent};`;
+---
+
+<ToolLayout
+  slug="brand-colours"
+  title="Brand colours"
+  lead="Pick a starting palette or enter your own brand colour. You get a four-colour system and a contrast check against the accessibility rules (WCAG 2.2)."
+  description="Free brand colour palette builder with WCAG contrast checker. Enter your brand colour and get a four-colour system you can copy as CSS."
+>
+  <div class="colour-tool" data-colour-tool style={style}>
+    <form method="get" action="/tools/brand-colours" class="controls" data-colour-form>
+      <fieldset class="field-inline">
+        <legend class="field-label">Start from a palette</legend>
+        <div class="presets">
+          {
+            PRESETS.map((p) => (
+              <label class="preset">
+                <input type="radio" name="preset" value={p.name} checked={!customHex && preset?.name === p.name} data-preset={JSON.stringify(p)} />
+                <span class="preset-dots" aria-hidden="true">
+                  <span style={`background:${p.ink}`} />
+                  <span style={`background:${p.accent}`} />
+                  <span style={`background:${p.surface}`} />
+                </span>
+                <span class="preset-name">{p.name}</span>
+              </label>
+            ))
+          }
+        </div>
+      </fieldset>
+
+      <div class="custom">
+        <label class="field-label" for="colour">Or use your own brand colour</label>
+        <div class="custom-row">
+          <input
+            type="color"
+            class="picker"
+            value={customHex ?? palette.accent}
+            aria-label="Pick a colour"
+            data-picker
+          />
+          <input
+            class="input hex"
+            id="colour"
+            name="colour"
+            value={customHex ?? ''}
+            placeholder="#1D6B45"
+            maxlength={7}
+            autocomplete="off"
+            spellcheck="false"
+            data-hex
+          />
+        </div>
+        <p class="field-error" data-hex-error hidden>Enter a colour as a hex code, like #1D6B45.</p>
+      </div>
+
+      <noscript>
+        <Button type="submit">Show palette</Button>
+      </noscript>
+    </form>
+
+    <div class="output" aria-live="polite">
+      <ul class="swatches" role="list">
+        {
+          SWATCHES.map((s) => (
+            <li class="swatch">
+              <span class="swatch-chip" style={`background: var(--p-${s.key})`} aria-hidden="true" />
+              <span class="swatch-text">
+                <span class="swatch-name">{s.name}</span>
+                <span class="swatch-hex" data-hex-out={s.key}>
+                  {palette[s.key]}
+                </span>
+                <span class="caption">{s.use}</span>
+              </span>
+              <button type="button" class="icon-button" data-copy-hex={s.key} aria-label={`Copy ${s.name} colour`}>
+                <Icon name="copy" />
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="preview" aria-label="Preview">
+        <div class="preview-light">
+          <p class="preview-eyebrow">Preview</p>
+          <p class="preview-title">Your business, properly set up.</p>
+          <p class="preview-body">This is how body text and supporting text look on your background.</p>
+          <span class="preview-button">Book now</span>
+        </div>
+        <div class="preview-dark">
+          <p class="preview-title">A dark section</p>
+          <p class="preview-highlight">With your brand colour as a highlight.</p>
+        </div>
+      </div>
+
+      <div class="contrast">
+        <h2 class="h4">Contrast check</h2>
+        <p class="small muted">Normal text needs 4.5:1 to pass (AA). Large text needs 3:1.</p>
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Pairing</th>
+              <th scope="col">Sample</th>
+              <th scope="col">Ratio</th>
+              <th scope="col">Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              checks.map((c, i) => (
+                <tr data-check={i}>
+                  <th scope="row" data-check-use>
+                    {c.use}
+                  </th>
+                  <td>
+                    <span class="sample" data-check-sample style={`color:${c.foreground};background:${c.background}`}>
+                      Aa
+                    </span>
+                  </td>
+                  <td class="ratio" data-check-ratio>
+                    {c.ratio.toFixed(2)}:1
+                  </td>
+                  <td>
+                    <span class:list={['grade', `grade-${gradeTone(c.grade)}`]} data-check-grade>
+                      {c.grade}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="export">
+        <div class="export-head">
+          <h2 class="h4">Use it on your site</h2>
+          <button type="button" class="btn-copy" data-copy-css>
+            <Icon name="copy" />
+            <span data-copy-css-label>Copy CSS</span>
+          </button>
+        </div>
+        <pre><code data-css>{cssVariables(palette)}</code></pre>
+      </div>
+    </div>
+  </div>
+</ToolLayout>
+
+<script>
+  import {
+    cssVariables,
+    derivePalette,
+    normaliseHex,
+    paletteChecks,
+    textOn,
+    type ContrastGrade,
+    type Palette,
+  } from '@/lib/domain/colour';
+  import { track } from '@/scripts/analytics';
+
+  const root = document.querySelector<HTMLElement>('[data-colour-tool]');
+  const form = root?.querySelector<HTMLFormElement>('[data-colour-form]');
+  const hexInput = root?.querySelector<HTMLInputElement>('[data-hex]');
+  const picker = root?.querySelector<HTMLInputElement>('[data-picker]');
+  const hexError = root?.querySelector<HTMLElement>('[data-hex-error]');
+  let current: Palette | null = null;
+
+  const tone = (grade: ContrastGrade) => (grade === 'Fails' ? 'fail' : grade === 'Large text only' ? 'warn' : 'pass');
+
+  function render(palette: Palette): void {
+    if (!root) return;
+    current = palette;
+    const onAccent = textOn(palette.accent, palette.ink);
+    root.style.setProperty('--p-ink', palette.ink);
+    root.style.setProperty('--p-accent', palette.accent);
+    root.style.setProperty('--p-surface', palette.surface);
+    root.style.setProperty('--p-muted', palette.muted);
+    root.style.setProperty('--p-on-accent', onAccent);
+    root.querySelectorAll<HTMLElement>('[data-hex-out]').forEach((el) => {
+      const key = el.dataset['hexOut'] as keyof Palette;
+      el.textContent = palette[key];
+    });
+    paletteChecks(palette).forEach((check, i) => {
+      const row = root.querySelector<HTMLElement>(`[data-check="${i}"]`);
+      if (!row) return;
+      const sample = row.querySelector<HTMLElement>('[data-check-sample]');
+      const ratio = row.querySelector<HTMLElement>('[data-check-ratio]');
+      const grade = row.querySelector<HTMLElement>('[data-check-grade]');
+      if (sample) {
+        sample.style.color = check.foreground;
+        sample.style.background = check.background;
+      }
+      if (ratio) ratio.textContent = `${check.ratio.toFixed(2)}:1`;
+      if (grade) {
+        grade.textContent = check.grade;
+        grade.className = `grade grade-${tone(check.grade)}`;
+      }
+    });
+    const css = root.querySelector<HTMLElement>('[data-css]');
+    if (css) css.textContent = cssVariables(palette);
+  }
+
+  function updateUrl(params: Record<string, string>): void {
+    const url = new URL(location.href);
+    url.search = new URLSearchParams(params).toString();
+    history.replaceState(null, '', url);
+  }
+
+  function applyCustom(value: string): void {
+    const hex = normaliseHex(value);
+    if (hexError) hexError.hidden = Boolean(hex) || value.trim() === '';
+    if (!hex) return;
+    const palette = derivePalette(hex);
+    if (!palette) return;
+    root?.querySelectorAll<HTMLInputElement>('input[name="preset"]').forEach((r) => (r.checked = false));
+    if (picker) picker.value = hex.toLowerCase();
+    render(palette);
+    updateUrl({ colour: hex });
+    track('tool_brand_colours_custom');
+  }
+
+  form?.addEventListener('submit', (event) => event.preventDefault());
+
+  root?.querySelectorAll<HTMLInputElement>('input[name="preset"]').forEach((radio) => {
+    radio.addEventListener('change', () => {
+      const data = radio.dataset['preset'];
+      if (!data) return;
+      const palette = JSON.parse(data) as Palette & { name: string };
+      if (hexInput) hexInput.value = '';
+      if (hexError) hexError.hidden = true;
+      if (picker) picker.value = palette.accent.toLowerCase();
+      render(palette);
+      updateUrl({ preset: palette.name });
+      track('tool_brand_colours_preset', { preset: palette.name });
+    });
+  });
+
+  picker?.addEventListener('input', () => {
+    if (hexInput) hexInput.value = picker.value.toUpperCase();
+    applyCustom(picker.value);
+  });
+
+  hexInput?.addEventListener('input', () => {
+    const value = hexInput.value.trim();
+    if (/^#?[0-9a-f]{6}$/i.test(value) || /^#?[0-9a-f]{3}$/i.test(value)) applyCustom(value);
+  });
+
+  hexInput?.addEventListener('change', () => applyCustom(hexInput.value));
+
+  async function copy(text: string, feedback?: HTMLElement | null, done = 'Copied'): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(text);
+      if (feedback) {
+        const original = feedback.textContent;
+        feedback.textContent = done;
+        setTimeout(() => (feedback.textContent = original), 1600);
+      }
+    } catch {
+      // Clipboard can be blocked; the values stay visible and selectable.
+    }
+  }
+
+  root?.querySelectorAll<HTMLButtonElement>('[data-copy-hex]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const key = button.dataset['copyHex'] as keyof Palette;
+      const value = current?.[key] ?? root.querySelector(`[data-hex-out="${key}"]`)?.textContent?.trim();
+      if (value) void copy(value, root.querySelector<HTMLElement>(`[data-hex-out="${key}"]`), 'Copied');
+    });
+  });
+
+  root?.querySelector<HTMLButtonElement>('[data-copy-css]')?.addEventListener('click', () => {
+    const css = root.querySelector('[data-css]')?.textContent ?? '';
+    void copy(css, root.querySelector<HTMLElement>('[data-copy-css-label]'), 'Copied');
+    track('tool_brand_colours_copy_css');
+  });
+</script>
+
+<style>
+  .colour-tool {
+    display: grid;
+    gap: var(--space-7);
+  }
+
+  .controls {
+    display: grid;
+    gap: var(--space-6);
+    align-content: start;
+  }
+
+  .presets {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .preset {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 3rem;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+  }
+
+  .preset input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+
+  .preset:has(input:checked) {
+    border-color: var(--color-ink);
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+    background: var(--color-paper-alt);
+  }
+
+  .preset:has(input:focus-visible) {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .preset-dots {
+    display: inline-flex;
+  }
+
+  .preset-dots span {
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 50%;
+    border: 1px solid rgb(10 14 15 / 0.15);
+  }
+
+  .preset-dots span + span {
+    margin-left: -0.35rem;
+  }
+
+  .preset-name {
+    font-size: var(--text-small);
+    font-weight: var(--weight-medium);
+    line-height: 1.25;
+  }
+
+  .custom {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .custom-row {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .picker {
+    width: var(--control-height);
+    height: var(--control-height);
+    padding: 0.2rem;
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-paper);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .hex {
+    font-variant-numeric: tabular-nums;
+    text-transform: uppercase;
+    max-width: 12rem;
+  }
+
+  .output {
+    display: grid;
+    gap: var(--space-6);
+    min-width: 0;
+  }
+
+  .swatches {
+    display: grid;
+    gap: var(--space-3);
+    list-style: none;
+    padding: 0;
+  }
+
+  .swatch {
+    display: grid;
+    grid-template-columns: 3.5rem 1fr auto;
+    gap: var(--space-4);
+    align-items: center;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  .swatch-chip {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgb(10 14 15 / 0.12);
+  }
+
+  .swatch-text {
+    display: grid;
+    gap: 0.1rem;
+    min-width: 0;
+  }
+
+  .swatch-name {
+    font-weight: var(--weight-semibold);
+  }
+
+  .swatch-hex {
+    font-variant-numeric: tabular-nums;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    font-size: var(--text-small);
+  }
+
+  .icon-button,
+  .btn-copy {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-paper);
+    font-weight: var(--weight-semibold);
+    font-size: var(--text-small);
+  }
+
+  .icon-button:hover,
+  .btn-copy:hover {
+    border-color: var(--color-ink);
+  }
+
+  .preview {
+    display: grid;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+  }
+
+  .preview-light {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: start;
+    padding: var(--space-6);
+    background: var(--p-surface);
+    color: var(--p-ink);
+  }
+
+  .preview-eyebrow {
+    font-size: var(--text-caption);
+    font-weight: var(--weight-semibold);
+    color: var(--p-muted);
+  }
+
+  .preview-title {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-heading);
+    line-height: var(--leading-snug);
+  }
+
+  .preview-body {
+    color: var(--p-muted);
+  }
+
+  .preview-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 var(--space-5);
+    border-radius: var(--radius-sm);
+    background: var(--p-accent);
+    color: var(--p-on-accent);
+    font-weight: var(--weight-semibold);
+  }
+
+  .preview-dark {
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-6);
+    background: var(--p-ink);
+    color: var(--color-paper);
+  }
+
+  .preview-highlight {
+    color: var(--p-accent);
+    font-weight: var(--weight-semibold);
+  }
+
+  .contrast {
+    display: grid;
+    gap: var(--space-2);
+    overflow-x: auto;
+  }
+
+  .contrast table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-small);
+    margin-top: var(--space-2);
+  }
+
+  .contrast th,
+  .contrast td {
+    padding: var(--space-3) var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .contrast thead th {
+    font-size: var(--text-caption);
+    color: var(--color-text-muted);
+    font-weight: var(--weight-semibold);
+  }
+
+  .contrast tbody th {
+    font-weight: var(--weight-medium);
+  }
+
+  .sample {
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgb(10 14 15 / 0.12);
+    font-weight: var(--weight-semibold);
+  }
+
+  .ratio {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .grade {
+    display: inline-block;
+    padding: 0.15rem var(--space-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-caption);
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+  }
+
+  .grade-pass {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+  }
+
+  .grade-warn {
+    background: var(--color-warning-bg);
+    color: var(--color-warning);
+  }
+
+  .grade-fail {
+    background: var(--color-error-bg);
+    color: var(--color-error);
+  }
+
+  .export {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .export-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .export pre {
+    overflow-x: auto;
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-size: var(--text-small);
+    line-height: 1.6;
+  }
+
+  @media (min-width: 480px) {
+    .presets {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .colour-tool {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+      gap: var(--space-9);
+      align-items: start;
+    }
+    .controls {
+      position: sticky;
+      top: calc(var(--header-height) + var(--space-5));
+    }
+  }
+</style>

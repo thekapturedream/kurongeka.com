@@ -1,0 +1,117 @@
+---
+/**
+ * One labelled form control with hint and error, wired for screen readers.
+ * Server-rendered forms pass `value` and `error` back after a failed POST.
+ */
+import type { HTMLAttributes } from 'astro/types';
+
+interface Option {
+  value: string;
+  label: string;
+}
+
+interface Props {
+  name: string;
+  label: string;
+  as?: 'input' | 'textarea' | 'select';
+  type?: 'text' | 'email' | 'tel' | 'url' | 'password' | 'number' | 'search';
+  value?: string;
+  error?: string | undefined;
+  hint?: string | undefined;
+  required?: boolean;
+  optional?: boolean;
+  autocomplete?: HTMLAttributes<'input'>['autocomplete'];
+  maxlength?: number;
+  minlength?: number;
+  rows?: number;
+  placeholder?: string;
+  inputmode?: HTMLAttributes<'input'>['inputmode'];
+  options?: readonly Option[];
+  emptyOption?: string;
+  id?: string;
+}
+
+const {
+  name,
+  label,
+  as = 'input',
+  type = 'text',
+  value = '',
+  error,
+  hint,
+  required = false,
+  optional = false,
+  autocomplete,
+  maxlength,
+  minlength,
+  rows = 5,
+  placeholder,
+  inputmode,
+  options = [],
+  emptyOption,
+  id = name,
+} = Astro.props;
+
+const hintId = hint ? `${id}-hint` : undefined;
+const errorId = `${id}-error`;
+const describedBy = [hintId, error ? errorId : undefined].filter(Boolean).join(' ') || undefined;
+const invalid = error ? 'true' : undefined;
+---
+
+<div class="field">
+  <label class="field-label" for={id}>
+    {label}
+    {optional && <span class="muted"> (optional)</span>}
+  </label>
+  {
+    as === 'textarea' ? (
+      <textarea
+        class="textarea"
+        id={id}
+        name={name}
+        rows={rows}
+        required={required}
+        maxlength={maxlength}
+        placeholder={placeholder}
+        aria-describedby={describedBy}
+        aria-invalid={invalid}
+        set:text={value}
+      />
+    ) : as === 'select' ? (
+      <select
+        class="select"
+        id={id}
+        name={name}
+        required={required}
+        autocomplete={autocomplete}
+        aria-describedby={describedBy}
+        aria-invalid={invalid}
+      >
+        {emptyOption !== undefined && <option value="">{emptyOption}</option>}
+        {options.map((o) => (
+          <option value={o.value} selected={o.value === value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    ) : (
+      <input
+        class="input"
+        id={id}
+        name={name}
+        type={type}
+        value={value}
+        required={required}
+        autocomplete={autocomplete}
+        maxlength={maxlength}
+        minlength={minlength}
+        placeholder={placeholder}
+        inputmode={inputmode}
+        aria-describedby={describedBy}
+        aria-invalid={invalid}
+      />
+    )
+  }
+  {hint && <p class="field-hint" id={hintId}>{hint}</p>}
+  {error && <p class="field-error" id={errorId}>{error}</p>}
+</div>

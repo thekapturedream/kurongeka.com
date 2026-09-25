@@ -1,0 +1,394 @@
+---
+import Field from '@/components/forms/Field.astro';
+import ScoreCard from '@/components/sections/ScoreCard.astro';
+import Button from '@/components/ui/Button.astro';
+import StatusBadge from '@/components/ui/StatusBadge.astro';
+import ToolLayout from '@/layouts/ToolLayout.astro';
+import { PILLAR_LABEL, PILLAR_SUMMARY, type Pillar, type SiteCheck } from '@/lib/domain/website-check';
+import { clientKey, noStore } from '@/lib/http';
+import { allowToolRun } from '@/lib/services/rate-limit';
+import { runWebsiteCheck, type WebsiteCheckResult } from '@/lib/services/website-check';
+
+export const prerender = false;
+noStore(Astro);
+
+const input = (Astro.url.searchParams.get('url') ?? '').trim().slice(0, 300);
+let result: WebsiteCheckResult | null = null;
+let limited = false;
+
+if (input) {
+  if (!allowToolRun(clientKey(Astro.request, () => Astro.clientAddress))) {
+    limited = true;
+    Astro.response.status = 429;
+  } else {
+    result = await runWebsiteCheck(input);
+    if (!result.ok) Astro.response.status = result.reason === 'invalid' ? 400 : 200;
+  }
+}
+
+const report = result?.ok ? result.report : null;
+const failure = result && !result.ok ? result : null;
+
+const FAILURE_MESSAGE: Record<string, string> = {
+  invalid: 'Enter a website address, like example.co.uk.',
+  blocked: 'We can only check public websites.',
+  unreachable: 'We could not reach that website. Check the address is right, or the site may be down.',
+  timeout: 'That website took too long to respond. It may be down or very slow.',
+  'not-html': 'That address is not a web page. Try the home page instead.',
+  'error-status': 'That page returned an error.',
+};
+
+const pillars: Pillar[] = ['found', 'trusted', 'fast'];
+const order: Record<SiteCheck['status'], number> = { fail: 0, warn: 1, pass: 2 };
+const byPillar = (pillar: Pillar) =>
+  (report?.checks ?? []).filter((c) => c.pillar === pillar).sort((a, b) => order[a.status] - order[b.status]);
+const toFix = (report?.checks ?? []).filter((c) => c.status !== 'pass').sort((a, b) => order[a.status] - order[b.status]);
+
+const summary = report
+  ? [
+      `Website check for ${report.url}: ${report.score.overall}/100 (Found ${report.score.found}, Trusted ${report.score.trusted}, Fast ${report.score.fast}).`,
+      toFix.length ? `To fix: ${toFix.map((c) => c.title).join('; ')}.` : 'No problems found.',
+      report.platform ? `Built with ${report.platform}.` : '',
+    ]
+      .filter(Boolean)
+      .join(' ')
+  : '';
+
+const checkedAt = report
+  ? new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/London' }).format(
+      new Date(report.checkedAt),
+    )
+  : '';
+---
+
+<ToolLayout
+  slug="website-check"
+  title="Website check"
+  lead="See how a website does on Google, how much it earns trust, and how fast it loads, with a plain-English fix for every problem."
+  description="Free website check for small businesses: search basics, trust signals and speed, with a fix for each problem. From Kurongeka."
+  noindex={Boolean(input)}
+  ctaTitle="Want these fixed for you?"
+  ctaBody="Every Kurongeka launch passes this check before it goes live, and Run plans keep it that way."
+>
+  <form method="get" action="/tools/website-check" class="check-form" data-website-form role="search">
+    <div class="check-row">
+      <Field
+        name="url"
+        label="Website address"
+        inputmode="url"
+        autocomplete="url"
+        placeholder="yourbusiness.co.uk"
+        required
+        maxlength={300}
+        value={input}
+        error={failure?.reason === 'invalid' ? FAILURE_MESSAGE['invalid'] : undefined}
+      />
+      <Button type="submit" size="lg" icon="arrow-right" track="tool_website_check_run" attrs={{ 'data-submit': '' }}>
+        Check website
+      </Button>
+    </div>
+    <p class="small muted">
+      We look at the one page you enter, as a visitor would. Nothing is stored except anonymous usage counts.
+    </p>
+  </form>
+
+  {
+    limited && (
+      <p class="notice notice-error result-notice" role="alert">
+        You have run a lot of checks. Please wait a few minutes and try again.
+      </p>
+    )
+  }
+
+  {
+    failure && failure.reason !== 'invalid' && (
+      <p class="notice notice-error result-notice" role="alert">
+        {FAILURE_MESSAGE[failure.reason]}
+        {failure.reason === 'error-status' && failure.status ? ` (HTTP ${failure.status})` : ''}
+      </p>
+    )
+  }
+
+  {
+    report && (
+      <div class="report" data-track-view="tool_website_check_result" data-track-param-score={String(report.score.overall)}>
+        <header class="report-head">
+          <p class="label">Results</p>
+          <h2 class="h2 report-host">{report.host}</h2>
+          <p class="small muted">
+            Checked {checkedAt} (UK time){report.platform ? ` · Built with ${report.platform}` : ''}
+          </p>
+        </header>
+
+        <div class="report-summary">
+          <ScoreCard
+            score={report.score}
+            scoreLabel="Website score"
+            pillars={pillars.map((p) => ({ key: p, label: PILLAR_LABEL[p], value: report.score[p] }))}
+            footer="Scored on the checks below. Each is worth the same."
+            headingLevel="p"
+          />
+          <div class="priorities">
+            <h3 class="h3">{toFix.length === 0 ? 'Nothing to fix. Well done.' : `${toFix.length} things to improve`}</h3>
+            {toFix.length > 0 && (
+              <ol class="priority-list" role="list">
+                {toFix.slice(0, 4).map((c) => (
+                  <li>
+                    <StatusBadge status={c.status} />
+                    <span>
+                      <strong>{c.title}.</strong> {c.fix ?? c.detail}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+        </div>
+
+        {pillars.map((pillar) => (
+          <section class="pillar-section" aria-labelledby={`pillar-${pillar}`}>
+            <div class="pillar-head">
+              <h3 id={`pillar-${pillar}`} class="h3">
+                {PILLAR_LABEL[pillar]} <span class="muted">{report.score[pillar]}/100</span>
+              </h3>
+              <p class="muted">{PILLAR_SUMMARY[pillar]}</p>
+            </div>
+            <ul class="checks" role="list">
+              {byPillar(pillar).map((c) => (
+                <li class="check-item">
+                  <StatusBadge status={c.status} />
+                  <div class="check-text">
+                    <p class="check-title">{c.title}</p>
+                    <p class="muted">{c.detail}</p>
+                    {c.fix && <p class="check-fix">{c.fix}</p>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+
+        <section class="fix-card form-card" aria-labelledby="fix-title">
+          <div class="fix-copy">
+            <h3 id="fix-title" class="h3">Get these fixed.</h3>
+            <p class="muted">
+              Send us the results and a Kurongeka manager will reply within one working day with what it would take, at a
+              fixed price.
+            </p>
+          </div>
+          <form method="post" action="/contact" class="fix-form" novalidate>
+            <input type="hidden" name="topic" value="website-check" />
+            <input type="hidden" name="website" value={report.url} />
+            <input type="hidden" name="details" value={summary} />
+            <div class="field-row">
+              <Field name="name" label="Your name" autocomplete="name" required maxlength={80} id="fix-name" />
+              <Field name="email" label="Email" type="email" autocomplete="email" required maxlength={254} id="fix-email" />
+            </div>
+            <Field name="phone" label="Phone or WhatsApp" type="tel" autocomplete="tel" optional maxlength={32} id="fix-phone" />
+            <div class="honeypot" aria-hidden="true">
+              <label>
+                Leave this empty <input type="text" name="company_website" tabindex="-1" autocomplete="off" />
+              </label>
+            </div>
+            <div class="form-actions">
+              <Button type="submit" icon="arrow-right" track="tool_website_check_fix">
+                Send me a fixed price
+              </Button>
+              <Button href="/pricing" variant="text" icon="arrow-right">
+                See launch packages
+              </Button>
+            </div>
+          </form>
+        </section>
+      </div>
+    )
+  }
+
+  {
+    !report && (
+      <section class="explainer" aria-labelledby="what-we-check">
+        <h2 id="what-we-check" class="h3">What the check looks at</h2>
+        <div class="explainer-grid">
+          {pillars.map((p) => (
+            <div>
+              <h3 class="h4">{PILLAR_LABEL[p]}</h3>
+              <p class="muted">{PILLAR_SUMMARY[p]}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+</ToolLayout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-website-form]');
+  form?.addEventListener('submit', () => {
+    const button = form.querySelector<HTMLButtonElement>('[data-submit]');
+    if (!button) return;
+    button.setAttribute('aria-disabled', 'true');
+    const label = button.querySelector('span');
+    if (label) label.textContent = 'Checking…';
+    form.setAttribute('aria-busy', 'true');
+  });
+</script>
+
+<style>
+  .check-form {
+    display: grid;
+    gap: var(--space-3);
+    max-width: 48rem;
+  }
+
+  .check-row {
+    display: grid;
+    gap: var(--space-3);
+    align-items: end;
+  }
+
+  .result-notice {
+    margin-top: var(--space-6);
+    max-width: 48rem;
+  }
+
+  .report {
+    display: grid;
+    gap: var(--space-8);
+    margin-top: var(--space-8);
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .report-head {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .report-host {
+    overflow-wrap: anywhere;
+  }
+
+  .report-summary {
+    display: grid;
+    gap: var(--space-6);
+    align-items: start;
+  }
+
+  .priorities {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .priority-list {
+    display: grid;
+    gap: var(--space-4);
+    list-style: none;
+    padding: 0;
+  }
+
+  .priority-list li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-3);
+    align-items: start;
+  }
+
+  .pillar-section {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .pillar-head {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  .checks {
+    list-style: none;
+    padding: 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .check-item {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: var(--space-4);
+    padding-block: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .check-text {
+    display: grid;
+    gap: var(--space-1);
+    max-width: var(--measure);
+  }
+
+  .check-title {
+    font-weight: var(--weight-semibold);
+  }
+
+  .check-fix {
+    font-size: var(--text-small);
+  }
+
+  .check-fix::before {
+    content: 'Fix: ';
+    font-weight: var(--weight-semibold);
+  }
+
+  .fix-card {
+    background: var(--color-bg-alt);
+  }
+
+  .fix-copy {
+    display: grid;
+    gap: var(--space-2);
+    max-width: 40rem;
+  }
+
+  .fix-form {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .explainer {
+    display: grid;
+    gap: var(--space-5);
+    margin-top: var(--space-8);
+    padding-top: var(--space-7);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .explainer-grid {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .explainer-grid > div {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  @media (min-width: 640px) {
+    .check-row {
+      grid-template-columns: 1fr auto;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .explainer-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .report-summary {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: var(--space-8);
+    }
+    .fix-card {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: var(--space-8);
+    }
+  }
+</style>

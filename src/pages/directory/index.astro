@@ -38,7 +38,10 @@ const empty = listings.data.length === 0;
               Businesses we launch can choose to be listed here, with a link to their site and WhatsApp. Launching soon?
               Your business could be one of the first.
             </p>
-            <p>
+            <p class="status-actions">
+              <Button href="/directory/apply" variant="text" icon="arrow-right" track="cta_directory_apply">
+                Apply to be listed
+              </Button>
               <Button href="/check" variant="text" icon="arrow-right" track="cta_directory_check">
                 Take the free check
               </Button>
@@ -68,6 +71,15 @@ const empty = listings.data.length === 0;
               </li>
             ))}
           </ul>
+        )
+      }
+      {
+        listings.ok && !empty && (
+          <p class="apply">
+            <Button href="/directory/apply" variant="text" icon="arrow-right" track="cta_directory_apply">
+              List your business
+            </Button>
+          </p>
         )
       }
     </div>
@@ -126,6 +138,16 @@ const empty = listings.data.length === 0;
   .listing-text {
     display: grid;
     gap: var(--space-1);
+  }
+
+  .status-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+  }
+
+  .apply {
+    margin-top: var(--space-6);
   }
 
   @media (min-width: 768px) {

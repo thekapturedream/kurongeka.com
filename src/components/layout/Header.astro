@@ -34,6 +34,7 @@ const isCurrent = (href: string) => current === href || current.startsWith(`${hr
     </nav>
 
     <div class="header-actions">
+      <a href="/account" class="header-login" aria-current={isCurrent('/account') ? 'page' : undefined}>Log in</a>
       <Button href="/check" variant={tone === 'ink' ? 'accent' : 'primary'} track="cta_header_check" class="header-cta">
         Free check
       </Button>
@@ -56,11 +57,17 @@ const isCurrent = (href: string) => current === href || current.startsWith(`${hr
                   </li>
                 ))
               }
+              <li><a href="/contact" aria-current={isCurrent('/contact') ? 'page' : undefined}>Contact</a></li>
             </ul>
           </nav>
-          <Button href="/check" variant="accent" size="lg" block track="cta_menu_check">
-            Take the free check
-          </Button>
+          <div class="drawer-actions">
+            <Button href="/check" variant="accent" size="lg" block track="cta_menu_check">
+              Take the free check
+            </Button>
+            <Button href="/account" variant="secondary" size="lg" block icon="user" iconPosition="start">
+              Client log in
+            </Button>
+          </div>
         </div>
       </details>
     </div>
@@ -163,6 +170,26 @@ const isCurrent = (href: string) => current === href || current.startsWith(`${hr
     display: none;
   }
 
+  .header-login {
+    display: none;
+    font-size: var(--text-small);
+    font-weight: var(--weight-semibold);
+    text-decoration: none;
+    padding: var(--space-2) var(--space-1);
+    white-space: nowrap;
+  }
+
+  .header-login:hover,
+  .header-login[aria-current='page'] {
+    text-decoration: underline;
+    text-underline-offset: 0.3em;
+  }
+
+  .drawer-actions {
+    display: grid;
+    gap: var(--space-3);
+  }
+
   .nav-mobile summary {
     list-style: none;
     display: grid;
@@ -244,6 +271,18 @@ const isCurrent = (href: string) => current === href || current.startsWith(`${hr
     }
     .nav-mobile {
       display: none;
+    }
+    .header-login {
+      display: inline-block;
+    }
+  }
+
+  @media (min-width: 1024px) and (max-width: 1199px) {
+    .header-inner {
+      gap: var(--space-5);
+    }
+    .nav-desktop ul {
+      gap: var(--space-5);
     }
   }
 </style>

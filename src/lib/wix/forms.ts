@@ -1,4 +1,4 @@
-import { WIX_CHECK_FORM_ID } from 'astro:env/server';
+import { WIX_CHECK_FORM_ID, WIX_ENQUIRY_FORM_ID } from 'astro:env/server';
 import { wixLeadClient } from './client';
 
 /**
@@ -29,6 +29,36 @@ export async function submitCheckForm(fields: CheckFormFields): Promise<{ submis
   if (!fields.email) delete values['email'];
   const submission = await wixLeadClient().submissions.createSubmission({
     formId: WIX_CHECK_FORM_ID,
+    submissions: values,
+  });
+  return { submissionId: submission._id ?? null };
+}
+
+/**
+ * Field targets on the "Kurongeka enquiry" Wix form. One form for calls, questions, website fixes,
+ * directory applications and launch briefs; `topic` tells staff which is which.
+ */
+export interface EnquiryFormFields {
+  first_name: string;
+  email: string;
+  phone?: string | undefined;
+  company?: string | undefined;
+  topic: string;
+  message?: string | undefined;
+  website?: string | undefined;
+  preferred_time?: string | undefined;
+  details?: string | undefined;
+  source_page?: string | undefined;
+  subscribe: boolean;
+}
+
+export async function submitEnquiryForm(fields: EnquiryFormFields): Promise<{ submissionId: string | null }> {
+  const values: Record<string, string | boolean> = {};
+  for (const [key, value] of Object.entries(fields)) {
+    if (value !== undefined && value !== '') values[key] = value;
+  }
+  const submission = await wixLeadClient().submissions.createSubmission({
+    formId: WIX_ENQUIRY_FORM_ID,
     submissions: values,
   });
   return { submissionId: submission._id ?? null };

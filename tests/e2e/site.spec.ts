@@ -5,7 +5,27 @@ import { expect, test, type Page } from '@playwright/test';
  * Pages read live (public) Wix content, so they need network access.
  */
 
-const PAGES = ['/', '/how-it-works', '/business-types', '/pricing', '/check', '/about', '/directory', '/privacy', '/terms'];
+const PAGES = [
+  '/',
+  '/how-it-works',
+  '/business-types',
+  '/pricing',
+  '/check',
+  '/about',
+  '/directory',
+  '/directory/apply',
+  '/contact',
+  '/tools',
+  '/tools/website-check',
+  '/tools/domain-check',
+  '/tools/brand-colours',
+  '/tools/email-signature',
+  '/account/login',
+  '/account/register',
+  '/account/reset',
+  '/privacy',
+  '/terms',
+];
 
 test.describe('pages', () => {
   for (const path of PAGES) {
@@ -133,5 +153,82 @@ test.describe('API', () => {
 
   test('only accepts POST', async ({ request }) => {
     expect((await request.get('/api/check')).status()).toBe(405);
+  });
+});
+
+test.describe('Contact', () => {
+  test('switches between a call and a question without JavaScript tricks', async ({ page }) => {
+    await page.goto('/contact');
+    await expect(page.getByRole('link', { name: 'Book a free call' })).toHaveAttribute('aria-current', 'page');
+    await expect(page.getByLabel('Preferred day')).toBeVisible();
+    await page.getByRole('link', { name: 'Ask a question' }).click();
+    await expect(page.getByLabel('Your question')).toBeVisible();
+    await expect(page.getByLabel('Preferred day')).toHaveCount(0);
+  });
+
+  test('validates on the server and keeps what was typed', async ({ page }) => {
+    await page.goto('/contact?topic=question');
+    await page.getByLabel('Your name').fill('Test Person');
+    await page.getByLabel('Email').fill('not-an-email');
+    await page.getByRole('button', { name: 'Send' }).click();
+    await expect(page.getByText('Please check the highlighted fields.')).toBeVisible();
+    await expect(page.getByText('Enter a valid email address')).toBeVisible();
+    await expect(page.getByLabel('Your name')).toHaveValue('Test Person');
+  });
+});
+
+test.describe('Free tools', () => {
+  test('brand colours updates the palette from a preset or a custom colour', async ({ page }) => {
+    await page.goto('/tools/brand-colours');
+    await page.locator('label.preset', { hasText: 'Ocean Calm' }).click();
+    await expect(page.locator('[data-hex-out="accent"]')).toHaveText('#00B4D8');
+    await page.getByLabel('Or use your own brand colour').fill('#1D6B45');
+    await expect(page.locator('[data-hex-out="accent"]')).toHaveText('#1D6B45');
+    await expect(page.locator('[data-css]')).toContainText('--brand-accent: #1D6B45;');
+  });
+
+  test('email signature previews as you type', async ({ page }) => {
+    await page.goto('/tools/email-signature');
+    await page.getByLabel('Your name').fill('Rudo Chikore');
+    await expect(page.locator('[data-signature-preview]')).toContainText('Rudo Chikore');
+  });
+
+  test('website check rejects private addresses', async ({ page }) => {
+    await page.goto('/tools/website-check?url=http%3A%2F%2F169.254.169.254%2F');
+    await expect(page.getByText('Enter a website address, like example.co.uk.')).toBeVisible();
+  });
+});
+
+test.describe('Client accounts', () => {
+  test('the account area asks visitors to log in', async ({ page }) => {
+    await page.goto('/account');
+    await expect(page).toHaveURL(/\/account\/login\?next=%2Faccount|\/account\/login\?next=\/account/);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Log in to your account.');
+  });
+
+  test('validates the login form before contacting Wix', async ({ page }) => {
+    await page.goto('/account/login');
+    await page.getByLabel('Email').fill('nope');
+    await page.getByRole('button', { name: 'Log in' }).click();
+    await expect(page.getByText('Enter a valid email address')).toBeVisible();
+  });
+
+  test('logging out only works as a POST', async ({ request }) => {
+    expect((await request.get('/account/logout')).status()).toBe(405);
+  });
+});
+
+test.describe('Navigation', () => {
+  test('header links to the tools and the client login', async ({ page, isMobile }) => {
+    await page.goto('/');
+    if (isMobile) {
+      await page.getByLabel('Menu').click();
+      const header = page.getByRole('banner');
+      await expect(header.getByRole('link', { name: 'Client log in' })).toBeVisible();
+      await expect(header.getByRole('link', { name: 'Free tools' })).toBeVisible();
+    } else {
+      await expect(page.locator('.header-login')).toBeVisible();
+      await expect(page.getByRole('navigation', { name: 'Main' }).first().getByRole('link', { name: 'Free tools' })).toBeVisible();
+    }
   });
 });

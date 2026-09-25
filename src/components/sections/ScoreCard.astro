@@ -1,26 +1,39 @@
 ---
 import { BAND_LABEL, band, type CheckScore } from '@/lib/domain/check';
 
+interface Pillar {
+  key: string;
+  label: string;
+  value: number;
+}
+
 interface Props {
-  score: CheckScore;
+  /** A Kurongeka Check score, or any 0 to 100 score with its own pillars. */
+  score: CheckScore | { overall: number };
+  pillars?: readonly Pillar[];
+  scoreLabel?: string;
   caption?: string;
   footer?: string;
   headingLevel?: 'h2' | 'h3' | 'p';
 }
-const { score, caption, footer, headingLevel = 'p' } = Astro.props;
+const { score, pillars: customPillars, scoreLabel = 'Kurongeka score', caption, footer, headingLevel = 'p' } = Astro.props;
 const Heading = headingLevel;
-const pillars = [
-  { key: 'found', label: 'Found', value: score.found },
-  { key: 'trusted', label: 'Trusted', value: score.trusted },
-  { key: 'paid', label: 'Paid', value: score.paid },
-] as const;
+const pillars: readonly Pillar[] =
+  customPillars ??
+  ('found' in score
+    ? [
+        { key: 'found', label: 'Found', value: score.found },
+        { key: 'trusted', label: 'Trusted', value: score.trusted },
+        { key: 'paid', label: 'Paid', value: score.paid },
+      ]
+    : []);
 ---
 
 <figure class="score-card">
   {caption && <figcaption class="label">{caption}</figcaption>}
   <div class="score-head">
     <Heading class="score-number">
-      <span class="visually-hidden">Kurongeka score: </span>{score.overall}<span class="score-max">/100</span>
+      <span class="visually-hidden">{scoreLabel}: </span>{score.overall}<span class="score-max">/100</span>
     </Heading>
     <p class="score-band">{BAND_LABEL[band(score.overall)]}</p>
   </div>
@@ -119,7 +132,7 @@ const pillars = [
   }
 
   .pillar-value {
-    width: 2ch;
+    width: 3ch;
     text-align: right;
     font-variant-numeric: tabular-nums;
     font-weight: var(--weight-semibold);

@@ -1,0 +1,340 @@
+---
+import Field from '@/components/forms/Field.astro';
+import PageIntro from '@/components/layout/PageIntro.astro';
+import Button from '@/components/ui/Button.astro';
+import Segmented from '@/components/ui/Segmented.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { formatWhatsapp, site, whatsappUrl } from '@/config/site';
+import { ANY_DAY, CALL_WINDOWS, callDays, describeCallSlot, topicLabel, type EnquiryTopic } from '@/lib/domain/enquiry';
+import { clientKey, noStore, readForm } from '@/lib/http';
+import { breadcrumbLd } from '@/lib/seo';
+import { emptyEnquiry, handleEnquiryForm, type EnquiryFormState } from '@/lib/services/enquiry-form';
+
+export const prerender = false;
+noStore(Astro);
+
+const SWITCHABLE: EnquiryTopic[] = ['call', 'question'];
+const FORWARDED: EnquiryTopic[] = ['website-check', 'directory'];
+
+const requested = Astro.url.searchParams.get('topic');
+let topic: EnquiryTopic = requested === 'question' ? 'question' : 'call';
+
+let state: EnquiryFormState = { status: 'idle', values: emptyEnquiry({ topic }), errors: {} };
+
+if (Astro.request.method === 'POST') {
+  const key = clientKey(Astro.request, () => Astro.clientAddress);
+  const form = await readForm(Astro.request);
+  const postedTopic = form?.get('topic');
+  const allowed = [...SWITCHABLE, ...FORWARDED] as string[];
+  topic = typeof postedTopic === 'string' && allowed.includes(postedTopic) ? (postedTopic as EnquiryTopic) : 'question';
+  state = await handleEnquiryForm(form, key, { topic, sourcePage: '/contact' });
+  if (state.status === 'invalid' || state.status === 'failed' || state.status === 'limited') Astro.response.status = 400;
+}
+
+const { values, errors, status } = state;
+const days = [{ value: ANY_DAY, label: 'Any working day' }, ...callDays()];
+const isCall = topic === 'call';
+const isForwarded = FORWARDED.includes(topic);
+const firstName = values.name.trim().split(/\s+/)[0] ?? '';
+---
+
+<BaseLayout
+  title={isCall ? 'Book a free call' : 'Contact'}
+  description="Book a free 15-minute call with Kurongeka or ask a question. We reply within one working day."
+  jsonLd={[breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'Contact', path: '/contact' }])]}
+>
+  <PageIntro
+    eyebrow="Contact"
+    title="Talk to a person."
+    lead="Book a free 15-minute call or ask a question. A Kurongeka manager replies within one working day."
+  />
+
+  <section class="section">
+    <div class="container contact-grid">
+      <div class="main">
+        {
+          status === 'sent' ? (
+            <div
+              class="form-card sent"
+              data-track-view="enquiry_submitted"
+              data-track-param-topic={topic}
+              role="status"
+              tabindex="-1"
+              id="enquiry-sent"
+            >
+              <p class="label">{topicLabel(topic)}</p>
+              <h2 class="h3">{firstName ? `Thank you, ${firstName}.` : 'Thank you.'}</h2>
+              {isCall ? (
+                <p>
+                  We will confirm your call for <strong>{describeCallSlot(values.callDay, state.enquiry?.callWindow)}</strong>{' '}
+                  by email{values.phone ? ' or WhatsApp' : ''} within one working day.
+                </p>
+              ) : (
+                <p>We will reply to {values.email} within one working day.</p>
+              )}
+              <p class="muted">While you wait, see how properly set up your business is today.</p>
+              <div class="form-actions">
+                <Button href="/check" icon="arrow-right" track="cta_contact_sent_check">
+                  Take the free check
+                </Button>
+                <Button href="/tools" variant="secondary">
+                  Try the free tools
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <form method="post" class="form-card" novalidate>
+              {!isForwarded && (
+                <Segmented
+                  label="What do you need?"
+                  items={[
+                    { label: 'Book a free call', href: '/contact?topic=call', current: isCall },
+                    { label: 'Ask a question', href: '/contact?topic=question', current: topic === 'question' },
+                  ]}
+                />
+              )}
+
+              {isForwarded && (
+                <div class="notice notice-info">
+                  <span>
+                    About: <strong>{topicLabel(topic)}</strong>
+                    {values.website ? ` for ${values.website}` : ''}
+                  </span>
+                </div>
+              )}
+
+              {status === 'limited' && (
+                <p class="notice notice-error" role="alert">
+                  Too many attempts. Please wait a few minutes, or message us on{' '}
+                  <a href={whatsappUrl('Hi Kurongeka, I tried to contact you through the website.')}>WhatsApp</a>.
+                </p>
+              )}
+              {status === 'failed' && (
+                <p class="notice notice-error" role="alert">
+                  We could not send your message just now. Please try again, or message us on{' '}
+                  <a href={whatsappUrl('Hi Kurongeka, I tried to contact you through the website.')}>WhatsApp</a>.
+                </p>
+              )}
+              {status === 'invalid' && (
+                <p class="notice notice-error" role="alert">
+                  Please check the highlighted fields.
+                </p>
+              )}
+
+              <input type="hidden" name="topic" value={topic} />
+              {isForwarded && <input type="hidden" name="details" value={values.details} />}
+              {isForwarded && <input type="hidden" name="website" value={values.website} />}
+
+              <div class="fields">
+                {isCall && (
+                  <>
+                    <div class="field-row">
+                      <Field
+                        name="callDay"
+                        label="Preferred day"
+                        as="select"
+                        options={days}
+                        value={values.callDay || ANY_DAY}
+                        error={errors['callDay']}
+                      />
+                      <fieldset class="field field-inline">
+                        <legend class="field-label">Time of day (UK)</legend>
+                        <div class="options compact">
+                          {CALL_WINDOWS.map((w) => (
+                            <label class="option">
+                              <input
+                                type="radio"
+                                name="callWindow"
+                                value={w.value}
+                                checked={values.callWindow === w.value}
+                                aria-describedby={errors['callWindow'] ? 'callWindow-error' : undefined}
+                              />
+                              <span class="option-label">{w.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                        {errors['callWindow'] && (
+                          <p class="field-error" id="callWindow-error">
+                            {errors['callWindow']}
+                          </p>
+                        )}
+                      </fieldset>
+                    </div>
+                    <Field
+                      name="message"
+                      label="What would you like to talk about?"
+                      as="textarea"
+                      rows={3}
+                      optional
+                      maxlength={2000}
+                      value={values.message}
+                      error={errors['message']}
+                    />
+                  </>
+                )}
+
+                {!isCall && (
+                  <Field
+                    name="message"
+                    label={topic === 'question' ? 'Your question' : 'Anything we should know?'}
+                    as="textarea"
+                    rows={topic === 'question' ? 6 : 3}
+                    required={topic === 'question'}
+                    optional={topic !== 'question'}
+                    maxlength={2000}
+                    value={values.message}
+                    error={errors['message']}
+                  />
+                )}
+
+                <div class="field-row">
+                  <Field
+                    name="name"
+                    label="Your name"
+                    autocomplete="name"
+                    required
+                    maxlength={80}
+                    value={values.name}
+                    error={errors['name']}
+                  />
+                  <Field
+                    name="email"
+                    label="Email"
+                    type="email"
+                    autocomplete="email"
+                    required
+                    maxlength={254}
+                    value={values.email}
+                    error={errors['email']}
+                  />
+                </div>
+                <div class="field-row">
+                  <Field
+                    name="phone"
+                    label="Phone or WhatsApp"
+                    type="tel"
+                    autocomplete="tel"
+                    required={isCall}
+                    optional={!isCall}
+                    hint={isCall ? 'We call this number. Outside the UK, start with your country code.' : undefined}
+                    maxlength={32}
+                    value={values.phone}
+                    error={errors['phone']}
+                  />
+                  <Field
+                    name="company"
+                    label="Business name"
+                    autocomplete="organization"
+                    optional
+                    maxlength={120}
+                    value={values.company}
+                    error={errors['company']}
+                  />
+                </div>
+
+                <label class="consent">
+                  <input type="checkbox" name="subscribe" value="true" checked={values.subscribe} />
+                  <span>Send me occasional guides and offers from Kurongeka. Unsubscribe at any time.</span>
+                </label>
+              </div>
+
+              <div class="honeypot" aria-hidden="true">
+                <label>
+                  Leave this empty <input type="text" name="company_website" tabindex="-1" autocomplete="off" />
+                </label>
+              </div>
+
+              <div class="form-actions">
+                <Button type="submit" size="lg" icon="arrow-right" track={`contact_submit_${topic}`}>
+                  {isCall ? 'Request my call' : 'Send'}
+                </Button>
+                <p class="small muted">
+                  We use your details only to reply. <a href="/privacy">Privacy notice</a>.
+                </p>
+              </div>
+            </form>
+          )
+        }
+      </div>
+
+      <aside class="aside" aria-label="Other ways to reach us">
+        <div class="aside-block">
+          <h2 class="h4">Prefer WhatsApp?</h2>
+          <p class="muted">Message us any time. We reply during UK working hours.</p>
+          <Button
+            href={whatsappUrl('Hi Kurongeka, I would like to talk about my business.')}
+            variant="secondary"
+            icon="whatsapp"
+            iconPosition="start"
+            track="whatsapp_contact"
+          >
+            {formatWhatsapp()}
+          </Button>
+        </div>
+        <div class="aside-block">
+          <h2 class="h4">Email</h2>
+          <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+        </div>
+        <div class="aside-block">
+          <h2 class="h4">Already a client?</h2>
+          <p class="muted">See your launch progress, files and next steps.</p>
+          <Button href="/account" variant="text" icon="arrow-right">Log in to your account</Button>
+        </div>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const sent = document.getElementById('enquiry-sent');
+  if (sent) sent.focus();
+</script>
+
+<style>
+  .section {
+    padding-block: var(--space-8) var(--section-pad);
+  }
+
+  .contact-grid {
+    display: grid;
+    gap: var(--space-8);
+    align-items: start;
+  }
+
+  .main {
+    min-width: 0;
+  }
+
+  .sent {
+    gap: var(--space-4);
+  }
+
+  .sent:focus {
+    outline: none;
+  }
+
+  .options.compact .option {
+    min-height: 3rem;
+    padding-block: var(--space-2);
+  }
+
+  .aside {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .aside-block {
+    display: grid;
+    gap: var(--space-2);
+    justify-items: start;
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border);
+  }
+
+  @media (min-width: 1024px) {
+    .contact-grid {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+      gap: var(--space-9);
+    }
+  }
+</style>

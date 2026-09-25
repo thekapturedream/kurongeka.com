@@ -5,6 +5,12 @@ import { site } from '@/config/site';
 
 export const prerender = true;
 const updated = '25 September 2026';
+
+const cookies = [
+  { name: 'kg_session', purpose: 'Keeps you logged in to your client account.', lasts: '30 days, or until you log out' },
+  { name: 'kg_oauth', purpose: 'Completes a secure log-in with Wix.', lasts: '10 minutes' },
+  { name: 'kg_verify', purpose: 'Remembers that you are confirming your email with a code.', lasts: '15 minutes' },
+];
 ---
 
 <BaseLayout title="Privacy notice" description="How Kurongeka collects, uses and protects your information.">
@@ -14,54 +20,102 @@ const updated = '25 September 2026';
       <div class="prose">
         <h2>Who we are</h2>
         <p>
-          Kurongeka is a service provided by Kapture ("we", "us"). If you have any question about your information,
-          email <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>.
+          Kurongeka is a service of Kapture, based in the United Kingdom ("we", "us"). We are the controller of the personal
+          information described here, under the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act
+          2018. For any question about your information, email <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>.
         </p>
 
         <h2>What we collect</h2>
-        <p>When you take the Kurongeka Check or contact us, we collect:</p>
         <ul>
-          <li>your name, business name and country</li>
-          <li>your WhatsApp number, and your email address if you give it</li>
-          <li>your answers to the check, your score and how you prefer to be contacted</li>
-          <li>whether you asked to receive guides and offers</li>
+          <li>
+            <strong>Kurongeka Check:</strong> your name, business name, country, WhatsApp number, email if you give it, your
+            answers, your score and how you prefer to be contacted.
+          </li>
+          <li>
+            <strong>Contact, call requests and directory applications:</strong> your name, email, phone if you give it, business
+            name, your message, your preferred call time and the business details you ask us to list.
+          </li>
+          <li>
+            <strong>Client accounts:</strong> your name and email. Your password is passed securely to Wix to log you in; we do
+            not store it. We also keep your launch brief and the progress of your project.
+          </li>
+          <li>
+            <strong>Website check:</strong> the web address you enter. Our server visits that page as a visitor would. Results
+            are kept briefly in memory to avoid repeat visits, then discarded.
+          </li>
+          <li>
+            <strong>Name and domain check:</strong> the business name you enter, which we send to the public domain registries
+            (Nominet, Verisign and Public Interest Registry) to ask if the addresses are free.
+          </li>
+          <li>
+            <strong>Brand colours and email signature tools:</strong> these run in your browser. What you type is not sent to us.
+          </li>
+          <li>Our hosting provider keeps standard server logs, including IP addresses, to run the site and prevent abuse.</li>
         </ul>
-        <p>
-          Our hosting provider keeps standard server logs, including IP addresses, to run the site and prevent abuse.
-        </p>
 
-        <h2>Why we use it</h2>
+        <h2>Why we use it, and our lawful basis</h2>
         <ul>
-          <li>To reply to your request and recommend the right service. This is in our legitimate interest and yours.</li>
-          <li>To prepare a proposal and deliver services if you become a client.</li>
-          <li>To send guides and offers, only if you ticked the box. You can unsubscribe at any time.</li>
+          <li>To reply to you and recommend the right service: our legitimate interest in answering enquiries.</li>
+          <li>To run your account, prepare proposals and deliver services: to take steps towards, and perform, our contract.</li>
+          <li>To send guides and offers, only if you ticked the box: your consent. You can unsubscribe at any time.</li>
+          <li>To keep the site and tools secure and working: our legitimate interest.</li>
         </ul>
         <p>We do not sell your information, and we do not use it for advertising profiles.</p>
 
-        <h2>Where it is stored</h2>
+        <h2>Who processes it for us</h2>
         <p>
-          Your answers are stored in Wix, which we use as our customer and forms system, and the site is hosted by
-          Vercel. Both may process data outside your country, under their own data protection commitments.
+          We use Wix as our customer, forms and member system, and Vercel to host this website. They process data on our
+          behalf under data processing terms, and may store it outside the UK with safeguards the UK recognises, such as the UK
+          International Data Transfer Addendum.
         </p>
 
         <h2>How long we keep it</h2>
         <p>
-          If you do not become a client, we keep your details for up to 24 months after our last contact, then delete
-          them. Client records are kept for as long as the law requires.
+          If you do not become a client, we keep your enquiry details for up to 24 months after our last contact, then delete
+          them. Client records are kept for as long as UK tax and company law requires, usually six years. You can close your
+          account at any time.
         </p>
 
         <h2>Cookies and storage</h2>
         <p>
-          We do not use advertising or analytics cookies. While you take the check, your progress is saved in your
-          browser session so you do not lose your answers. It is cleared when you finish or close the tab.
+          We use no advertising or analytics cookies. If you log in to a client account, we set these strictly necessary
+          cookies, which do not need consent:
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Cookie</th>
+                <th scope="col">What it does</th>
+                <th scope="col">How long</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                cookies.map((c) => (
+                  <tr>
+                    <th scope="row">
+                      <code>{c.name}</code>
+                    </th>
+                    <td>{c.purpose}</td>
+                    <td>{c.lasts}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+        <p>
+          While you take the Kurongeka Check, your progress is saved in your browser session so you do not lose your answers.
+          It is cleared when you finish or close the tab.
         </p>
 
         <h2>Your rights</h2>
         <p>
-          You can ask to see, correct or delete your information, or withdraw consent to marketing, by emailing{' '}
-          <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>. If you are unhappy with how we handle your
-          data, you can complain to your data protection regulator, such as the Information Commissioner's Office in the
-          UK or POTRAZ in Zimbabwe.
+          You can ask to see, correct or delete your information, object to how we use it, or withdraw consent to marketing, by
+          emailing <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>. We reply within one month. If you are
+          unhappy with how we handle your data, you can complain to the
+          <a href="https://ico.org.uk/make-a-complaint/" rel="noopener">Information Commissioner's Office</a>.
         </p>
       </div>
     </div>
@@ -71,5 +125,28 @@ const updated = '25 September 2026';
 <style>
   .section {
     padding-block: var(--space-8) var(--section-pad);
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-small);
+  }
+
+  th,
+  td {
+    padding: var(--space-3) var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  thead th {
+    color: var(--color-text-muted);
+    font-weight: var(--weight-semibold);
   }
 </style>

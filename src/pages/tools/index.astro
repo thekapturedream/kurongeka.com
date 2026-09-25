@@ -1,0 +1,61 @@
+---
+import PageIntro from '@/components/layout/PageIntro.astro';
+import CtaBand from '@/components/sections/CtaBand.astro';
+import ToolCards from '@/components/sections/ToolCards.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { tools } from '@/config/tools';
+import { site } from '@/config/site';
+import { breadcrumbLd, ORG_ID } from '@/lib/seo';
+
+export const prerender = true;
+
+const itemList = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Free tools for small businesses',
+  itemListElement: tools.map((tool, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    item: {
+      '@type': 'WebApplication',
+      name: tool.name,
+      description: tool.summary,
+      url: `${site.url}/tools/${tool.slug}`,
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Any',
+      offers: { '@type': 'Offer', price: 0, priceCurrency: 'GBP' },
+      provider: { '@id': ORG_ID },
+    },
+  })),
+};
+---
+
+<BaseLayout
+  title="Free tools for small businesses"
+  description="Free tools from Kurongeka: check your website, find a domain for your business name, build brand colours and make an email signature."
+  jsonLd={[breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'Free tools', path: '/tools' }]), itemList]}
+>
+  <PageIntro
+    eyebrow="Free tools"
+    title="Small jobs, done properly."
+    lead="Four free tools for the parts of setting up a business that trip people up. No sign-up, and nothing to install."
+  />
+
+  <section class="section">
+    <div class="container">
+      <ToolCards headingLevel="h2" />
+    </div>
+  </section>
+
+  <CtaBand
+    title="Want it all done for you?"
+    body="A Kurongeka launch covers your domain, website, brand, payments and Google listing, at a fixed price."
+    track="cta_tools_check"
+  />
+</BaseLayout>
+
+<style>
+  .section {
+    padding-block: var(--space-8) var(--section-pad);
+  }
+</style>

@@ -1,0 +1,241 @@
+---
+import Field from '@/components/forms/Field.astro';
+import PageIntro from '@/components/layout/PageIntro.astro';
+import Button from '@/components/ui/Button.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { whatsappUrl } from '@/config/site';
+import { memberSession } from '@/lib/auth/session';
+import { formatPrice } from '@/lib/domain/format';
+import { ASSETS, LAUNCH_PACKAGE_CHOICES, briefSchema } from '@/lib/domain/projects';
+import { fieldErrors } from '@/lib/domain/validation';
+import { clientKey, formValues, noStore, readForm } from '@/lib/http';
+import { getBusinessModels, getLaunchPackages } from '@/lib/services/catalog';
+import { submitEnquiry } from '@/lib/services/enquiries';
+import { allowRequest } from '@/lib/services/rate-limit';
+import { createProject, getMemberProfile } from '@/lib/wix/account';
+
+export const prerender = false;
+noStore(Astro);
+
+const session = memberSession(Astro.cookies, Astro.url);
+if (!session) return Astro.redirect('/account/login?next=/account/brief');
+
+const [models, packages] = await Promise.all([getBusinessModels(), getLaunchPackages()]);
+const businessTypes = [...models.data.map((m) => ({ value: m.slug, label: m.title })), { value: 'other', label: 'Something else' }];
+const priceFor = (slug: string) => {
+  const price = packages.data.find((p) => p.slug === slug)?.price;
+  return typeof price === 'number' ? formatPrice(price) : null;
+};
+
+const preselected = Astro.url.searchParams.get('package') ?? '';
+const TEXT_FIELDS = ['title', 'packageSlug', 'businessType', 'location', 'currentWebsite', 'goals', 'contactPhone'] as const;
+let values: Record<(typeof TEXT_FIELDS)[number], string> & { assetsReady: string[] } = {
+  title: '',
+  packageSlug: LAUNCH_PACKAGE_CHOICES.some((p) => p.value === preselected) ? preselected : '',
+  businessType: '',
+  location: '',
+  currentWebsite: '',
+  goals: '',
+  contactPhone: '',
+  assetsReady: [],
+};
+let errors: Record<string, string> = {};
+let message: string | null = null;
+
+if (Astro.request.method === 'POST') {
+  const form = await readForm(Astro.request);
+  if (form) values = { ...formValues(form, TEXT_FIELDS), assetsReady: form.getAll('assetsReady').map(String) };
+  const parsed = briefSchema.safeParse(values);
+  if (!allowRequest(clientKey(Astro.request, () => Astro.clientAddress))) {
+    message = 'Too many attempts. Please wait a few minutes and try again.';
+  } else if (!parsed.success) {
+    errors = fieldErrors(parsed.error);
+  } else {
+    try {
+      const profile = await getMemberProfile(session.client);
+      const email = profile?.email ?? '';
+      const typeLabel = businessTypes.find((t) => t.value === parsed.data.businessType)?.label ?? parsed.data.businessType;
+      await createProject(session.client, parsed.data, email, typeLabel);
+      // Notify staff and update the CRM contact. The project already exists, so this is best effort.
+      await submitEnquiry({
+        topic: 'launch-brief',
+        name: [profile?.firstName, profile?.lastName].filter(Boolean).join(' ') || email,
+        email,
+        phone: parsed.data.contactPhone,
+        company: parsed.data.title,
+        message: parsed.data.goals,
+        website: parsed.data.currentWebsite,
+        callDay: undefined,
+        callWindow: undefined,
+        details: `Package: ${parsed.data.packageSlug}. Type: ${typeLabel}. Location: ${parsed.data.location}. Has: ${parsed.data.assetsReady.join(', ') || 'nothing yet'}.`,
+        sourcePage: '/account/brief',
+        subscribe: false,
+      }).catch((error: unknown) => console.warn('[brief] enquiry notification failed', error instanceof Error ? error.message : error));
+      session.persist();
+      return Astro.redirect('/account?brief=sent', 303);
+    } catch (error) {
+      console.error('[brief] create failed', error instanceof Error ? error.message : error);
+      message = 'We could not save your brief just now. Please try again, or send it to us on WhatsApp.';
+    }
+  }
+  if (!session.persist()) return Astro.redirect('/account/login?notice=session-ended&next=/account/brief');
+  Astro.response.status = 400;
+}
+---
+
+<BaseLayout title="Launch brief" description="Tell Kurongeka about your business to start your launch." noindex>
+  <PageIntro
+    eyebrow="Launch brief"
+    title="Tell us about the business."
+    lead="About five minutes. We reply within one working day with your scope, fixed price and launch date."
+  >
+    <p><a href="/account">Back to your account</a></p>
+  </PageIntro>
+
+  <section class="section">
+    <div class="container-narrow">
+      <form method="post" class="form-card brief" novalidate>
+        {message && (
+          <p class="notice notice-error" role="alert">
+            {message} <a href={whatsappUrl('Hi Kurongeka, I would like to start my launch.')}>WhatsApp</a>
+          </p>
+        )}
+        {Object.keys(errors).length > 0 && (
+          <p class="notice notice-error" role="alert">
+            Please check the highlighted fields.
+          </p>
+        )}
+
+        <fieldset class="field-inline group">
+          <legend class="h4">The business</legend>
+          <div class="fields">
+            <Field name="title" label="Business name" autocomplete="organization" required maxlength={120} value={values.title} error={errors['title']} />
+            <div class="field-row">
+              <Field
+                name="businessType"
+                label="Type of business"
+                as="select"
+                emptyOption="Choose one"
+                options={businessTypes}
+                value={values.businessType}
+                error={errors['businessType']}
+              />
+              <Field
+                name="location"
+                label="Where it trades"
+                placeholder="Leeds, or online across the UK"
+                required
+                maxlength={120}
+                value={values.location}
+                error={errors['location']}
+              />
+            </div>
+            <Field
+              name="currentWebsite"
+              label="Current website"
+              optional
+              inputmode="url"
+              placeholder="yourbusiness.co.uk"
+              maxlength={200}
+              value={values.currentWebsite}
+              error={errors['currentWebsite']}
+            />
+          </div>
+        </fieldset>
+
+        <fieldset class="field-inline group">
+          <legend class="h4">The launch</legend>
+          <div class="options package-options">
+            {
+              LAUNCH_PACKAGE_CHOICES.map((p) => (
+                <label class="option">
+                  <input type="radio" name="packageSlug" value={p.value} checked={values.packageSlug === p.value} />
+                  <span class="option-label">
+                    {p.value === 'unsure' ? p.label : `Launch ${p.label}`}
+                    {priceFor(p.value) && <span class="muted"> · {priceFor(p.value)}</span>}
+                  </span>
+                </label>
+              ))
+            }
+          </div>
+          {errors['packageSlug'] && <p class="field-error">{errors['packageSlug']}</p>}
+          <p class="small muted">
+            Compare them on the <a href="/pricing">pricing page</a>. You can change your mind after we talk.
+          </p>
+        </fieldset>
+
+        <fieldset class="field-inline group">
+          <legend class="h4">What you already have</legend>
+          <div class="chips">
+            {
+              ASSETS.map((a) => (
+                <label class="chip">
+                  <input type="checkbox" name="assetsReady" value={a.value} checked={values.assetsReady.includes(a.value)} />
+                  <span>{a.label}</span>
+                </label>
+              ))
+            }
+          </div>
+          <p class="small muted">Tick what you have. We create or improve the rest.</p>
+        </fieldset>
+
+        <fieldset class="field-inline group">
+          <legend class="h4">Success</legend>
+          <div class="fields">
+            <Field
+              name="goals"
+              label="What would make this launch a success?"
+              as="textarea"
+              rows={5}
+              required
+              maxlength={1000}
+              hint="For example: more bookings, looking credible for a tender, taking card payments."
+              value={values.goals}
+              error={errors['goals']}
+            />
+            <Field
+              name="contactPhone"
+              label="Best phone or WhatsApp"
+              type="tel"
+              autocomplete="tel"
+              optional
+              maxlength={32}
+              value={values.contactPhone}
+              error={errors['contactPhone']}
+            />
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <Button type="submit" size="lg" icon="arrow-right" track="launch_brief_submit">Send my brief</Button>
+          <p class="small muted">No payment now. We agree the scope and price with you first.</p>
+        </div>
+      </form>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .section {
+    padding-block: var(--space-8) var(--section-pad);
+  }
+
+  .brief {
+    gap: var(--space-7);
+  }
+
+  .group {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .group legend {
+    margin-bottom: var(--space-4);
+  }
+
+  @media (min-width: 640px) {
+    .package-options {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

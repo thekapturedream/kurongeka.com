@@ -17,6 +17,8 @@ export function organizationLd(): JsonLd {
     description: site.description,
     email: site.contact.email,
     telephone: `+${site.contact.whatsapp}`,
+    address: { '@type': 'PostalAddress', addressCountry: 'GB' },
+    areaServed: ['GB', 'ZW', 'ZA'],
     parentOrganization: { '@type': 'Organization', name: site.parent.name, url: site.parent.url },
     sameAs: site.social.map((s) => s.url),
   };

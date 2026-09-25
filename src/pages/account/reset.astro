@@ -1,0 +1,63 @@
+---
+import { z } from 'astro/zod';
+import Field from '@/components/forms/Field.astro';
+import Button from '@/components/ui/Button.astro';
+import AuthLayout from '@/layouts/AuthLayout.astro';
+import { requestPasswordReset } from '@/lib/auth/login';
+import { emailField } from '@/lib/domain/validation';
+import { clientKey, noStore, readForm } from '@/lib/http';
+import { allowAuthAttempt } from '@/lib/services/rate-limit';
+
+export const prerender = false;
+noStore(Astro);
+
+let email = '';
+let error: string | undefined;
+let sent = false;
+let limited = false;
+
+if (Astro.request.method === 'POST') {
+  const form = await readForm(Astro.request);
+  email = String(form?.get('email') ?? '');
+  const parsed = z.object({ email: emailField }).safeParse({ email });
+  if (!allowAuthAttempt(clientKey(Astro.request, () => Astro.clientAddress))) {
+    limited = true;
+  } else if (!parsed.success) {
+    error = 'Enter a valid email address.';
+  } else {
+    await requestPasswordReset(parsed.data.email, Astro.url);
+    sent = true;
+  }
+  if (!sent) Astro.response.status = 400;
+}
+---
+
+<AuthLayout title="Reset your password" heading="Reset your password." lead="Enter the email you use for your account. We will send you a link to set a new password.">
+  {limited && <p class="notice notice-error" role="alert">Too many attempts. Please wait a few minutes and try again.</p>}
+  {
+    sent ? (
+      <div class="form-card" role="status">
+        <h2 class="h4">Check your email.</h2>
+        <p class="muted">
+          If there is an account for {email}, a reset link is on its way. It can take a few minutes. The link expires, so use it
+          soon.
+        </p>
+        <Button href="/account/login" variant="secondary">
+          Back to log in
+        </Button>
+      </div>
+    ) : (
+      <form method="post" class="form-card" novalidate>
+        <Field name="email" label="Email" type="email" autocomplete="email" required maxlength={254} value={email} error={error} />
+        <div class="form-actions">
+          <Button type="submit" size="lg" block track="account_reset_submit">
+            Send reset link
+          </Button>
+        </div>
+        <p class="small">
+          Remembered it? <a href="/account/login">Log in</a>
+        </p>
+      </form>
+    )
+  }
+</AuthLayout>

@@ -1,0 +1,45 @@
+---
+import Icon from './Icon.astro';
+
+/** Pass, improve or fix. Always shows a word and an icon, never colour alone. */
+interface Props {
+  status: 'pass' | 'warn' | 'fail';
+}
+const { status } = Astro.props;
+const label = { pass: 'Good', warn: 'Improve', fail: 'Fix' }[status];
+const icon = ({ pass: 'check', warn: 'minus', fail: 'close' } as const)[status];
+---
+
+<span class:list={['badge', `badge-${status}`]}>
+  <Icon name={icon} />
+  {label}
+</span>
+
+<style>
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: 1.75rem;
+    padding: 0 var(--space-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-caption);
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+  }
+
+  .badge-pass {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+  }
+
+  .badge-warn {
+    background: var(--color-warning-bg);
+    color: var(--color-warning);
+  }
+
+  .badge-fail {
+    background: var(--color-error-bg);
+    color: var(--color-error);
+  }
+</style>

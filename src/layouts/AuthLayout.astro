@@ -1,0 +1,97 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+/** Signed-out account pages: what the account is for on one side, the form on the other. */
+interface Props {
+  title: string;
+  heading: string;
+  lead?: string;
+}
+const { title, heading, lead } = Astro.props;
+
+const benefits = [
+  { title: 'Track your launch', body: 'See where your website is, what happens next and when it goes live.' },
+  { title: 'Previews and files', body: 'Your preview link, live site and shared files in one place.' },
+  { title: 'Your Run plan', body: 'Check your monthly plan and ask for changes.' },
+];
+---
+
+<BaseLayout title={title} description="Log in to your Kurongeka client account." noindex>
+  <section class="auth">
+    <div class="container auth-grid">
+      <div class="auth-main">
+        <div class="auth-head">
+          <p class="label">Client account</p>
+          <h1 class="h2">{heading}</h1>
+          {lead && <p class="muted">{lead}</p>}
+        </div>
+        <slot />
+      </div>
+      <aside class="auth-aside surface-ink" aria-label="What your account is for">
+        <p class="label">Your Kurongeka account</p>
+        <ul role="list">
+          {
+            benefits.map((b) => (
+              <li>
+                <p class="h4">{b.title}</p>
+                <p class="muted">{b.body}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .auth {
+    padding-block: clamp(2rem, 1rem + 4vw, 5rem) var(--section-pad);
+  }
+
+  .auth-grid {
+    display: grid;
+    gap: var(--space-8);
+    align-items: start;
+  }
+
+  .auth-main {
+    display: grid;
+    gap: var(--space-6);
+    max-width: 32rem;
+    width: 100%;
+  }
+
+  .auth-head {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .auth-aside {
+    display: grid;
+    gap: var(--space-6);
+    padding: var(--space-7) var(--space-6);
+    border-radius: var(--radius-lg);
+  }
+
+  .auth-aside ul {
+    display: grid;
+    gap: var(--space-5);
+    list-style: none;
+    padding: 0;
+  }
+
+  .auth-aside li {
+    display: grid;
+    gap: var(--space-1);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+
+  @media (min-width: 1024px) {
+    .auth-grid {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      gap: var(--space-9);
+    }
+  }
+</style>

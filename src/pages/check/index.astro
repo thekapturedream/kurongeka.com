@@ -28,7 +28,7 @@ const validInterest = interest && (RECOMMENDATIONS as readonly string[]).include
 const errorCode = params.get('error');
 
 const geo = Astro.request.headers.get('x-vercel-ip-country')?.toUpperCase();
-const defaultCountry: CountryCode = COUNTRIES.some((c) => c.value === geo) ? (geo as CountryCode) : 'ZW';
+const defaultCountry: CountryCode = COUNTRIES.some((c) => c.value === geo) ? (geo as CountryCode) : 'GB';
 
 const businessTypes = [
   ...models.data.map((m) => ({ value: m.slug, label: m.title })),
@@ -64,7 +64,7 @@ const totalSteps = 8;
 
       {
         errorCode && (
-          <div class="notice" role="alert">
+          <div class="notice notice-error" role="alert">
             <p>
               {errorCode === 'invalid'
                 ? 'Some answers were missing. Please check each question and try again.'
@@ -189,7 +189,7 @@ const totalSteps = 8;
                 maxlength="32"
                 aria-describedby="phone-hint phone-error"
               />
-              <p class="field-hint" id="phone-hint">Local format is fine, for example 077 123 4567.</p>
+              <p class="field-hint" id="phone-hint">Local format is fine, for example 07700 900123.</p>
               <p class="field-error" id="phone-error" data-error-for="phone" hidden></p>
             </div>
 
@@ -279,10 +279,6 @@ const totalSteps = 8;
 
   .notice {
     margin-bottom: var(--space-6);
-    padding: var(--space-4) var(--space-5);
-    border-radius: var(--radius-md);
-    background: var(--color-error-bg);
-    color: var(--color-error);
   }
 
   .check-form {
@@ -340,144 +336,9 @@ const totalSteps = 8;
     margin-top: calc(var(--space-3) * -1);
   }
 
-  .options {
-    display: grid;
-    gap: var(--space-3);
-  }
-
-  .option {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    min-height: 3.5rem;
-    padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--color-line-strong);
-    border-radius: var(--radius-md);
-    background: var(--color-paper);
-    cursor: pointer;
-    transition:
-      border-color var(--duration-fast) var(--ease-out),
-      background-color var(--duration-fast) var(--ease-out);
-  }
-
-  .option:hover {
-    border-color: var(--color-ink);
-  }
-
-  .option input {
-    width: 1.25rem;
-    height: 1.25rem;
-    flex-shrink: 0;
-    accent-color: var(--color-ink);
-    margin: 0;
-  }
-
-  .option:has(input:checked) {
-    border-color: var(--color-ink);
-    background: var(--color-paper-alt);
-    box-shadow: inset 0 0 0 1px var(--color-ink);
-  }
-
-  .option:has(input:focus-visible) {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
-  }
-
-  .option-label {
-    font-weight: var(--weight-medium);
-    line-height: var(--leading-snug);
-  }
-
-  .fields {
-    display: grid;
-    gap: var(--space-5);
-  }
-
-  .field-inline {
-    border: 0;
-    padding: 0;
-    margin: 0;
-  }
-
-  .field-inline legend {
-    padding: 0;
-    margin-bottom: var(--space-2);
-  }
-
-  .chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-  }
-
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    min-height: 2.75rem;
-    padding: 0 var(--space-4);
-    border: 1px solid var(--color-line-strong);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-  }
-
-  .chip input {
-    accent-color: var(--color-ink);
-    margin: 0;
-  }
-
-  .chip:has(input:checked) {
-    border-color: var(--color-ink);
-    box-shadow: inset 0 0 0 1px var(--color-ink);
-  }
-
-  .chip:has(input:focus-visible) {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
-  }
-
-  .consent {
-    display: flex;
-    gap: var(--space-3);
-    align-items: flex-start;
-    font-size: var(--text-small);
-    cursor: pointer;
-  }
-
-  .consent input {
-    width: 1.125rem;
-    height: 1.125rem;
-    margin-top: 0.2em;
-    accent-color: var(--color-ink);
-    flex-shrink: 0;
-  }
-
   .fineprint a,
   .alt-contact a {
     color: var(--color-text);
-  }
-
-  .honeypot {
-    position: absolute;
-    left: -10000px;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-  }
-
-  .form-error {
-    display: grid;
-    gap: var(--space-2);
-    padding: var(--space-4) var(--space-5);
-    border-radius: var(--radius-md);
-    background: var(--color-error-bg);
-    color: var(--color-error);
-    font-weight: var(--weight-medium);
-  }
-
-  .form-error a {
-    color: var(--color-ink);
   }
 
   .step-nav {

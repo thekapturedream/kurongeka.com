@@ -17,6 +17,19 @@ export function track(event: string, params: Params = {}): void {
   window.dispatchEvent(new CustomEvent('kurongeka:track', { detail: payload }));
 }
 
+/** Server-rendered outcomes (a sent enquiry, a finished tool run) mark themselves with data-track-view. */
+export function initViewTracking(): void {
+  document.querySelectorAll<HTMLElement>('[data-track-view]').forEach((el) => {
+    const name = el.dataset['trackView'];
+    if (!name) return;
+    const params: Params = { path: location.pathname };
+    for (const [key, value] of Object.entries(el.dataset)) {
+      if (key.startsWith('trackParam') && value) params[key.slice('trackParam'.length).toLowerCase()] = value;
+    }
+    track(name, params);
+  });
+}
+
 export function initClickTracking(): void {
   document.addEventListener('click', (event) => {
     const target = event.target instanceof Element ? event.target.closest<HTMLElement>('[data-track]') : null;

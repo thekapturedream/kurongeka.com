@@ -74,8 +74,9 @@ const structured = jsonLd.filter((item): item is Record<string, unknown> => item
     </main>
     <Footer />
     <script>
-      import { initClickTracking } from '@/scripts/analytics';
+      import { initClickTracking, initViewTracking } from '@/scripts/analytics';
       initClickTracking();
+      initViewTracking();
     </script>
   </body>
 </html>

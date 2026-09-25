@@ -13,7 +13,9 @@ export const site = {
     name: 'Kapture',
     url: 'https://www.thekapture.com',
   },
-  locations: ['Harare', 'London'],
+  /** Where the business is run from, and who it serves. */
+  base: 'United Kingdom',
+  serves: 'the UK and Southern Africa',
   contact: {
     email: CONTACT_EMAIL,
     whatsapp: WHATSAPP_NUMBER,
@@ -26,6 +28,7 @@ export const nav = [
   { label: 'How it works', href: '/how-it-works' },
   { label: 'Business types', href: '/business-types' },
   { label: 'Pricing', href: '/pricing' },
+  { label: 'Free tools', href: '/tools' },
   { label: 'About', href: '/about' },
 ] as const;
 
@@ -35,7 +38,10 @@ export function whatsappUrl(message?: string): string {
 }
 
 export function formatWhatsapp(number: string = site.contact.whatsapp): string {
-  // 263771535326 -> +263 77 153 5326
-  const match = /^(263)(\d{2})(\d{3})(\d{4})$/.exec(number);
-  return match ? `+${match[1]} ${match[2]} ${match[3]} ${match[4]}` : `+${number}`;
+  // UK mobile: 447352144677 -> +44 7352 144677
+  const uk = /^(44)(7\d{3})(\d{6})$/.exec(number);
+  if (uk) return `+${uk[1]} ${uk[2]} ${uk[3]}`;
+  // Zimbabwe: 263771234567 -> +263 77 123 4567
+  const zw = /^(263)(\d{2})(\d{3})(\d{4})$/.exec(number);
+  return zw ? `+${zw[1]} ${zw[2]} ${zw[3]} ${zw[4]}` : `+${number}`;
 }

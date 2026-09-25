@@ -30,6 +30,8 @@
   --color-success-bg: #e8f3ec;
   --color-error: #b3261e;
   --color-error-bg: #fbeceb;
+  --color-warning: #7a4f00;
+  --color-warning-bg: #fdf2dc;
   --color-focus: var(--color-ink);
 
   /* Typography */

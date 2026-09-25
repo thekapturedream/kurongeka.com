@@ -1,0 +1,97 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import { tools } from '@/config/tools';
+
+interface Props {
+  exclude?: string;
+  headingLevel?: 'h2' | 'h3';
+}
+const { exclude, headingLevel = 'h3' } = Astro.props;
+const Heading = headingLevel;
+const list = tools.filter((t) => t.slug !== exclude);
+---
+
+<ul class="tools" role="list">
+  {
+    list.map((tool, index) => (
+      <li class="tool">
+        <a href={`/tools/${tool.slug}`} class="tool-link" data-track={`tool_open_${tool.slug}`}>
+          <span class="tool-number" aria-hidden="true">
+            {String(index + 1).padStart(2, '0')}
+          </span>
+          <Heading class="h4 tool-name">{tool.name}</Heading>
+          <p class="muted">{tool.summary}</p>
+          <span class="tool-meta small">
+            <span>{tool.time}</span>
+            <Icon name="arrow-right" />
+          </span>
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .tools {
+    display: grid;
+    gap: var(--space-4);
+    list-style: none;
+    padding: 0;
+  }
+
+  .tool-link {
+    display: grid;
+    gap: var(--space-3);
+    height: 100%;
+    padding: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg);
+    text-decoration: none;
+    transition:
+      border-color var(--duration-fast) var(--ease-out),
+      transform var(--duration) var(--ease-out);
+  }
+
+  .tool-link:hover {
+    border-color: var(--color-text);
+  }
+
+  .tool-number {
+    font-family: var(--font-display);
+    font-size: var(--text-small);
+    font-weight: var(--weight-semibold);
+    color: var(--color-text-muted);
+  }
+
+  .tool-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    align-self: end;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+  }
+
+  .tool-link:hover .tool-meta :global(.icon) {
+    transform: translateX(3px);
+    color: var(--color-text);
+  }
+
+  .tool-meta :global(.icon) {
+    transition: transform var(--duration) var(--ease-out);
+  }
+
+  @media (min-width: 640px) {
+    .tools {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .tools {
+      grid-template-columns: repeat(var(--tool-columns, 4), minmax(0, 1fr));
+    }
+  }
+</style>

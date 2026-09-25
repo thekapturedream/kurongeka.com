@@ -6,6 +6,7 @@ import FaqList from '@/components/sections/FaqList.astro';
 import ModelGrid from '@/components/sections/ModelGrid.astro';
 import PackageCards from '@/components/sections/PackageCards.astro';
 import ScoreCard from '@/components/sections/ScoreCard.astro';
+import ToolCards from '@/components/sections/ToolCards.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { site } from '@/config/site';
 import { formatMoney } from '@/lib/domain/format';
@@ -55,7 +56,7 @@ const reasons = [
   { title: 'Fixed prices, agreed upfront', body: 'You know the full cost before we start. No hourly billing, no surprise invoices.' },
   { title: 'You own everything', body: 'Your site, domain and customer data are set up in your business’s name.' },
   { title: 'Local payments, global reach', body: 'Take payments from customers at home and from the diaspora abroad.' },
-  { title: 'A real team', body: 'Designers and developers from Kapture, the studio behind Kurongeka, in Harare and London.' },
+  { title: 'A real team', body: 'Designers and developers from Kapture, the UK studio behind Kurongeka.' },
 ];
 ---
 
@@ -95,7 +96,7 @@ const reasons = [
         <li><strong>7 to 21 working days</strong><span>from deposit to launch</span></li>
         <li><strong>Fixed prices</strong><span>in pounds sterling</span></li>
         <li><strong>Built on Wix</strong><span>managed from your phone</span></li>
-        <li><strong>Harare and London</strong><span>serving Southern Africa and the diaspora</span></li>
+        <li><strong>Based in the UK</strong><span>serving {site.serves}</span></li>
       </ul>
     </div>
   </section>
@@ -180,7 +181,19 @@ const reasons = [
     </div>
   </section>
 
-  <section class="section" aria-labelledby="why-title">
+  <section class="section" aria-labelledby="tools-title">
+    <div class="container stack" style="--stack-gap: var(--space-8)">
+      <SectionHeader
+        id="tools-title"
+        eyebrow="Free tools"
+        title="Start sorting it out today."
+        lead="Check your website, find a domain for your name, set your brand colours and make an email signature. Free, no sign-up."
+      />
+      <ToolCards />
+    </div>
+  </section>
+
+  <section class="section surface-alt" aria-labelledby="why-title">
     <div class="container why-grid">
       <SectionHeader id="why-title" eyebrow="Why Kurongeka" title="The certainty of a product. The care of a studio." />
       <ul class="reasons" role="list">
@@ -198,7 +211,7 @@ const reasons = [
 
   {
     homeFaqs.length > 0 && (
-      <section class="section surface-alt" aria-labelledby="faq-title">
+      <section class="section" aria-labelledby="faq-title">
         <div class="container faq-grid">
           <SectionHeader id="faq-title" eyebrow="Questions" title="Straight answers." />
           <FaqList faqs={homeFaqs} />

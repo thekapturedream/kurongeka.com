@@ -1,0 +1,265 @@
+---
+import Field from '@/components/forms/Field.astro';
+import Button from '@/components/ui/Button.astro';
+import Icon from '@/components/ui/Icon.astro';
+import ToolLayout from '@/layouts/ToolLayout.astro';
+import { domainLabel, type DomainResult } from '@/lib/domain/domains';
+import { clientKey, noStore } from '@/lib/http';
+import { checkDomains } from '@/lib/services/domain-check';
+import { allowToolRun } from '@/lib/services/rate-limit';
+
+export const prerender = false;
+noStore(Astro);
+
+const name = (Astro.url.searchParams.get('name') ?? '').trim().slice(0, 80);
+const label = name ? domainLabel(name) : null;
+let results: DomainResult[] = [];
+let limited = false;
+
+if (name && label) {
+  if (allowToolRun(clientKey(Astro.request, () => Astro.clientAddress))) {
+    results = await checkDomains(name);
+  } else {
+    limited = true;
+    Astro.response.status = 429;
+  }
+}
+
+const available = results.filter((r) => r.status === 'available');
+const STATUS_TEXT = { available: 'Likely available', taken: 'Taken', unknown: 'Could not check' } as const;
+const companiesHouse = `https://find-and-update.company-information.service.gov.uk/search/companies?q=${encodeURIComponent(name)}`;
+const trademarks = `https://trademarks.ipo.gov.uk/ipo-tmtext`;
+---
+
+<ToolLayout
+  slug="domain-check"
+  title="Name and domain check"
+  lead="Type your business name. We ask the official domain registries whether it is free as a .co.uk, .com, .uk, .org or .net."
+  description="Free domain name check for small businesses: see if your business name is available as a .co.uk, .com or .uk. From Kurongeka."
+  noindex={Boolean(name)}
+  ctaTitle="Found your name?"
+  ctaBody="Every Kurongeka launch registers your domain in your business's name, connects it and sets up matching email."
+>
+  <form method="get" action="/tools/domain-check" class="name-form" role="search" data-domain-form>
+    <div class="name-row">
+      <Field
+        name="name"
+        label="Business name"
+        placeholder="Tendai's Kitchen"
+        required
+        maxlength={80}
+        value={name}
+        error={name && !label ? 'Use at least two letters or numbers.' : undefined}
+      />
+      <Button type="submit" size="lg" icon="arrow-right" track="tool_domain_check_run" attrs={{ 'data-submit': '' }}>
+        Check names
+      </Button>
+    </div>
+  </form>
+
+  {
+    limited && (
+      <p class="notice notice-error result-notice" role="alert">
+        You have run a lot of checks. Please wait a few minutes and try again.
+      </p>
+    )
+  }
+
+  {
+    results.length > 0 && (
+      <div class="results" data-track-view="tool_domain_check_result" data-track-param-available={String(available.length)}>
+        <div class="results-head">
+          <h2 class="h3">
+            {available.length === 0
+              ? `The obvious domains for "${name}" are taken.`
+              : `${available.length} of ${results.length} look free for "${name}".`}
+          </h2>
+          <p class="muted small">
+            Checked just now with the public registries (Nominet for .uk, Verisign for .com and .net, PIR for .org). A domain can
+            still be taken between now and when you register it.
+          </p>
+        </div>
+        <ul class="domains" role="list">
+          {results.map((r) => (
+            <li class:list={['domain', `domain-${r.status}`]}>
+              <span class="domain-name">{r.domain}</span>
+              <span class="domain-status">
+                <Icon name={r.status === 'available' ? 'check' : r.status === 'taken' ? 'close' : 'minus'} />
+                {STATUS_TEXT[r.status]}
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        <div class="next">
+          <h3 class="h4">Before you commit to a name</h3>
+          <ul class="next-list" role="list">
+            <li>
+              <a href={companiesHouse} rel="noopener" target="_blank">
+                Search Companies House for "{name}"<span class="visually-hidden"> (opens in a new tab)</span>
+              </a>
+              <span class="muted small">to see if a UK company already uses it.</span>
+            </li>
+            <li>
+              <a href={trademarks} rel="noopener" target="_blank">
+                Search UK trade marks<span class="visually-hidden"> (opens in a new tab)</span>
+              </a>
+              <span class="muted small">to avoid a name someone has protected.</span>
+            </li>
+            {label && (
+              <li>
+                <a href={`https://www.instagram.com/${label}/`} rel="noopener" target="_blank">
+                  Look up @{label} on Instagram<span class="visually-hidden"> (opens in a new tab)</span>
+                </a>
+                <span class="muted small">so your handle can match your domain.</span>
+              </li>
+            )}
+          </ul>
+          <div class="form-actions">
+            <Button href="/contact?topic=question" variant="secondary" track="tool_domain_check_help">
+              Ask us to register it
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  {
+    results.length === 0 && !limited && (
+      <section class="explainer" aria-labelledby="how-it-works">
+        <h2 id="how-it-works" class="h3">How it works</h2>
+        <ol class="explainer-list" role="list">
+          <li>We turn your business name into web addresses, like tendaiskitchen.co.uk.</li>
+          <li>We ask each registry whether that address is registered.</li>
+          <li>You see which are free, plus the checks to make before you buy.</li>
+        </ol>
+      </section>
+    )
+  }
+</ToolLayout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-domain-form]');
+  form?.addEventListener('submit', () => {
+    const button = form.querySelector<HTMLButtonElement>('[data-submit]');
+    const label = button?.querySelector('span');
+    if (button) button.setAttribute('aria-disabled', 'true');
+    if (label) label.textContent = 'Checking…';
+  });
+</script>
+
+<style>
+  .name-form {
+    max-width: 48rem;
+  }
+
+  .name-row {
+    display: grid;
+    gap: var(--space-3);
+    align-items: end;
+  }
+
+  .result-notice {
+    margin-top: var(--space-6);
+    max-width: 48rem;
+  }
+
+  .results {
+    display: grid;
+    gap: var(--space-7);
+    margin-top: var(--space-8);
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--color-border);
+    max-width: 48rem;
+  }
+
+  .results-head {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .domains {
+    list-style: none;
+    padding: 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .domain {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding-block: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .domain-name {
+    font-family: var(--font-display);
+    font-size: var(--text-h4);
+    font-weight: var(--weight-semibold);
+    overflow-wrap: anywhere;
+  }
+
+  .domain-taken .domain-name,
+  .domain-unknown .domain-name {
+    color: var(--color-text-muted);
+    font-weight: var(--weight-medium);
+  }
+
+  .domain-status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-small);
+    font-weight: var(--weight-semibold);
+  }
+
+  .domain-available .domain-status {
+    color: var(--color-success);
+  }
+
+  .domain-taken .domain-status,
+  .domain-unknown .domain-status {
+    color: var(--color-text-muted);
+  }
+
+  .next {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .next-list {
+    display: grid;
+    gap: var(--space-3);
+    list-style: none;
+    padding: 0;
+  }
+
+  .next-list li {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  .explainer {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-8);
+    padding-top: var(--space-7);
+    border-top: 1px solid var(--color-border);
+    max-width: 48rem;
+  }
+
+  .explainer-list {
+    display: grid;
+    gap: var(--space-3);
+    padding-left: 1.25rem;
+  }
+
+  @media (min-width: 640px) {
+    .name-row {
+      grid-template-columns: 1fr auto;
+    }
+  }
+</style>

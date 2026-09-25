@@ -57,6 +57,8 @@ export const CONTACT_PREFERENCES = [
 ] as const satisfies readonly Option[];
 
 export const COUNTRIES = [
+  { value: 'GB', label: 'United Kingdom', dial: '44' },
+  { value: 'IE', label: 'Ireland', dial: '353' },
   { value: 'ZW', label: 'Zimbabwe', dial: '263' },
   { value: 'ZA', label: 'South Africa', dial: '27' },
   { value: 'ZM', label: 'Zambia', dial: '260' },
@@ -66,8 +68,6 @@ export const COUNTRIES = [
   { value: 'MW', label: 'Malawi', dial: '265' },
   { value: 'KE', label: 'Kenya', dial: '254' },
   { value: 'NG', label: 'Nigeria', dial: '234' },
-  { value: 'GB', label: 'United Kingdom', dial: '44' },
-  { value: 'IE', label: 'Ireland', dial: '353' },
   { value: 'US', label: 'United States', dial: '1' },
   { value: 'OTHER', label: 'Somewhere else', dial: '' },
 ] as const;

@@ -31,7 +31,7 @@ const principles = [
 
 <BaseLayout
   title="About"
-  description="Kurongeka is Shona for 'to be properly arranged'. We are the productised launch-and-run service from Kapture, working from Harare and London."
+  description="Kurongeka is Shona for 'to be properly arranged'. We are the productised launch-and-run service from Kapture, based in the UK."
   jsonLd={[breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'About', path: '/about' }]), organizationLd()]}
 >
   <PageIntro
@@ -46,8 +46,8 @@ const principles = [
       <div class="prose">
         <p>
           Kurongeka is the productised side of <a href={site.parent.url} rel="noopener">Kapture</a>, the design and
-          technology studio founded by Rodney Takunda Manyepa. Kapture builds brands, websites and platforms for
-          organisations across Southern Africa and the UK.
+          technology studio founded by Rodney Takunda Manyepa and based in the UK. Kapture builds brands, websites and
+          platforms for organisations in the UK and Southern Africa.
         </p>
         <p>
           Many of the businesses that came to Kapture did not need a bespoke project. They needed to be found on
@@ -81,7 +81,11 @@ const principles = [
 
   <section class="section">
     <div class="container about-grid">
-      <SectionHeader eyebrow="Contact" title="Talk to a person." lead={`We work from ${site.locations.join(' and ')}.`} />
+      <SectionHeader
+        eyebrow="Contact"
+        title="Talk to a person."
+        lead={`We are based in the ${site.base} and work with businesses in ${site.serves}.`}
+      />
       <div class="contact">
         <Button
           href={whatsappUrl('Hi Kurongeka, I would like to talk about my business.')}

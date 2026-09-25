@@ -1,0 +1,399 @@
+---
+import PageIntro from '@/components/layout/PageIntro.astro';
+import Button from '@/components/ui/Button.astro';
+import Icon from '@/components/ui/Icon.astro';
+import StatusMessage from '@/components/ui/StatusMessage.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { whatsappUrl } from '@/config/site';
+import { memberSession } from '@/lib/auth/session';
+import { LAUNCH_PACKAGE_CHOICES, PROJECT_STAGES, stageIndex, type Project } from '@/lib/domain/projects';
+import { noStore } from '@/lib/http';
+import { getMemberProfile, listMemberPlans, listProjects, type MemberPlan, type MemberProfile } from '@/lib/wix/account';
+
+export const prerender = false;
+noStore(Astro);
+
+const session = memberSession(Astro.cookies, Astro.url);
+if (!session) return Astro.redirect('/account/login?next=/account');
+
+let profile: MemberProfile | null = null;
+let projects: Project[] = [];
+let plans: MemberPlan[] = [];
+let failed = false;
+
+try {
+  [profile, projects, plans] = await Promise.all([
+    getMemberProfile(session.client),
+    listProjects(session.client),
+    listMemberPlans(session.client).catch(() => []),
+  ]);
+} catch (error) {
+  console.error('[account] load failed', error instanceof Error ? error.message : error);
+  failed = true;
+}
+if (!session.persist()) return Astro.redirect('/account/login?notice=session-ended&next=/account');
+
+const briefSent = Astro.url.searchParams.get('brief') === 'sent';
+const firstName = profile?.firstName || 'there';
+
+const date = (iso: string | null) =>
+  iso ? new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/London' }).format(new Date(iso)) : null;
+const packageLabel = (slug: string) => LAUNCH_PACKAGE_CHOICES.find((p) => p.value === slug)?.label ?? null;
+const PLAN_STATUS: Record<MemberPlan['status'], string> = {
+  ACTIVE: 'Active',
+  PENDING: 'Starts soon',
+  PAUSED: 'Paused',
+  ENDED: 'Ended',
+  CANCELED: 'Cancelled',
+  DRAFT: 'Not started',
+  UNDEFINED: 'Unknown',
+};
+---
+
+<BaseLayout title="Your account" description="Your Kurongeka client account." noindex>
+  <PageIntro eyebrow="Client account" title={`Hello, ${firstName}.`} lead={profile?.email ? `Signed in as ${profile.email}.` : undefined}>
+    <form method="post" action="/account/logout" class="logout">
+      <Button type="submit" variant="secondary" track="account_logout">Log out</Button>
+    </form>
+  </PageIntro>
+
+  <section class="section">
+    <div class="container account-grid">
+      <div class="main">
+        {
+          briefSent && (
+            <p class="notice notice-success" role="status" data-track-view="launch_brief_submitted">
+              Thank you. Your brief is with us. We will confirm your scope, price and launch date within one working day.
+            </p>
+          )
+        }
+
+        {
+          failed ? (
+            <StatusMessage kind="error" title="Your projects are not loading right now">
+              <p>
+                Please refresh in a moment. If it keeps happening,{' '}
+                <a href={whatsappUrl('Hi Kurongeka, my account page is not loading.')}>message us on WhatsApp</a>.
+              </p>
+            </StatusMessage>
+          ) : projects.length === 0 ? (
+            <div class="form-card empty">
+              <p class="label">Your launch</p>
+              <h2 class="h3">Start with a launch brief.</h2>
+              <p class="muted">
+                Tell us about the business in about five minutes. We reply within one working day with the scope, fixed price and
+                launch date.
+              </p>
+              <div class="form-actions">
+                <Button href="/account/brief" icon="arrow-right" track="account_start_brief">
+                  Start my brief
+                </Button>
+                <Button href="/contact?topic=call" variant="secondary">
+                  Book a free call first
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div class="projects">
+              <div class="projects-head">
+                <h2 class="h3">{projects.length === 1 ? 'Your launch' : 'Your launches'}</h2>
+                <Button href="/account/brief" variant="text" icon="plus" iconPosition="start">
+                  New brief
+                </Button>
+              </div>
+              {projects.map((project) => {
+                const current = stageIndex(project.status);
+                const stage = PROJECT_STAGES[current];
+                return (
+                  <article class="project form-card" aria-labelledby={`project-${project.id}`}>
+                    <header class="project-head">
+                      <h3 id={`project-${project.id}`} class="h3">
+                        {project.title}
+                      </h3>
+                      <p class="small muted">
+                        {[packageLabel(project.packageSlug) && `Launch ${packageLabel(project.packageSlug)}`, date(project.createdAt) && `Started ${date(project.createdAt)}`]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </p>
+                    </header>
+
+                    {project.status === 'on_hold' ? (
+                      <p class="notice notice-info">This project is on hold. We will be in touch about the next step.</p>
+                    ) : (
+                      <ol class="stages" aria-label="Progress">
+                        {PROJECT_STAGES.map((s, i) => (
+                          <li
+                            class:list={['stage', i < current && 'done', i === current && 'current']}
+                            aria-current={i === current ? 'step' : undefined}
+                          >
+                            <span class="stage-dot" aria-hidden="true">
+                              {i < current ? <Icon name="check" /> : i + 1}
+                            </span>
+                            <span class="stage-label">{s.label}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+
+                    {stage && project.status !== 'on_hold' && <p>{stage.client}</p>}
+
+                    <dl class="facts">
+                      {project.nextStep && (
+                        <div>
+                          <dt>Next step</dt>
+                          <dd>{project.nextStep}</dd>
+                        </div>
+                      )}
+                      {project.clientNote && (
+                        <div>
+                          <dt>Latest update</dt>
+                          <dd>{project.clientNote}</dd>
+                        </div>
+                      )}
+                      {date(project.targetLaunchDate) && (
+                        <div>
+                          <dt>Target launch</dt>
+                          <dd>{date(project.targetLaunchDate)}</dd>
+                        </div>
+                      )}
+                      <div>
+                        <dt>Deposit</dt>
+                        <dd>{project.depositReceived ? 'Received, thank you' : 'Invoice to follow once scope is agreed'}</dd>
+                      </div>
+                    </dl>
+
+                    {(project.previewUrl || project.liveUrl || project.filesUrl) && (
+                      <div class="project-links">
+                        {project.liveUrl && (
+                          <Button href={project.liveUrl} icon="arrow-up-right" external>
+                            Visit your live site
+                          </Button>
+                        )}
+                        {project.previewUrl && (
+                          <Button href={project.previewUrl} variant="secondary" icon="arrow-up-right" external>
+                            Open preview
+                          </Button>
+                        )}
+                        {project.filesUrl && (
+                          <Button href={project.filesUrl} variant="secondary" icon="arrow-up-right" external>
+                            Shared files
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          )
+        }
+      </div>
+
+      <aside class="aside" aria-label="Plan and help">
+        <div class="aside-block">
+          <h2 class="h4">Run plan</h2>
+          {
+            plans.length ? (
+              <ul class="plans" role="list">
+                {plans.map((plan) => (
+                  <li>
+                    <span class="plan-name">{plan.name}</span>
+                    <span class="small muted">
+                      {PLAN_STATUS[plan.status]}
+                      {plan.status === 'ACTIVE' && date(plan.startDate) ? ` since ${date(plan.startDate)}` : ''}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <>
+                <p class="muted">No monthly plan yet. Run plans keep your site updated, secure and growing after launch.</p>
+                <Button href="/pricing#run-plans" variant="text" icon="arrow-right">
+                  See Run plans
+                </Button>
+              </>
+            )
+          }
+        </div>
+        <div class="aside-block">
+          <h2 class="h4">Need something?</h2>
+          <p class="muted">Changes, questions or a quick call: message your manager.</p>
+          <Button
+            href={whatsappUrl('Hi Kurongeka, I have a question about my project.')}
+            variant="secondary"
+            icon="whatsapp"
+            iconPosition="start"
+            track="whatsapp_account"
+          >
+            WhatsApp us
+          </Button>
+          <Button href="/contact?topic=call" variant="text" icon="arrow-right">
+            Book a call
+          </Button>
+        </div>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .logout {
+    margin-top: var(--space-2);
+  }
+
+  .section {
+    padding-block: var(--space-8) var(--section-pad);
+  }
+
+  .account-grid {
+    display: grid;
+    gap: var(--space-8);
+    align-items: start;
+  }
+
+  .main {
+    display: grid;
+    gap: var(--space-6);
+    min-width: 0;
+  }
+
+  .empty {
+    gap: var(--space-4);
+  }
+
+  .projects {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .projects-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .project {
+    gap: var(--space-5);
+  }
+
+  .project-head {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  .stages {
+    display: grid;
+    gap: var(--space-3);
+    list-style: none;
+    padding: 0;
+  }
+
+  .stage {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    color: var(--color-text-muted);
+    font-size: var(--text-small);
+  }
+
+  .stage-dot {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px solid var(--color-line-strong);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stage.done .stage-dot {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .stage.current {
+    color: var(--color-text);
+    font-weight: var(--weight-semibold);
+  }
+
+  .stage.current .stage-dot {
+    border: 2px solid var(--color-ink);
+  }
+
+  .facts {
+    display: grid;
+    gap: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .facts div {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  .facts dt {
+    font-size: var(--text-caption);
+    font-weight: var(--weight-semibold);
+    color: var(--color-text-muted);
+  }
+
+  .project-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .aside {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .aside-block {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: start;
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .plans {
+    display: grid;
+    gap: var(--space-3);
+    list-style: none;
+    padding: 0;
+  }
+
+  .plans li {
+    display: grid;
+  }
+
+  .plan-name {
+    font-weight: var(--weight-semibold);
+  }
+
+  @media (min-width: 768px) {
+    .stages {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .stage {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .facts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .account-grid {
+      grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+      gap: var(--space-9);
+    }
+  }
+</style>

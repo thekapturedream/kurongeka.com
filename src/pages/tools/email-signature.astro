@@ -1,0 +1,308 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import ToolLayout from '@/layouts/ToolLayout.astro';
+import { signatureHtml, type SignatureInput } from '@/lib/domain/signature';
+
+export const prerender = true;
+
+/** Example details. The phone number is from Ofcom's range reserved for drama and examples. */
+const example: SignatureInput = {
+  name: 'Tendai Moyo',
+  role: 'Owner',
+  business: "Tendai's Kitchen",
+  phone: '+44 7700 900123',
+  email: 'hello@tendaiskitchen.co.uk',
+  website: 'tendaiskitchen.co.uk',
+  accent: '#1D6B45',
+};
+
+const fields = [
+  { name: 'name', label: 'Your name', autocomplete: 'name', type: 'text' },
+  { name: 'role', label: 'Job title', autocomplete: 'organization-title', type: 'text' },
+  { name: 'business', label: 'Business name', autocomplete: 'organization', type: 'text' },
+  { name: 'phone', label: 'Phone', autocomplete: 'tel', type: 'tel' },
+  { name: 'email', label: 'Email', autocomplete: 'email', type: 'email' },
+  { name: 'website', label: 'Website', autocomplete: 'url', type: 'text' },
+] as const;
+
+const steps = [
+  {
+    client: 'Gmail',
+    body: 'Settings (the gear icon), See all settings, General. Scroll to Signature, create one, paste, then Save changes at the bottom.',
+  },
+  {
+    client: 'Outlook',
+    body: 'Settings, Mail (or Accounts), Signatures. Create a new signature, paste, and set it as the default for new messages.',
+  },
+  {
+    client: 'Apple Mail',
+    body: 'Mail, Settings, Signatures. Add a signature, untick "Always match my default message font", then paste.',
+  },
+  {
+    client: 'Phone apps',
+    body: 'Most phone mail apps only take plain text. Use Copy as text and paste it into the app’s signature setting.',
+  },
+];
+---
+
+<ToolLayout
+  slug="email-signature"
+  title="Email signature"
+  lead="Fill in your details and copy a clean signature that works in Gmail, Outlook and Apple Mail. Nothing is sent to us: it all happens in your browser."
+  description="Free email signature generator for small businesses. Make a clean, professional signature for Gmail, Outlook and Apple Mail and copy it in one click."
+>
+  <div class="signature-tool" data-signature-tool>
+    <form class="editor" data-signature-form>
+      <div class="fields">
+        {
+          fields.map((f) => (
+            <div class="field">
+              <label class="field-label" for={`sig-${f.name}`}>
+                {f.label}
+              </label>
+              <input
+                class="input"
+                id={`sig-${f.name}`}
+                name={f.name}
+                type={f.type}
+                autocomplete={f.autocomplete}
+                value={example[f.name]}
+                maxlength={120}
+                data-sig-field
+              />
+            </div>
+          ))
+        }
+        <div class="field">
+          <label class="field-label" for="sig-accent">Line colour</label>
+          <div class="colour-row">
+            <input type="color" id="sig-accent" name="accent" value={example.accent.toLowerCase()} class="picker" data-sig-field />
+            <span class="small muted">Use your brand colour.</span>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <div class="result">
+      <div class="preview-frame">
+        <p class="preview-label caption">Preview</p>
+        <div class="preview" data-signature-preview set:html={signatureHtml(example)} />
+      </div>
+      <div class="actions">
+        <button type="button" class="action primary" data-copy-rich>
+          <Icon name="copy" />
+          <span data-label>Copy signature</span>
+        </button>
+        <button type="button" class="action" data-copy-text>
+          <Icon name="copy" />
+          <span data-label>Copy as text</span>
+        </button>
+        <button type="button" class="action" data-copy-html>
+          <Icon name="copy" />
+          <span data-label>Copy HTML</span>
+        </button>
+      </div>
+      <p class="small muted" role="status" data-copy-status></p>
+      <noscript>
+        <p class="notice notice-info">Turn on JavaScript to edit and copy your signature. You can still select the preview and copy it.</p>
+      </noscript>
+
+      <div class="howto">
+        <h2 class="h4">Adding it to your email</h2>
+        {
+          steps.map((s) => (
+            <details>
+              <summary>{s.client}</summary>
+              <p class="muted">{s.body}</p>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</ToolLayout>
+
+<script>
+  import { signatureHtml, signatureText, type SignatureInput } from '@/lib/domain/signature';
+  import { track } from '@/scripts/analytics';
+
+  const root = document.querySelector<HTMLElement>('[data-signature-tool]');
+  const form = root?.querySelector<HTMLFormElement>('[data-signature-form]');
+  const preview = root?.querySelector<HTMLElement>('[data-signature-preview]');
+  const status = root?.querySelector<HTMLElement>('[data-copy-status]');
+
+  function read(): SignatureInput {
+    const data = new FormData(form ?? undefined);
+    const value = (key: string) => String(data.get(key) ?? '');
+    return {
+      name: value('name'),
+      role: value('role'),
+      business: value('business'),
+      phone: value('phone'),
+      email: value('email'),
+      website: value('website'),
+      accent: value('accent'),
+    };
+  }
+
+  function render(): void {
+    if (preview) preview.innerHTML = signatureHtml(read());
+  }
+
+  form?.addEventListener('input', render);
+  form?.addEventListener('submit', (event) => event.preventDefault());
+
+  function say(message: string): void {
+    if (status) status.textContent = message;
+  }
+
+  async function copyRich(): Promise<void> {
+    const input = read();
+    const html = signatureHtml(input);
+    const text = signatureText(input);
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'text/html': new Blob([html], { type: 'text/html' }),
+          'text/plain': new Blob([text], { type: 'text/plain' }),
+        }),
+      ]);
+      say('Signature copied. Paste it into your email settings.');
+    } catch {
+      // Fallback: select the rendered preview so the browser copies formatted content.
+      const range = document.createRange();
+      if (preview) range.selectNodeContents(preview);
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      const ok = document.execCommand?.('copy');
+      selection?.removeAllRanges();
+      say(ok ? 'Signature copied. Paste it into your email settings.' : 'Select the preview and copy it with Ctrl+C or Cmd+C.');
+    }
+    track('tool_email_signature_copy', { format: 'rich' });
+  }
+
+  async function copyPlain(value: string, format: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(value);
+      say(format === 'html' ? 'HTML copied.' : 'Text copied.');
+    } catch {
+      say('Your browser blocked copying. Select the preview and copy it instead.');
+    }
+    track('tool_email_signature_copy', { format });
+  }
+
+  root?.querySelector('[data-copy-rich]')?.addEventListener('click', () => void copyRich());
+  root?.querySelector('[data-copy-text]')?.addEventListener('click', () => void copyPlain(signatureText(read()), 'text'));
+  root?.querySelector('[data-copy-html]')?.addEventListener('click', () => void copyPlain(signatureHtml(read()), 'html'));
+</script>
+
+<style>
+  .signature-tool {
+    display: grid;
+    gap: var(--space-7);
+  }
+
+  .editor {
+    min-width: 0;
+  }
+
+  .colour-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .picker {
+    width: var(--control-height);
+    height: var(--control-height);
+    padding: 0.2rem;
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-paper);
+    cursor: pointer;
+  }
+
+  .result {
+    display: grid;
+    gap: var(--space-5);
+    align-content: start;
+    min-width: 0;
+  }
+
+  .preview-frame {
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-paper);
+    overflow-x: auto;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .action {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--control-height);
+    padding: 0 var(--space-4);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-paper);
+    font-weight: var(--weight-semibold);
+  }
+
+  .action:hover {
+    border-color: var(--color-ink);
+  }
+
+  .action.primary {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .action.primary:hover {
+    background: #262b2d;
+  }
+
+  .howto {
+    display: grid;
+    gap: var(--space-2);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .howto h2 {
+    margin-bottom: var(--space-2);
+  }
+
+  details {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  summary {
+    padding: var(--space-3) 0;
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+  }
+
+  details p {
+    padding-bottom: var(--space-4);
+    max-width: var(--measure);
+  }
+
+  @media (min-width: 1024px) {
+    .signature-tool {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+      gap: var(--space-9);
+      align-items: start;
+    }
+  }
+</style>

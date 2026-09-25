@@ -1,0 +1,65 @@
+---
+/** A segmented control made of links, so switching modes works without JavaScript. */
+interface Item {
+  label: string;
+  href: string;
+  current: boolean;
+}
+
+interface Props {
+  items: Item[];
+  label: string;
+}
+
+const { items, label } = Astro.props;
+---
+
+<nav class="segmented" aria-label={label}>
+  <ul role="list">
+    {
+      items.map((item) => (
+        <li>
+          <a href={item.href} aria-current={item.current ? 'page' : undefined}>
+            {item.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  .segmented ul {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    padding: var(--space-1);
+    list-style: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-alt);
+  }
+
+  .segmented a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.5rem;
+    padding: 0 var(--space-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-small);
+    font-weight: var(--weight-semibold);
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+
+  .segmented a:hover {
+    color: var(--color-text);
+  }
+
+  .segmented a[aria-current='page'] {
+    background: var(--color-bg);
+    color: var(--color-text);
+    box-shadow: var(--shadow-1);
+    outline: 1px solid var(--color-border);
+  }
+</style>

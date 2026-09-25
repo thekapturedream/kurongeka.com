@@ -1,0 +1,145 @@
+---
+import Button from '@/components/ui/Button.astro';
+import StatusMessage from '@/components/ui/StatusMessage.astro';
+import { whatsappUrl } from '@/config/site';
+import { formatPrice, workingDays } from '@/lib/domain/format';
+import type { LaunchPackage } from '@/lib/domain/types';
+
+interface Props {
+  packages: LaunchPackage[];
+  failed?: boolean;
+  /** Show only the first N inclusions (home page). */
+  includeLimit?: number;
+  headingLevel?: 'h2' | 'h3';
+}
+const { packages, failed = false, includeLimit, headingLevel = 'h3' } = Astro.props;
+const Heading = headingLevel;
+---
+
+{
+  packages.length === 0 ? (
+    <StatusMessage kind={failed ? 'error' : 'empty'} title={failed ? 'Prices are not loading right now' : 'Prices are being updated'}>
+      <p>
+        Message us on <a href={whatsappUrl('Hi Kurongeka, could you send me your launch prices?')}>WhatsApp</a> and we
+        will send them straight away.
+      </p>
+    </StatusMessage>
+  ) : (
+    <ol class="packages" role="list">
+      {packages.map((pkg) => {
+        const includes = includeLimit ? pkg.includes.slice(0, includeLimit) : pkg.includes;
+        return (
+          <li class:list={['package', pkg.highlighted && 'package-highlighted surface-ink']}>
+            <div class="package-head">
+              {pkg.highlighted && <p class="package-flag">Recommended</p>}
+              <Heading class="h3">{pkg.title}</Heading>
+              <p class="muted">{pkg.tagline}</p>
+            </div>
+            <p class="package-price">
+              {pkg.price !== null && <span class="price-main">{formatPrice(pkg.price)}</span>}
+              <span class="price-note">one-off{pkg.deliveryDays !== null && <>, live in about {workingDays(pkg.deliveryDays)}</>}</span>
+            </p>
+            <ul class="check-list includes">
+              {includes.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+            {includeLimit && pkg.includes.length > includeLimit && (
+              <p class="more small muted">And {pkg.includes.length - includeLimit} more</p>
+            )}
+            <div class="package-foot">
+              {pkg.bestFor && <p class="small muted">{pkg.bestFor}</p>}
+              <Button
+                href={`/check?package=${pkg.slug}`}
+                variant={pkg.highlighted ? 'accent' : 'primary'}
+                block
+                track={`cta_package_${pkg.slug}`}
+              >
+                Start with a free check
+              </Button>
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  )
+}
+
+<style>
+  .packages {
+    display: grid;
+    gap: var(--space-5);
+    list-style: none;
+    padding: 0;
+  }
+
+  .package {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding: var(--space-6);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg);
+  }
+
+  .package-head {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .package-flag {
+    justify-self: start;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-sm);
+    background: var(--color-yellow);
+    color: var(--color-ink);
+    font-size: var(--text-caption);
+    font-weight: var(--weight-semibold);
+  }
+
+  .package-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: var(--space-3);
+    row-gap: var(--space-1);
+    padding-bottom: var(--space-5);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .price-main {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .price-note {
+    flex-basis: 100%;
+    font-size: var(--text-small);
+    color: var(--color-text-muted);
+  }
+
+  .includes {
+    font-size: var(--text-small);
+  }
+
+  .more {
+    margin-top: calc(var(--space-3) * -1);
+  }
+
+  .package-foot {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: auto;
+  }
+
+  @media (min-width: 1024px) {
+    .packages {
+      grid-template-columns: repeat(3, 1fr);
+      align-items: stretch;
+    }
+  }
+</style>

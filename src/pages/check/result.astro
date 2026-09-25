@@ -1,0 +1,309 @@
+---
+import Button from '@/components/ui/Button.astro';
+import ScoreCard from '@/components/sections/ScoreCard.astro';
+import PlanCards from '@/components/sections/PlanCards.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { whatsappUrl } from '@/config/site';
+import { BAND_LABEL, PILLAR_COPY, band, parseResultParams } from '@/lib/domain/check';
+import { formatPrice, workingDays } from '@/lib/domain/format';
+import { cachePage } from '@/lib/http';
+import { getLaunchPackages, getRunPlans } from '@/lib/services/catalog';
+
+const result = parseResultParams(Astro.url.searchParams);
+if (!result) return Astro.redirect('/check', 302);
+
+const isRun = result.recommendation === 'run';
+const [packages, plans] = await Promise.all([getLaunchPackages(), isRun ? getRunPlans() : Promise.resolve(null)]);
+cachePage(Astro, { ok: packages.ok && (plans?.ok ?? true), maxAge: 3600 });
+
+const pkg = isRun ? null : packages.data.find((p) => p.slug === result.recommendation) ?? null;
+const overallBand = band(result.overall);
+const pillars = (['found', 'trusted', 'paid'] as const).map((key) => ({
+  key,
+  title: PILLAR_COPY[key].title,
+  value: result[key],
+  copy: PILLAR_COPY[key][band(result[key])],
+}));
+const weakest = [...pillars].sort((a, b) => a.value - b.value)[0];
+
+const nextStepName = isRun ? 'a Run plan' : pkg ? `Launch ${pkg.title}` : 'a launch package';
+const whatsappMessage = `Hi Kurongeka, I just took the check. My score is ${result.overall}/100 and you recommended ${nextStepName}. Can we talk?`;
+
+const intro: Record<typeof overallBand, string> = {
+  low: 'The good news: the biggest gains come first. A proper launch will change how customers find and pay you.',
+  mid: 'You have the foundations. Arranging the missing pieces will make the business easier to find, trust and pay.',
+  high: 'You are in good shape. The job now is keeping it that way and growing from here.',
+};
+---
+
+<BaseLayout
+  title="Your Kurongeka score"
+  description="Your Kurongeka score and recommended next step."
+  noindex
+>
+  <section class="result-hero surface-ink">
+    <div class="container result-grid">
+      <div class="result-copy">
+        <p class="label">Your Kurongeka score</p>
+        <h1 class="h1">{BAND_LABEL[overallBand]}<span class="accent-dot">.</span></h1>
+        <p class="lead">{intro[overallBand]}</p>
+        <p class="small muted">
+          We have your answers. A Kurongeka manager will contact you within one working day.
+        </p>
+      </div>
+      <ScoreCard score={result} caption="Based on your answers" headingLevel="h2" />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2 class="h2">What your score means</h2>
+      <dl class="pillars">
+        {
+          pillars.map((p) => (
+            <div class:list={['pillar', p.key === weakest?.key && 'pillar-focus']}>
+              <dt>
+                <span class="h3">{p.title}</span>
+                <span class="pillar-score">{p.value}/100</span>
+              </dt>
+              <dd class="muted">{p.copy}</dd>
+              {p.key === weakest?.key && <dd class="pillar-tag small">Start here</dd>}
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+
+  <section class="section surface-alt">
+    <div class="container recommend-grid">
+      <div class="recommend-copy">
+        <p class="label">Recommended next step</p>
+        {
+          pkg ? (
+            <>
+              <h2>Launch {pkg.title}</h2>
+              <p class="lead">{pkg.tagline}</p>
+              <p class="price">
+                {pkg.price !== null && <span class="price-main">{formatPrice(pkg.price)}</span>}
+                <span class="muted">one-off</span>
+              </p>
+              {pkg.deliveryDays !== null && <p class="muted">Live in about {workingDays(pkg.deliveryDays)}.</p>}
+            </>
+          ) : isRun ? (
+            <>
+              <h2>Keep it running with a Run plan</h2>
+              <p class="lead">Your basics are in place. A monthly plan keeps your site current and brings in new customers.</p>
+            </>
+          ) : (
+            <>
+              <h2>Let us recommend a package on a call</h2>
+              <p class="lead">Prices are being updated. We will confirm the right package and price when we talk.</p>
+            </>
+          )
+        }
+        <div class="actions">
+          <Button
+            href={whatsappUrl(whatsappMessage)}
+            icon="whatsapp"
+            iconPosition="start"
+            size="lg"
+            track="whatsapp_result"
+          >
+            Talk to us on WhatsApp now
+          </Button>
+          <Button href="/pricing" variant="secondary" size="lg">Compare all options</Button>
+        </div>
+      </div>
+      <div>
+        {pkg && (
+          <ul class="check-list includes">
+            {pkg.includes.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        )}
+        {isRun && plans && <PlanCards plans={plans.data} failed={!plans.ok} />}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2 class="h2">What happens next</h2>
+      <ol class="next" role="list">
+        <li>
+          <span class="next-num" aria-hidden="true">1</span>
+          <div>
+            <h3 class="h4">We contact you</h3>
+            <p class="muted">Within one working day, on the channel you chose.</p>
+          </div>
+        </li>
+        <li>
+          <span class="next-num" aria-hidden="true">2</span>
+          <div>
+            <h3 class="h4">A 15-minute call</h3>
+            <p class="muted">We confirm your goals, the right package and the fixed price.</p>
+          </div>
+        </li>
+        <li>
+          <span class="next-num" aria-hidden="true">3</span>
+          <div>
+            <h3 class="h4">You decide</h3>
+            <p class="muted">No obligation. If you go ahead, a 50% deposit books your launch.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .result-hero {
+    padding-block: clamp(3rem, 2rem + 4vw, 6rem);
+  }
+
+  .result-grid {
+    display: grid;
+    gap: var(--space-8);
+    align-items: center;
+  }
+
+  .result-copy {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .section {
+    padding-block: var(--section-pad);
+  }
+
+  .pillars {
+    display: grid;
+    gap: var(--space-5);
+    margin-top: var(--space-7);
+  }
+
+  .pillar {
+    display: grid;
+    gap: var(--space-2);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .pillar-focus {
+    border-top: 2px solid var(--color-text);
+  }
+
+  .pillar dt {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .pillar-score {
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--weight-semibold);
+  }
+
+  .pillar-tag {
+    justify-self: start;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-sm);
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-weight: var(--weight-semibold);
+  }
+
+  .recommend-grid {
+    display: grid;
+    gap: var(--space-7);
+  }
+
+  .recommend-copy {
+    display: grid;
+    gap: var(--space-4);
+    align-content: start;
+  }
+
+  .price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-3);
+  }
+
+  .price-main {
+    font-family: var(--font-display);
+    font-size: 2.75rem;
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+  }
+
+  .includes {
+    font-size: var(--text-lead);
+  }
+
+  .next {
+    display: grid;
+    gap: var(--space-6);
+    list-style: none;
+    padding: 0;
+    margin-top: var(--space-7);
+  }
+
+  .next li {
+    display: flex;
+    gap: var(--space-4);
+  }
+
+  .next-num {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    border: 1px solid var(--color-text);
+    font-weight: var(--weight-semibold);
+  }
+
+  .next li > div {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  @media (max-width: 479px) {
+    .actions > :global(*) {
+      width: 100%;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .pillars,
+    .next {
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-7);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .result-grid {
+      grid-template-columns: 1.2fr 1fr;
+      gap: var(--space-9);
+    }
+    .recommend-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-9);
+    }
+  }
+</style>

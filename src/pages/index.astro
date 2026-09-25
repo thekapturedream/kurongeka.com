@@ -1,0 +1,373 @@
+---
+import Button from '@/components/ui/Button.astro';
+import SectionHeader from '@/components/ui/SectionHeader.astro';
+import CtaBand from '@/components/sections/CtaBand.astro';
+import FaqList from '@/components/sections/FaqList.astro';
+import ModelGrid from '@/components/sections/ModelGrid.astro';
+import PackageCards from '@/components/sections/PackageCards.astro';
+import ScoreCard from '@/components/sections/ScoreCard.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { site } from '@/config/site';
+import { formatMoney } from '@/lib/domain/format';
+import { cachePage } from '@/lib/http';
+import { faqLd, organizationLd, websiteLd } from '@/lib/seo';
+import { getBusinessModels, getFaqs, getLaunchPackages, getRunPlans } from '@/lib/services/catalog';
+
+const [packages, models, faqs, plans] = await Promise.all([
+  getLaunchPackages(),
+  getBusinessModels(),
+  getFaqs(),
+  getRunPlans(),
+]);
+cachePage(Astro, { ok: packages.ok && models.ok && faqs.ok && plans.ok });
+
+const cheapestPlan = plans.data[0];
+const homeFaqs = faqs.data.filter((f) => f.topic === 'general' || f.topic === 'pricing').slice(0, 6);
+const exampleScore = { overall: 42, found: 35, trusted: 45, paid: 45 };
+
+const steps = [
+  {
+    number: '01',
+    title: 'Check',
+    body: 'Answer seven quick questions. You get your Kurongeka score, and a manager contacts you within one working day.',
+  },
+  {
+    number: '02',
+    title: 'Launch',
+    body: 'Pick a fixed-price package. We build your site, set up payments and bookings, and train you to run it.',
+  },
+  {
+    number: '03',
+    title: 'Run',
+    body: 'Manage it yourself from the Wix app, or let us look after updates, content and reports every month.',
+  },
+];
+
+const outcomes = [
+  { term: 'Found', body: 'On Google, Maps and social, with the same correct details everywhere.' },
+  { term: 'Trusted', body: 'A brand and website that look like the serious business you are.' },
+  { term: 'Booked', body: 'Customers can book, order or enquire at any hour without calling.' },
+  { term: 'Paid', body: 'Mobile money, card and diaspora payments, connected where your market allows.' },
+  { term: 'Organised', body: 'Bookings, orders and customers in one dashboard, on your phone.' },
+];
+
+const reasons = [
+  { title: 'Fixed prices, agreed upfront', body: 'You know the full cost before we start. No hourly billing, no surprise invoices.' },
+  { title: 'You own everything', body: 'Your site, domain and customer data are set up in your business’s name.' },
+  { title: 'Local payments, global reach', body: 'Take payments from customers at home and from the diaspora abroad.' },
+  { title: 'A real team', body: 'Designers and developers from Kapture, the studio behind Kurongeka, in Harare and London.' },
+];
+---
+
+<BaseLayout
+  title="Kurongeka: your business, properly set up"
+  exactTitle
+  description={site.description}
+  headerTone="ink"
+  jsonLd={[organizationLd(), websiteLd(), faqLd(homeFaqs)]}
+>
+  <section class="hero surface-ink" aria-labelledby="hero-title">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <p class="label">Kurongeka, by Kapture</p>
+        <h1 id="hero-title" class="display">Your business, properly set up<span class="accent-dot">.</span></h1>
+        <p class="lead">
+          We launch your business online in days: website, brand, payments and bookings. Then we keep it running.
+          Fixed prices, and you own everything.
+        </p>
+        <div class="hero-actions">
+          <Button href="/check" variant="accent" size="lg" icon="arrow-right" track="cta_hero_check">
+            Take the free check
+          </Button>
+          <Button href="/pricing" variant="secondary" size="lg" track="cta_hero_pricing">See prices</Button>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <ScoreCard
+          score={exampleScore}
+          caption="Example Kurongeka score"
+          footer="Found, Trusted and Paid, scored from your answers in about two minutes."
+        />
+      </div>
+    </div>
+    <div class="container">
+      <ul class="facts" role="list">
+        <li><strong>7 to 21 working days</strong><span>from deposit to launch</span></li>
+        <li><strong>Fixed prices</strong><span>in pounds sterling</span></li>
+        <li><strong>Built on Wix</strong><span>managed from your phone</span></li>
+        <li><strong>Harare and London</strong><span>serving Southern Africa and the diaspora</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="how-title">
+    <div class="container">
+      <SectionHeader
+        id="how-title"
+        eyebrow="How it works"
+        title="Three steps. No 17-page brief."
+        lead="Kurongeka is a service with a clear path, not a project that drifts."
+      />
+      <ol class="steps" role="list">
+        {
+          steps.map((step) => (
+            <li class="step">
+              <span class="step-number" aria-hidden="true">
+                {step.number}
+              </span>
+              <h3>{step.title}</h3>
+              <p class="muted">{step.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+      <Button href="/how-it-works" variant="text" icon="arrow-right">See the full process</Button>
+    </div>
+  </section>
+
+  <section class="section surface-alt" aria-labelledby="outcomes-title">
+    <div class="container outcomes-grid">
+      <SectionHeader
+        id="outcomes-title"
+        eyebrow="What you get"
+        title="What properly set up means."
+        lead="Every launch covers the five things a small business needs to win customers online."
+      />
+      <dl class="outcomes">
+        {
+          outcomes.map((o) => (
+            <div class="outcome">
+              <dt class="h3">{o.term}</dt>
+              <dd class="muted">{o.body}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="models-title">
+    <div class="container stack" style="--stack-gap: var(--space-8)">
+      <SectionHeader
+        id="models-title"
+        eyebrow="Business types"
+        title="Built for how your business works."
+        lead="Each launch starts from a proven model for your type of business, then takes on your brand."
+      />
+      <ModelGrid models={models.data} failed={!models.ok} limit={6} />
+      {
+        models.data.length > 6 && (
+          <Button href="/business-types" variant="text" icon="arrow-right">
+            See all {models.data.length} business types
+          </Button>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="section surface-alt" aria-labelledby="pricing-title">
+    <div class="container stack" style="--stack-gap: var(--space-8)">
+      <SectionHeader
+        id="pricing-title"
+        eyebrow="Pricing"
+        title="One price. Agreed before we start."
+        lead={cheapestPlan
+          ? `Launch once, then run it yourself or with us from ${formatMoney(cheapestPlan.price, cheapestPlan.currency)} a month.`
+          : 'Launch once, then run it yourself or with us every month.'}
+      />
+      <PackageCards packages={packages.data} failed={!packages.ok} includeLimit={4} />
+      <Button href="/pricing" variant="text" icon="arrow-right">Compare packages and monthly plans</Button>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="why-title">
+    <div class="container why-grid">
+      <SectionHeader id="why-title" eyebrow="Why Kurongeka" title="The certainty of a product. The care of a studio." />
+      <ul class="reasons" role="list">
+        {
+          reasons.map((r) => (
+            <li>
+              <h3 class="h4">{r.title}</h3>
+              <p class="muted">{r.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  {
+    homeFaqs.length > 0 && (
+      <section class="section surface-alt" aria-labelledby="faq-title">
+        <div class="container faq-grid">
+          <SectionHeader id="faq-title" eyebrow="Questions" title="Straight answers." />
+          <FaqList faqs={homeFaqs} />
+        </div>
+      </section>
+    )
+  }
+
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  .hero {
+    padding-top: clamp(3rem, 2rem + 5vw, 7rem);
+  }
+
+  .hero-grid {
+    display: grid;
+    gap: var(--space-8);
+    align-items: center;
+    padding-bottom: clamp(3rem, 2rem + 4vw, 6rem);
+  }
+
+  .hero-copy {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .hero-copy h1 {
+    max-width: 12ch;
+  }
+
+  .hero-copy .lead {
+    max-width: 38rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+  }
+
+  .hero-visual {
+    max-width: 28rem;
+    width: 100%;
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    list-style: none;
+    padding: 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .facts li {
+    display: grid;
+    gap: var(--space-1);
+    padding: var(--space-5) var(--space-4) var(--space-5) 0;
+    font-size: var(--text-small);
+  }
+
+  .facts strong {
+    font-weight: var(--weight-semibold);
+  }
+
+  .facts span {
+    color: var(--color-text-muted);
+  }
+
+  .section {
+    padding-block: var(--section-pad);
+  }
+
+  .steps {
+    display: grid;
+    gap: var(--space-6);
+    list-style: none;
+    padding: 0;
+    margin-block: var(--space-8) var(--space-6);
+  }
+
+  .step {
+    display: grid;
+    gap: var(--space-3);
+    padding-top: var(--space-5);
+    border-top: 2px solid var(--color-text);
+  }
+
+  .step-number {
+    font-family: var(--font-display);
+    font-size: var(--text-small);
+    font-weight: var(--weight-semibold);
+    color: var(--color-text-muted);
+  }
+
+  .outcomes-grid,
+  .why-grid,
+  .faq-grid {
+    display: grid;
+    gap: var(--space-8);
+  }
+
+  .outcomes {
+    display: grid;
+  }
+
+  .outcome {
+    display: grid;
+    gap: var(--space-2);
+    padding-block: var(--space-5);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .outcome:last-child {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .reasons {
+    display: grid;
+    gap: var(--space-7);
+    list-style: none;
+    padding: 0;
+  }
+
+  .reasons li {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  @media (max-width: 479px) {
+    .hero-actions > :global(*) {
+      width: 100%;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .facts {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .steps {
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-7);
+    }
+    .reasons {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .outcome {
+      grid-template-columns: 12rem 1fr;
+      align-items: baseline;
+      gap: var(--space-6);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .hero-grid {
+      grid-template-columns: 1.35fr 1fr;
+      gap: var(--space-9);
+    }
+    .hero-visual {
+      justify-self: end;
+    }
+    .outcomes-grid,
+    .why-grid,
+    .faq-grid {
+      grid-template-columns: 5fr 7fr;
+      gap: var(--space-9);
+      align-items: start;
+    }
+  }
+</style>

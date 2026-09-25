@@ -1,0 +1,565 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { site, whatsappUrl } from '@/config/site';
+import {
+  BRAND_STATUS,
+  CONTACT_PREFERENCES,
+  COUNTRIES,
+  MAPS_STATUS,
+  OTHER_BUSINESS_TYPE,
+  PAYMENT_METHODS,
+  PRIORITIES,
+  RECOMMENDATIONS,
+  STAGES,
+  WEBSITE_STATUS,
+  type CountryCode,
+} from '@/lib/domain/check';
+import { breadcrumbLd } from '@/lib/seo';
+import { getBusinessModels } from '@/lib/services/catalog';
+
+const models = await getBusinessModels();
+Astro.response.headers.set('Cache-Control', 'no-store');
+
+const params = Astro.url.searchParams;
+const preselectedType = params.get('type') ?? '';
+const interest = params.get('package');
+const validInterest = interest && (RECOMMENDATIONS as readonly string[]).includes(interest) ? interest : '';
+const errorCode = params.get('error');
+
+const geo = Astro.request.headers.get('x-vercel-ip-country')?.toUpperCase();
+const defaultCountry: CountryCode = COUNTRIES.some((c) => c.value === geo) ? (geo as CountryCode) : 'ZW';
+
+const businessTypes = [
+  ...models.data.map((m) => ({ value: m.slug, label: m.title })),
+  { value: OTHER_BUSINESS_TYPE, label: 'Something else' },
+];
+
+const singleSteps = [
+  { name: 'stage', title: 'Where is the business today?', options: STAGES },
+  { name: 'website', title: 'Do you have a website?', options: WEBSITE_STATUS },
+  { name: 'maps', title: 'Can customers find you on Google Maps?', options: MAPS_STATUS },
+] as const;
+
+const laterSteps = [
+  { name: 'brand', title: 'Are you happy with your logo and brand?', options: BRAND_STATUS },
+  { name: 'priority', title: 'What matters most in the next 90 days?', options: PRIORITIES },
+] as const;
+
+const totalSteps = 8;
+---
+
+<BaseLayout
+  title="Free business check"
+  description="Seven questions, about two minutes. Get your Kurongeka score for Found, Trusted and Paid, and a clear next step for your business."
+  jsonLd={[breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'Free check', path: '/check' }])]}
+>
+  <section class="check">
+    <div class="container-narrow">
+      <header class="check-intro">
+        <p class="label">The Kurongeka Check</p>
+        <h1 class="h2">How properly set up is your business?</h1>
+        <p class="muted">Seven questions, about two minutes. Free, and no obligation.</p>
+      </header>
+
+      {
+        errorCode && (
+          <div class="notice" role="alert">
+            <p>
+              {errorCode === 'invalid'
+                ? 'Some answers were missing. Please check each question and try again.'
+                : 'We could not send your answers just now. Please try again, or message us on WhatsApp.'}
+            </p>
+          </div>
+        )
+      }
+
+      <form method="post" action="/api/check" class="check-form" data-check-form novalidate>
+        <div class="progress" data-progress hidden>
+          <div class="progress-track" aria-hidden="true"><span class="progress-bar" data-progress-bar></span></div>
+          <p class="progress-label small" data-progress-label aria-live="polite">Question 1 of {totalSteps}</p>
+        </div>
+
+        <input type="hidden" name="interest" value={validInterest} />
+
+        <fieldset class="step" data-step="businessType" data-type="single">
+          <legend class="step-title" tabindex="-1">What kind of business do you run?</legend>
+          <div class="options options-grid">
+            {
+              businessTypes.map((t) => (
+                <label class="option">
+                  <input type="radio" name="businessType" value={t.value} checked={t.value === preselectedType} />
+                  <span class="option-label">{t.label}</span>
+                </label>
+              ))
+            }
+          </div>
+          <p class="field-error" data-error-for="businessType" hidden></p>
+        </fieldset>
+
+        {
+          singleSteps.map((step) => (
+            <fieldset class="step" data-step={step.name} data-type="single">
+              <legend class="step-title" tabindex="-1">
+                {step.title}
+              </legend>
+              <div class="options">
+                {step.options.map((o) => (
+                  <label class="option">
+                    <input type="radio" name={step.name} value={o.value} />
+                    <span class="option-label">{o.label}</span>
+                  </label>
+                ))}
+              </div>
+              <p class="field-error" data-error-for={step.name} hidden />
+            </fieldset>
+          ))
+        }
+
+        <fieldset class="step" data-step="payments" data-type="multi">
+          <legend class="step-title" tabindex="-1">How do customers pay you today?</legend>
+          <p class="step-hint small muted">Choose all that apply.</p>
+          <div class="options">
+            {
+              PAYMENT_METHODS.map((o) => (
+                <label class="option option-check">
+                  <input type="checkbox" name="payments" value={o.value} />
+                  <span class="option-label">{o.label}</span>
+                </label>
+              ))
+            }
+          </div>
+          <p class="field-error" data-error-for="payments" hidden></p>
+        </fieldset>
+
+        {
+          laterSteps.map((step) => (
+            <fieldset class="step" data-step={step.name} data-type="single">
+              <legend class="step-title" tabindex="-1">
+                {step.title}
+              </legend>
+              <div class="options">
+                {step.options.map((o) => (
+                  <label class="option">
+                    <input type="radio" name={step.name} value={o.value} />
+                    <span class="option-label">{o.label}</span>
+                  </label>
+                ))}
+              </div>
+              <p class="field-error" data-error-for={step.name} hidden />
+            </fieldset>
+          ))
+        }
+
+        <fieldset class="step" data-step="details" data-type="details">
+          <legend class="step-title" tabindex="-1">Last step: where should we send your result?</legend>
+          <p class="step-hint small muted">A Kurongeka manager will contact you within one working day.</p>
+
+          <div class="fields">
+            <div class="field">
+              <label class="field-label" for="name">Your name</label>
+              <input class="input" id="name" name="name" autocomplete="name" required maxlength="80" aria-describedby="name-error" />
+              <p class="field-error" id="name-error" data-error-for="name" hidden></p>
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="business">Business name</label>
+              <input class="input" id="business" name="business" autocomplete="organization" required maxlength="120" aria-describedby="business-error" />
+              <p class="field-error" id="business-error" data-error-for="business" hidden></p>
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="country">Country</label>
+              <select class="select" id="country" name="country" autocomplete="country" aria-describedby="country-error">
+                {COUNTRIES.map((c) => <option value={c.value} selected={c.value === defaultCountry}>{c.label}</option>)}
+              </select>
+              <p class="field-error" id="country-error" data-error-for="country" hidden></p>
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="phone">WhatsApp number</label>
+              <input
+                class="input"
+                id="phone"
+                name="phone"
+                type="tel"
+                inputmode="tel"
+                autocomplete="tel"
+                required
+                maxlength="32"
+                aria-describedby="phone-hint phone-error"
+              />
+              <p class="field-hint" id="phone-hint">Local format is fine, for example 077 123 4567.</p>
+              <p class="field-error" id="phone-error" data-error-for="phone" hidden></p>
+            </div>
+
+            <div class="field">
+              <label class="field-label" for="email">Email <span class="muted">(optional)</span></label>
+              <input class="input" id="email" name="email" type="email" autocomplete="email" maxlength="160" aria-describedby="email-error" />
+              <p class="field-error" id="email-error" data-error-for="email" hidden></p>
+            </div>
+
+            <fieldset class="field field-inline">
+              <legend class="field-label">How should we contact you?</legend>
+              <div class="chips">
+                {
+                  CONTACT_PREFERENCES.map((o, i) => (
+                    <label class="chip">
+                      <input type="radio" name="contactPreference" value={o.value} checked={i === 0} />
+                      <span>{o.label}</span>
+                    </label>
+                  ))
+                }
+              </div>
+            </fieldset>
+
+            <label class="consent">
+              <input type="checkbox" name="subscribe" value="true" />
+              <span>Send me occasional guides and offers. You can unsubscribe at any time.</span>
+            </label>
+          </div>
+
+          <p class="small muted fineprint">
+            By sending, you agree we can contact you about your check. Read our <a href="/privacy">privacy notice</a>.
+          </p>
+        </fieldset>
+
+        <div class="honeypot" aria-hidden="true">
+          <label>Leave this field empty <input type="text" name="company_website" tabindex="-1" autocomplete="off" /></label>
+        </div>
+
+        <p class="form-error" data-form-error role="alert" hidden>
+          <span data-form-error-text>We could not send your answers.</span>
+          <a href={whatsappUrl('Hi Kurongeka, I tried the check but it did not send.')} data-form-error-whatsapp data-track="whatsapp_check_error">
+            Message us on WhatsApp instead
+          </a>
+        </p>
+
+        <div class="step-nav">
+          <button type="button" class="nav-back" data-back hidden>
+            <Icon name="arrow-left" /> Back
+          </button>
+          <button type="button" class="nav-next" data-next hidden>
+            Continue <Icon name="arrow-right" />
+          </button>
+          <button type="submit" class="nav-submit" data-submit>
+            <span data-submit-label>Get my score</span>
+            <Icon name="arrow-right" />
+          </button>
+        </div>
+      </form>
+
+      <p class="alt-contact small muted">
+        Prefer to talk?{' '}
+        <a href={whatsappUrl('Hi Kurongeka, I would like to talk about my business.')} data-track="whatsapp_check_page">
+          Message us on WhatsApp
+        </a>{' '}
+        or email <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import { initCheckFlow } from '@/scripts/check-flow';
+  const form = document.querySelector<HTMLFormElement>('[data-check-form]');
+  if (form) initCheckFlow(form);
+</script>
+
+<style>
+  .check {
+    padding-block: clamp(2rem, 1rem + 4vw, 5rem) var(--section-pad);
+  }
+
+  .check-intro {
+    display: grid;
+    gap: var(--space-3);
+    margin-bottom: var(--space-7);
+  }
+
+  .notice {
+    margin-bottom: var(--space-6);
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-md);
+    background: var(--color-error-bg);
+    color: var(--color-error);
+  }
+
+  .check-form {
+    display: grid;
+    gap: var(--space-8);
+  }
+
+  .progress {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .progress-track {
+    height: 4px;
+    border-radius: 999px;
+    background: var(--color-line);
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    display: block;
+    height: 100%;
+    width: var(--progress, 12.5%);
+    background: var(--color-ink);
+    transition: width var(--duration-slow) var(--ease-out);
+  }
+
+  .progress-label {
+    color: var(--color-text-muted);
+  }
+
+  .step {
+    border: 0;
+    padding: 0;
+    min-width: 0;
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .step-title {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-heading);
+    line-height: var(--leading-snug);
+    padding: 0;
+    margin-bottom: var(--space-2);
+  }
+
+  .step-title:focus {
+    outline: none;
+  }
+
+  .step-hint {
+    margin-top: calc(var(--space-3) * -1);
+  }
+
+  .options {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .option {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 3.5rem;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-paper);
+    cursor: pointer;
+    transition:
+      border-color var(--duration-fast) var(--ease-out),
+      background-color var(--duration-fast) var(--ease-out);
+  }
+
+  .option:hover {
+    border-color: var(--color-ink);
+  }
+
+  .option input {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+    accent-color: var(--color-ink);
+    margin: 0;
+  }
+
+  .option:has(input:checked) {
+    border-color: var(--color-ink);
+    background: var(--color-paper-alt);
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+
+  .option:has(input:focus-visible) {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .option-label {
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-snug);
+  }
+
+  .fields {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .field-inline {
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  .field-inline legend {
+    padding: 0;
+    margin-bottom: var(--space-2);
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 2.75rem;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+
+  .chip input {
+    accent-color: var(--color-ink);
+    margin: 0;
+  }
+
+  .chip:has(input:checked) {
+    border-color: var(--color-ink);
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+
+  .chip:has(input:focus-visible) {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .consent {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+    font-size: var(--text-small);
+    cursor: pointer;
+  }
+
+  .consent input {
+    width: 1.125rem;
+    height: 1.125rem;
+    margin-top: 0.2em;
+    accent-color: var(--color-ink);
+    flex-shrink: 0;
+  }
+
+  .fineprint a,
+  .alt-contact a {
+    color: var(--color-text);
+  }
+
+  .honeypot {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .form-error {
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-md);
+    background: var(--color-error-bg);
+    color: var(--color-error);
+    font-weight: var(--weight-medium);
+  }
+
+  .form-error a {
+    color: var(--color-ink);
+  }
+
+  .step-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .step-nav button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: var(--control-height-lg);
+    padding: 0 var(--space-6);
+    border-radius: var(--radius-sm);
+    font-weight: var(--weight-semibold);
+    font-size: 1.0625rem;
+    border: 1px solid transparent;
+    transition: background-color var(--duration-fast) var(--ease-out);
+  }
+
+  .nav-back {
+    background: transparent;
+    border-color: var(--color-line-strong) !important;
+  }
+
+  .nav-back:hover {
+    border-color: var(--color-ink) !important;
+  }
+
+  .nav-next,
+  .nav-submit {
+    margin-left: auto;
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .nav-next:hover,
+  .nav-submit:hover {
+    background: #262b2d;
+  }
+
+  .nav-submit[aria-busy='true'] {
+    opacity: 0.7;
+    cursor: progress;
+  }
+
+  .alt-contact {
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* Enhanced, one question at a time. */
+  :global(.check-form.is-enhanced) .step:not(.is-active) {
+    display: none;
+  }
+
+  :global(.check-form.is-enhanced) {
+    gap: var(--space-6);
+  }
+
+  @media (min-width: 768px) {
+    .options-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 479px) {
+    .step-nav {
+      position: sticky;
+      bottom: 0;
+      margin-inline: calc(var(--gutter) * -1);
+      padding: var(--space-3) var(--gutter) calc(var(--space-3) + env(safe-area-inset-bottom));
+      background: var(--color-bg);
+      border-top: 1px solid var(--color-border);
+    }
+
+    .nav-next,
+    .nav-submit {
+      flex: 1;
+    }
+  }
+</style>

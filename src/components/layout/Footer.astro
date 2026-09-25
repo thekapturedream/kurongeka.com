@@ -1,0 +1,165 @@
+---
+import { formatWhatsapp, site, whatsappUrl } from '@/config/site';
+import Mark from '@/components/ui/Mark.astro';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer surface-ink" id="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <a href="/" class="brand" aria-label="Kurongeka, home">
+        <Mark size={32} />
+        <span class="wordmark">kurongeka</span>
+      </a>
+      <p class="muted">
+        Kurongeka is Shona for <em>to be properly arranged</em>. We set small businesses up properly online, then keep
+        them running.
+      </p>
+    </div>
+
+    <nav aria-label="Product" class="footer-col">
+      <p class="label">Product</p>
+      <ul>
+        <li><a href="/how-it-works">How it works</a></li>
+        <li><a href="/business-types">Business types</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/check">Free check</a></li>
+      </ul>
+    </nav>
+
+    <nav aria-label="Company" class="footer-col">
+      <p class="label">Company</p>
+      <ul>
+        <li><a href="/about">About</a></li>
+        <li><a href="/directory">Directory</a></li>
+        <li>
+          <a href={site.parent.url} rel="noopener">Kapture<span class="visually-hidden"> (our parent studio)</span></a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="footer-col">
+      <p class="label">Talk to us</p>
+      <ul>
+        <li>
+          <a href={whatsappUrl('Hi Kurongeka, I would like to talk about my business.')} data-track="whatsapp_footer">
+            WhatsApp {formatWhatsapp()}
+          </a>
+        </li>
+        <li><a href={`mailto:${site.contact.email}`}>{site.contact.email}</a></li>
+        {
+          site.social.map((s) => (
+            <li>
+              <a href={s.url} rel="noopener me">
+                {s.label} {s.handle}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+
+  <div class="container footer-base">
+    <p>© {year} Kurongeka. A Kapture company. {site.locations.join(' · ')}.</p>
+    <ul>
+      <li><a href="/privacy">Privacy</a></li>
+      <li><a href="/terms">Terms</a></li>
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    padding-top: var(--space-9);
+    padding-bottom: var(--space-6);
+  }
+
+  .footer-grid {
+    display: grid;
+    gap: var(--space-7);
+    grid-template-columns: 1fr;
+  }
+
+  .footer-brand {
+    display: grid;
+    gap: var(--space-4);
+    max-width: 22rem;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    text-decoration: none;
+  }
+
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
+    font-size: 1.5rem;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+  }
+
+  .footer-col ul,
+  .footer-base ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .footer-col .label {
+    margin-bottom: var(--space-4);
+  }
+
+  .footer-col li + li {
+    margin-top: var(--space-3);
+  }
+
+  .footer-col a,
+  .footer-base a {
+    text-decoration: none;
+    color: var(--color-text);
+  }
+
+  .footer-col a:hover,
+  .footer-base a:hover {
+    text-decoration: underline;
+  }
+
+  .footer-base {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-9);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border);
+    font-size: var(--text-caption);
+    color: var(--color-text-muted);
+  }
+
+  .footer-base ul {
+    display: flex;
+    gap: var(--space-5);
+  }
+
+  @media (min-width: 768px) {
+    .footer-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .footer-brand {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .footer-grid {
+      grid-template-columns: 2fr 1fr 1fr 1.4fr;
+    }
+    .footer-brand {
+      grid-column: auto;
+    }
+  }
+</style>

@@ -1,0 +1,75 @@
+---
+import PageIntro from '@/components/layout/PageIntro.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { site } from '@/config/site';
+
+export const prerender = true;
+const updated = '25 September 2026';
+---
+
+<BaseLayout title="Privacy notice" description="How Kurongeka collects, uses and protects your information.">
+  <PageIntro eyebrow="Legal" title="Privacy notice" lead={`Last updated ${updated}. Plain language, no surprises.`} />
+  <section class="section">
+    <div class="container">
+      <div class="prose">
+        <h2>Who we are</h2>
+        <p>
+          Kurongeka is a service provided by Kapture ("we", "us"). If you have any question about your information,
+          email <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>.
+        </p>
+
+        <h2>What we collect</h2>
+        <p>When you take the Kurongeka Check or contact us, we collect:</p>
+        <ul>
+          <li>your name, business name and country</li>
+          <li>your WhatsApp number, and your email address if you give it</li>
+          <li>your answers to the check, your score and how you prefer to be contacted</li>
+          <li>whether you asked to receive guides and offers</li>
+        </ul>
+        <p>
+          Our hosting provider keeps standard server logs, including IP addresses, to run the site and prevent abuse.
+        </p>
+
+        <h2>Why we use it</h2>
+        <ul>
+          <li>To reply to your request and recommend the right service. This is in our legitimate interest and yours.</li>
+          <li>To prepare a proposal and deliver services if you become a client.</li>
+          <li>To send guides and offers, only if you ticked the box. You can unsubscribe at any time.</li>
+        </ul>
+        <p>We do not sell your information, and we do not use it for advertising profiles.</p>
+
+        <h2>Where it is stored</h2>
+        <p>
+          Your answers are stored in Wix, which we use as our customer and forms system, and the site is hosted by
+          Vercel. Both may process data outside your country, under their own data protection commitments.
+        </p>
+
+        <h2>How long we keep it</h2>
+        <p>
+          If you do not become a client, we keep your details for up to 24 months after our last contact, then delete
+          them. Client records are kept for as long as the law requires.
+        </p>
+
+        <h2>Cookies and storage</h2>
+        <p>
+          We do not use advertising or analytics cookies. While you take the check, your progress is saved in your
+          browser session so you do not lose your answers. It is cleared when you finish or close the tab.
+        </p>
+
+        <h2>Your rights</h2>
+        <p>
+          You can ask to see, correct or delete your information, or withdraw consent to marketing, by emailing{' '}
+          <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>. If you are unhappy with how we handle your
+          data, you can complain to your data protection regulator, such as the Information Commissioner's Office in the
+          UK or POTRAZ in Zimbabwe.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .section {
+    padding-block: var(--space-8) var(--section-pad);
+  }
+</style>

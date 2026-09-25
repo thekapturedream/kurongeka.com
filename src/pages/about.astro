@@ -1,0 +1,157 @@
+---
+import Button from '@/components/ui/Button.astro';
+import SectionHeader from '@/components/ui/SectionHeader.astro';
+import CtaBand from '@/components/sections/CtaBand.astro';
+import PageIntro from '@/components/layout/PageIntro.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { formatWhatsapp, site, whatsappUrl } from '@/config/site';
+import { breadcrumbLd, organizationLd } from '@/lib/seo';
+
+export const prerender = true;
+
+const principles = [
+  {
+    title: 'Arranged, not decorated',
+    body: 'A business site earns its keep by being found, trusted and easy to pay. We design for those three things first.',
+  },
+  {
+    title: 'Fixed scope, fixed price',
+    body: 'Small businesses cannot carry open-ended agency projects. Every package has a clear scope, price and launch date.',
+  },
+  {
+    title: 'Yours to keep',
+    body: 'Your site, domain and customer data are set up in your business’s name. You can manage it without us.',
+  },
+  {
+    title: 'Built for local and diaspora customers',
+    body: 'We set up the payment methods your customers actually use, at home and abroad, where your market allows.',
+  },
+];
+---
+
+<BaseLayout
+  title="About"
+  description="Kurongeka is Shona for 'to be properly arranged'. We are the productised launch-and-run service from Kapture, working from Harare and London."
+  jsonLd={[breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'About', path: '/about' }]), organizationLd()]}
+>
+  <PageIntro
+    eyebrow="About"
+    title="Kurongeka means properly arranged."
+    lead="It is a Shona word, and it is the promise: we take the scattered parts of a small business online, arrange them properly, and keep them that way."
+  />
+
+  <section class="section">
+    <div class="container about-grid">
+      <SectionHeader title="A Kapture company." />
+      <div class="prose">
+        <p>
+          Kurongeka is the productised side of <a href={site.parent.url} rel="noopener">Kapture</a>, the design and
+          technology studio founded by Rodney Takunda Manyepa. Kapture builds brands, websites and platforms for
+          organisations across Southern Africa and the UK.
+        </p>
+        <p>
+          Many of the businesses that came to Kapture did not need a bespoke project. They needed to be found on
+          Google, look credible, take bookings and get paid, quickly and at a price they could plan for. Kurongeka is
+          that service: proven models for common business types, fixed prices, and a team that keeps things running
+          after launch.
+        </p>
+        <p>
+          We build on Wix because it lets business owners manage bookings, orders, customers and content from a phone,
+          without a developer.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section surface-alt">
+    <div class="container">
+      <SectionHeader eyebrow="How we work" title="Four principles." />
+      <ul class="principles" role="list">
+        {
+          principles.map((p) => (
+            <li>
+              <h3 class="h4">{p.title}</h3>
+              <p class="muted">{p.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container about-grid">
+      <SectionHeader eyebrow="Contact" title="Talk to a person." lead={`We work from ${site.locations.join(' and ')}.`} />
+      <div class="contact">
+        <Button
+          href={whatsappUrl('Hi Kurongeka, I would like to talk about my business.')}
+          icon="whatsapp"
+          iconPosition="start"
+          size="lg"
+          track="whatsapp_about"
+        >
+          WhatsApp {formatWhatsapp()}
+        </Button>
+        <Button href={`mailto:${site.contact.email}`} variant="secondary" icon="mail" iconPosition="start" size="lg">
+          {site.contact.email}
+        </Button>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  .section {
+    padding-block: var(--section-pad);
+  }
+
+  .about-grid {
+    display: grid;
+    gap: var(--space-7);
+  }
+
+  .prose {
+    font-size: var(--text-lead);
+    line-height: var(--leading-snug);
+  }
+
+  .principles {
+    display: grid;
+    gap: var(--space-7);
+    list-style: none;
+    padding: 0;
+    margin-top: var(--space-8);
+  }
+
+  .principles li {
+    display: grid;
+    gap: var(--space-2);
+    padding-top: var(--space-5);
+    border-top: 2px solid var(--color-text);
+  }
+
+  .contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    align-content: start;
+  }
+
+  @media (min-width: 768px) {
+    .principles {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .about-grid {
+      grid-template-columns: 5fr 7fr;
+      gap: var(--space-9);
+    }
+    .principles {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+</style>

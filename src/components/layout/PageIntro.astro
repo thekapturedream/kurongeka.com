@@ -1,0 +1,38 @@
+---
+interface Props {
+  eyebrow?: string;
+  title: string;
+  lead?: string;
+}
+const { eyebrow, title, lead } = Astro.props;
+---
+
+<section class="page-intro">
+  <div class="container">
+    <slot name="before" />
+    <div class="intro-copy">
+      {eyebrow && <p class="label">{eyebrow}</p>}
+      <h1>{title}</h1>
+      {lead && <p class="lead">{lead}</p>}
+      <slot />
+    </div>
+  </div>
+</section>
+
+<style>
+  .page-intro {
+    padding-top: clamp(2.5rem, 1.5rem + 4vw, 6rem);
+    padding-bottom: clamp(2.5rem, 1.5rem + 3vw, 4.5rem);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .intro-copy {
+    display: grid;
+    gap: var(--space-5);
+    max-width: 52rem;
+  }
+
+  .intro-copy h1 {
+    max-width: 20ch;
+  }
+</style>

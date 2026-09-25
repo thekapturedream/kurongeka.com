@@ -1,0 +1,36 @@
+---
+import CtaBand from '@/components/sections/CtaBand.astro';
+import ModelGrid from '@/components/sections/ModelGrid.astro';
+import PageIntro from '@/components/layout/PageIntro.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { cachePage } from '@/lib/http';
+import { breadcrumbLd } from '@/lib/seo';
+import { getBusinessModels } from '@/lib/services/catalog';
+
+const models = await getBusinessModels();
+cachePage(Astro, { ok: models.ok });
+---
+
+<BaseLayout
+  title="Business types"
+  description="Proven launch models for clinics, restaurants, salons, travel, construction, retail, professional services, garages and community groups."
+  jsonLd={[breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'Business types', path: '/business-types' }])]}
+>
+  <PageIntro
+    eyebrow="Business types"
+    title="A proven starting point for your business."
+    lead="Every launch starts from a model built for how your type of business wins customers, then takes on your brand, content and payments. Do not see yours? Most businesses fit one of these, and the check will tell us."
+  />
+  <section class="section">
+    <div class="container">
+      <ModelGrid models={models.data} failed={!models.ok} />
+    </div>
+  </section>
+  <CtaBand title="Not sure which fits?" body="Take the free check and tell us what you do. We will recommend the right model and package." />
+</BaseLayout>
+
+<style>
+  .section {
+    padding-block: var(--space-8) var(--section-pad);
+  }
+</style>

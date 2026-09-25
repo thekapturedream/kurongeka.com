@@ -1,0 +1,37 @@
+---
+interface Props {
+  eyebrow?: string;
+  title: string;
+  lead?: string;
+  level?: 'h1' | 'h2';
+  align?: 'start' | 'center';
+  id?: string;
+}
+const { eyebrow, title, lead, level = 'h2', align = 'start', id } = Astro.props;
+const Heading = level;
+---
+
+<header class:list={['section-header', `align-${align}`]}>
+  {eyebrow && <p class="label">{eyebrow}</p>}
+  <Heading id={id}>{title}</Heading>
+  {lead && <p class="lead">{lead}</p>}
+  <slot />
+</header>
+
+<style>
+  .section-header {
+    display: grid;
+    gap: var(--space-4);
+    max-width: 46rem;
+  }
+
+  .section-header .label {
+    margin-bottom: calc(var(--space-2) * -1);
+  }
+
+  .align-center {
+    margin-inline: auto;
+    text-align: center;
+    justify-items: center;
+  }
+</style>

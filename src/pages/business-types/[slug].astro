@@ -1,0 +1,251 @@
+---
+import Button from '@/components/ui/Button.astro';
+import StatusMessage from '@/components/ui/StatusMessage.astro';
+import CtaBand from '@/components/sections/CtaBand.astro';
+import Breadcrumbs from '@/components/layout/Breadcrumbs.astro';
+import PageIntro from '@/components/layout/PageIntro.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { formatPrice, paragraphs, workingDays } from '@/lib/domain/format';
+import { cachePage } from '@/lib/http';
+import { breadcrumbLd, businessModelLd } from '@/lib/seo';
+import { getBusinessModel } from '@/lib/services/catalog';
+
+const slug = Astro.params.slug ?? '';
+const result = await getBusinessModel(slug);
+
+const model = result.data;
+const notFound = result.ok && !model;
+if (!result.ok) {
+  Astro.response.status = 503;
+  cachePage(Astro, { ok: false });
+} else if (notFound) {
+  Astro.response.status = 404;
+  cachePage(Astro, { maxAge: 60 });
+} else {
+  cachePage(Astro);
+}
+
+const path = `/business-types/${slug}`;
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Business types', path: '/business-types' },
+  { name: model?.title ?? 'Business type', path },
+];
+const pkg = model?.recommendedPackage ?? null;
+---
+
+{
+  model ? (
+    <BaseLayout
+      title={model.seoTitle || model.title}
+      description={model.seoDescription || model.summary}
+      jsonLd={[breadcrumbLd(crumbs), businessModelLd(model, path)]}
+    >
+      <PageIntro eyebrow={model.category} title={model.title} lead={model.summary}>
+        <Breadcrumbs slot="before" items={crumbs} />
+        <div class="intro-actions">
+          <Button href={`/check?type=${model.slug}`} size="lg" icon="arrow-right" track={`cta_model_${model.slug}`}>
+            Check my business
+          </Button>
+          {model.demoUrl && (
+            <Button href={model.demoUrl} variant="secondary" size="lg" external>
+              See an example site
+            </Button>
+          )}
+        </div>
+      </PageIntro>
+
+      <section class="section">
+        <div class="container detail-grid">
+          <div class="prose">
+            {paragraphs(model.body).map((p) => (
+              <p>{p}</p>
+            ))}
+          </div>
+
+          <aside class="facts" aria-label="At a glance">
+            {model.idealFor.length > 0 && (
+              <div>
+                <h2 class="label">Ideal for</h2>
+                <ul class="plain">
+                  {model.idealFor.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {model.launchDays !== null && (
+              <div>
+                <h2 class="label">Typical launch</h2>
+                <p>About {workingDays(model.launchDays)}</p>
+              </div>
+            )}
+            {model.wixSolutions.length > 0 && (
+              <div>
+                <h2 class="label">Built with</h2>
+                <p>{model.wixSolutions.join(', ')}</p>
+              </div>
+            )}
+          </aside>
+        </div>
+      </section>
+
+      {model.customerActions.length > 0 && (
+        <section class="section surface-alt">
+          <div class="container detail-grid">
+            <h2>What your customers can do</h2>
+            <ul class="check-list actions">
+              {model.customerActions.map((action) => (
+                <li>{action}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
+      {pkg && (
+        <section class="section">
+          <div class="container">
+            <div class="recommended surface-ink">
+              <div class="recommended-copy">
+                <p class="label">Recommended package</p>
+                <h2>Launch {pkg.title}</h2>
+                <p class="muted">{pkg.tagline}</p>
+                <p class="recommended-price">
+                  {pkg.price !== null && <span class="price-main">{formatPrice(pkg.price)}</span>}
+                  <span class="muted">one-off</span>
+                </p>
+              </div>
+              <ul class="check-list small">
+                {pkg.includes.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+              <div class="recommended-actions">
+                <Button href={`/check?type=${model.slug}&package=${pkg.slug}`} variant="accent" icon="arrow-right" track="cta_model_package">
+                  Start with a free check
+                </Button>
+                <Button href="/pricing" variant="secondary">Compare all packages</Button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <CtaBand />
+    </BaseLayout>
+  ) : (
+    <BaseLayout
+      title={notFound ? 'Business type not found' : 'Business type unavailable'}
+      description="This business type could not be shown."
+      noindex
+    >
+      <section class="section">
+        <div class="container">
+          <StatusMessage
+            kind={notFound ? 'empty' : 'error'}
+            title={notFound ? 'We could not find that business type' : 'This page is not loading right now'}
+          >
+            <p>
+              {notFound ? 'It may have been renamed.' : 'Please try again in a moment.'}{' '}
+              <a href="/business-types">See all business types</a>.
+            </p>
+          </StatusMessage>
+        </div>
+      </section>
+    </BaseLayout>
+  )
+}
+
+<style>
+  .section {
+    padding-block: var(--section-pad);
+  }
+
+  .intro-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .detail-grid {
+    display: grid;
+    gap: var(--space-7);
+  }
+
+  .prose {
+    font-size: var(--text-lead);
+    line-height: var(--leading-snug);
+  }
+
+  .facts {
+    display: grid;
+    gap: var(--space-5);
+    align-content: start;
+  }
+
+  .facts > div {
+    display: grid;
+    gap: var(--space-2);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .plain {
+    list-style: none;
+    padding: 0;
+  }
+
+  .actions {
+    font-size: var(--text-lead);
+  }
+
+  .recommended {
+    display: grid;
+    gap: var(--space-6);
+    padding: clamp(1.5rem, 1rem + 3vw, 4rem);
+    border-radius: var(--radius-lg);
+  }
+
+  .recommended-copy {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .recommended-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-3);
+  }
+
+  .price-main {
+    font-family: var(--font-display);
+    font-size: 2.75rem;
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .recommended-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  @media (min-width: 1024px) {
+    .detail-grid {
+      grid-template-columns: 7fr 4fr;
+      gap: var(--space-9);
+    }
+
+    .recommended {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+
+    .recommended-actions {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

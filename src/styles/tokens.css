@@ -1,0 +1,139 @@
+/*
+ * Kurongeka design tokens.
+ * Kapture-owned property: ink, white and Kapture yellow (#FFCC00, from the Kapture logo files),
+ * Wix Madefor Display for headings, Wix Madefor Text for body.
+ * Rule: yellow sits on ink only. Never yellow text or yellow fills on white.
+ * Breakpoints (for reference; media queries can't read custom properties):
+ *   sm 480px · md 768px · lg 1024px · xl 1280px
+ */
+:root {
+  /* Colour: brand */
+  --color-ink: #0a0e0f;
+  --color-ink-raised: #15191a;
+  --color-ink-line: #2a2f31;
+  --color-ink-muted: #a3aaad;
+  --color-paper: #ffffff;
+  --color-paper-alt: #f5f5f2;
+  --color-line: #e3e3de;
+  --color-line-strong: #c9c9c2;
+  --color-muted: #555b5e;
+  --color-yellow: #ffcc00;
+  --color-yellow-hover: #ffd633;
+
+  /* Colour: semantic */
+  --color-text: var(--color-ink);
+  --color-text-muted: var(--color-muted);
+  --color-bg: var(--color-paper);
+  --color-bg-alt: var(--color-paper-alt);
+  --color-border: var(--color-line);
+  --color-success: #1d6b45;
+  --color-success-bg: #e8f3ec;
+  --color-error: #b3261e;
+  --color-error-bg: #fbeceb;
+  --color-focus: var(--color-ink);
+
+  /* Typography */
+  --font-display: 'Wix Madefor Display Variable', 'Wix Madefor Display', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-text: 'Wix Madefor Text Variable', 'Wix Madefor Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --text-display: clamp(2.75rem, 1.55rem + 5.2vw, 5.75rem);
+  --text-h1: clamp(2.25rem, 1.55rem + 3vw, 4rem);
+  --text-h2: clamp(1.875rem, 1.45rem + 1.8vw, 3rem);
+  --text-h3: clamp(1.25rem, 1.12rem + 0.55vw, 1.625rem);
+  --text-h4: 1.125rem;
+  --text-lead: clamp(1.125rem, 1.04rem + 0.4vw, 1.375rem);
+  --text-body: 1.0625rem;
+  --text-small: 0.9375rem;
+  --text-caption: 0.8125rem;
+  --text-label: 0.875rem;
+
+  --leading-tight: 1.04;
+  --leading-heading: 1.12;
+  --leading-snug: 1.35;
+  --leading-body: 1.6;
+
+  --tracking-display: -0.035em;
+  --tracking-heading: -0.022em;
+  --tracking-body: 0;
+  --tracking-label: 0.01em;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --measure: 62ch;
+  --measure-narrow: 44ch;
+
+  /* Spacing: 8-point scale (4px half-step) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+  --space-10: 8rem;
+  --section-pad: clamp(4rem, 2.8rem + 5vw, 8rem);
+
+  /* Layout */
+  --container: 76rem;
+  --container-narrow: 48rem;
+  --gutter: clamp(1.25rem, 0.6rem + 2.8vw, 2.5rem);
+  --header-height: 4.5rem;
+
+  /* Shape */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --border: 1px solid var(--color-border);
+
+  /* Elevation */
+  --shadow-1: 0 1px 2px rgb(10 14 15 / 0.06);
+  --shadow-2: 0 12px 32px -12px rgb(10 14 15 / 0.18);
+
+  /* Layers */
+  --z-header: 50;
+  --z-drawer: 60;
+  --z-skip: 100;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --duration-fast: 120ms;
+  --duration: 200ms;
+  --duration-slow: 360ms;
+
+  /* Controls */
+  --control-height: 3rem;
+  --control-height-lg: 3.5rem;
+  --icon-sm: 1rem;
+  --icon-md: 1.25rem;
+  --focus-ring: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-focus);
+}
+
+/* Ink surfaces flip the semantic tokens. */
+.surface-ink {
+  --color-text: var(--color-paper);
+  --color-text-muted: var(--color-ink-muted);
+  --color-bg: var(--color-ink);
+  --color-bg-alt: var(--color-ink-raised);
+  --color-border: var(--color-ink-line);
+  --color-focus: var(--color-yellow);
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+.surface-alt {
+  --color-bg: var(--color-paper-alt);
+  background: var(--color-bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration: 0ms;
+    --duration-slow: 0ms;
+  }
+}

@@ -1,0 +1,81 @@
+---
+import '@fontsource-variable/wix-madefor-display';
+import '@fontsource-variable/wix-madefor-text';
+import '@/styles/base.css';
+import Footer from '@/components/layout/Footer.astro';
+import Header from '@/components/layout/Header.astro';
+import { site } from '@/config/site';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Use the full title as-is (home page). Otherwise " · Kurongeka" is appended. */
+  exactTitle?: boolean;
+  noindex?: boolean;
+  jsonLd?: (Record<string, unknown> | null)[];
+  ogImage?: string;
+  headerTone?: 'light' | 'ink';
+}
+
+const {
+  title,
+  description,
+  exactTitle = false,
+  noindex = false,
+  jsonLd = [],
+  ogImage = '/og-default.png',
+  headerTone = 'light',
+} = Astro.props;
+
+const fullTitle = exactTitle ? title : `${title} · ${site.name}`;
+const canonical = new URL(Astro.url.pathname.replace(/\/$/, '') || '/', site.url).toString();
+const ogImageUrl = new URL(ogImage, site.url).toString();
+const structured = jsonLd.filter((item): item is Record<string, unknown> => item !== null);
+---
+
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content={site.locale} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Kurongeka. Your business, properly set up." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <meta name="theme-color" content="#0a0e0f" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    {structured.map((item) => <script type="application/ld+json" set:html={JSON.stringify(item)} />)}
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header tone={headerTone} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+    <script>
+      import { initClickTracking } from '@/scripts/analytics';
+      initClickTracking();
+    </script>
+  </body>
+</html>

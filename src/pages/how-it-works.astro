@@ -1,0 +1,194 @@
+---
+import Button from '@/components/ui/Button.astro';
+import SectionHeader from '@/components/ui/SectionHeader.astro';
+import CtaBand from '@/components/sections/CtaBand.astro';
+import PageIntro from '@/components/layout/PageIntro.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { breadcrumbLd } from '@/lib/seo';
+
+export const prerender = true;
+
+const stages = [
+  {
+    name: 'Check',
+    time: 'About 2 minutes',
+    body: 'Answer seven questions about your business. You get your Kurongeka score across Found, Trusted and Paid, and a recommended next step.',
+    you: 'Answer honestly. There are no wrong answers.',
+  },
+  {
+    name: 'Call',
+    time: '15 minutes, within one working day',
+    body: 'A Kurongeka manager contacts you on WhatsApp or by phone. We talk through your goals and confirm the right package and price.',
+    you: 'Tell us what success looks like in the next 90 days.',
+  },
+  {
+    name: 'Agree',
+    time: 'Same day',
+    body: 'You receive a fixed-price invoice and a short content checklist. A 50% deposit books your launch slot.',
+    you: 'Pay the deposit and send your logo, photos and service details.',
+  },
+  {
+    name: 'Build',
+    time: '7 to 21 working days',
+    body: 'We start from the proven model for your business type, apply your brand, write and structure your pages, and connect payments, bookings or your store.',
+    you: 'Review one preview link and send your changes in one round.',
+  },
+  {
+    name: 'Launch',
+    time: 'Launch day',
+    body: 'We connect your domain, set up Google Business Profile and search basics, and train you and your team to run everything from the Wix app.',
+    you: 'Pay the balance and share your new site.',
+  },
+  {
+    name: 'Run',
+    time: 'Monthly, optional',
+    body: 'Run it yourself, or choose a Run plan and we handle updates, content, Google posts and a monthly report.',
+    you: 'Focus on your customers.',
+  },
+];
+
+const needs = [
+  'Your logo, if you have one (we can tidy it up or create a wordmark)',
+  'Photos of your work, premises or products (phone photos are fine to start)',
+  'Your services or products, with prices',
+  'Opening hours, location and contact details',
+  'Your business registration details, if you want tender-ready documents',
+];
+---
+
+<BaseLayout
+  title="How it works"
+  description="From a two-minute check to a live, payment-ready business site in 7 to 21 working days. Here is exactly what happens, and what we need from you."
+  jsonLd={[breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'How it works', path: '/how-it-works' }])]}
+>
+  <PageIntro
+    eyebrow="How it works"
+    title="From check to launch, step by step."
+    lead="A clear path with fixed prices and one point of contact. Here is exactly what happens, how long it takes and what we need from you."
+  >
+    <div>
+      <Button href="/check" icon="arrow-right" size="lg" track="cta_process_check">Take the free check</Button>
+    </div>
+  </PageIntro>
+
+  <section class="section">
+    <div class="container">
+      <ol class="timeline" role="list">
+        {
+          stages.map((stage, index) => (
+            <li class="stage">
+              <div class="stage-marker" aria-hidden="true">
+                <span>{String(index + 1).padStart(2, '0')}</span>
+              </div>
+              <div class="stage-body">
+                <h2 class="h3">{stage.name}</h2>
+                <p class="stage-time small">{stage.time}</p>
+                <p>{stage.body}</p>
+                <p class="stage-you small">
+                  <strong>Your part:</strong> {stage.you}
+                </p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="section surface-alt">
+    <div class="container needs-grid">
+      <SectionHeader
+        eyebrow="Before we start"
+        title="What we need from you."
+        lead="Most of it you already have. We send a checklist after your call so nothing slows the launch down."
+      />
+      <ul class="check-list needs">
+        {needs.map((need) => <li>{need}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  .section {
+    padding-block: var(--section-pad);
+  }
+
+  .timeline {
+    list-style: none;
+    padding: 0;
+    max-width: 52rem;
+  }
+
+  .stage {
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    gap: var(--space-5);
+  }
+
+  .stage-marker {
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+
+  .stage-marker span {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    border: 1px solid var(--color-text);
+    background: var(--color-bg);
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
+    font-size: var(--text-small);
+  }
+
+  .stage:not(:last-child) .stage-marker::after {
+    content: '';
+    position: absolute;
+    top: 3rem;
+    bottom: 0;
+    width: 1px;
+    background: var(--color-line-strong);
+  }
+
+  .stage-body {
+    display: grid;
+    gap: var(--space-3);
+    padding-bottom: var(--space-8);
+    padding-top: var(--space-2);
+  }
+
+  .stage-time {
+    color: var(--color-text-muted);
+    font-weight: var(--weight-medium);
+  }
+
+  .stage-you {
+    padding: var(--space-3) var(--space-4);
+    border-left: 2px solid var(--color-text);
+    background: var(--color-paper-alt);
+  }
+
+  .needs-grid {
+    display: grid;
+    gap: var(--space-7);
+  }
+
+  .needs {
+    font-size: var(--text-lead);
+  }
+
+  @media (min-width: 1024px) {
+    .needs-grid {
+      grid-template-columns: 5fr 7fr;
+      gap: var(--space-9);
+    }
+  }
+</style>

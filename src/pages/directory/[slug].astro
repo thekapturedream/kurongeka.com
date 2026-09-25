@@ -1,0 +1,140 @@
+---
+import Button from '@/components/ui/Button.astro';
+import StatusMessage from '@/components/ui/StatusMessage.astro';
+import CtaBand from '@/components/sections/CtaBand.astro';
+import Breadcrumbs from '@/components/layout/Breadcrumbs.astro';
+import PageIntro from '@/components/layout/PageIntro.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { site } from '@/config/site';
+import { cachePage } from '@/lib/http';
+import { breadcrumbLd } from '@/lib/seo';
+import { getDirectoryListing } from '@/lib/services/catalog';
+
+const slug = Astro.params.slug ?? '';
+const result = await getDirectoryListing(slug);
+const listing = result.data;
+const notFound = result.ok && !listing;
+if (!result.ok) {
+  Astro.response.status = 503;
+  cachePage(Astro, { ok: false });
+} else if (notFound) {
+  Astro.response.status = 404;
+  cachePage(Astro, { maxAge: 60 });
+} else {
+  cachePage(Astro);
+}
+
+const path = `/directory/${slug}`;
+const crumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Directory', path: '/directory' },
+  { name: listing?.businessName ?? 'Listing', path },
+];
+const location = listing ? [listing.city, listing.country].filter(Boolean).join(', ') : '';
+const localBusinessLd = listing
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'LocalBusiness',
+      name: listing.businessName,
+      description: listing.summary || undefined,
+      url: listing.website ?? new URL(path, site.url).toString(),
+      image: listing.coverImageUrl ?? listing.logoUrl ?? undefined,
+      telephone: listing.whatsapp ? `+${listing.whatsapp}` : undefined,
+      address: location
+        ? { '@type': 'PostalAddress', addressLocality: listing.city || undefined, addressCountry: listing.country || undefined }
+        : undefined,
+    }
+  : null;
+---
+
+{
+  listing ? (
+    <BaseLayout
+      title={listing.businessName}
+      description={listing.summary || `${listing.businessName}, launched with Kurongeka.`}
+      jsonLd={[breadcrumbLd(crumbs), localBusinessLd]}
+    >
+      <PageIntro eyebrow={listing.category || 'Directory'} title={listing.businessName} lead={listing.summary}>
+        <Breadcrumbs slot="before" items={crumbs} />
+        <p class="meta small muted">
+          {location}
+          {listing.verified && <span class="verified">Registration verified by Kurongeka</span>}
+        </p>
+        <div class="actions">
+          {listing.website && (
+            <Button href={listing.website} size="lg" external icon="arrow-up-right">
+              Visit website
+            </Button>
+          )}
+          {listing.whatsapp && (
+            <Button
+              href={`https://wa.me/${listing.whatsapp}`}
+              variant="secondary"
+              size="lg"
+              icon="whatsapp"
+              iconPosition="start"
+              external
+            >
+              WhatsApp
+            </Button>
+          )}
+        </div>
+      </PageIntro>
+      {listing.coverImageUrl && (
+        <div class="container cover">
+          <img src={listing.coverImageUrl} alt={`${listing.businessName}`} width="1200" height="800" loading="lazy" />
+        </div>
+      )}
+      <CtaBand title="Want your business here?" body="Launch with Kurongeka, and choose to be listed in the directory." />
+    </BaseLayout>
+  ) : (
+    <BaseLayout title="Listing not found" description="This directory listing could not be shown." noindex>
+      <section class="section">
+        <div class="container">
+          <StatusMessage
+            kind={notFound ? 'empty' : 'error'}
+            title={notFound ? 'We could not find that listing' : 'This listing is not loading right now'}
+          >
+            <p>
+              <a href="/directory">Back to the directory</a>
+            </p>
+          </StatusMessage>
+        </div>
+      </section>
+    </BaseLayout>
+  )
+}
+
+<style>
+  .section {
+    padding-block: var(--section-pad);
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+
+  .verified {
+    font-weight: var(--weight-semibold);
+    color: var(--color-text);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .cover {
+    padding-block: var(--space-8);
+  }
+
+  .cover img {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+  }
+</style>

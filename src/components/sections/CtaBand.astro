@@ -1,0 +1,71 @@
+---
+import Button from '@/components/ui/Button.astro';
+import { whatsappUrl } from '@/config/site';
+
+interface Props {
+  title?: string;
+  body?: string;
+  track?: string;
+}
+const {
+  title = 'Find out where your business stands.',
+  body = 'Seven questions, about two minutes. You get your Kurongeka score and a clear next step, whatever you decide.',
+  track = 'cta_band_check',
+} = Astro.props;
+---
+
+<section class="cta-band surface-ink" aria-labelledby="cta-title">
+  <div class="container cta-inner">
+    <div class="cta-copy">
+      <h2 id="cta-title" class="display cta-title">{title}</h2>
+      <p class="lead">{body}</p>
+    </div>
+    <div class="cta-actions">
+      <Button href="/check" variant="accent" size="lg" icon="arrow-right" track={track}>Take the free check</Button>
+      <Button
+        href={whatsappUrl('Hi Kurongeka, I would like to talk about my business.')}
+        variant="secondary"
+        size="lg"
+        icon="whatsapp"
+        iconPosition="start"
+        track="whatsapp_cta_band"
+      >
+        Message us on WhatsApp
+      </Button>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta-band {
+    padding-block: var(--section-pad);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .cta-inner {
+    display: grid;
+    gap: var(--space-7);
+  }
+
+  .cta-copy {
+    display: grid;
+    gap: var(--space-5);
+    max-width: 52rem;
+  }
+
+  .cta-title {
+    font-size: clamp(2.25rem, 1.5rem + 3.4vw, 4.25rem);
+  }
+
+  .cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  @media (max-width: 479px) {
+    .cta-actions > :global(*) {
+      width: 100%;
+    }
+  }
+</style>

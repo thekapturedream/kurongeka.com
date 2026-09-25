@@ -1,0 +1,134 @@
+---
+import { BAND_LABEL, band, type CheckScore } from '@/lib/domain/check';
+
+interface Props {
+  score: CheckScore;
+  caption?: string;
+  footer?: string;
+  headingLevel?: 'h2' | 'h3' | 'p';
+}
+const { score, caption, footer, headingLevel = 'p' } = Astro.props;
+const Heading = headingLevel;
+const pillars = [
+  { key: 'found', label: 'Found', value: score.found },
+  { key: 'trusted', label: 'Trusted', value: score.trusted },
+  { key: 'paid', label: 'Paid', value: score.paid },
+] as const;
+---
+
+<figure class="score-card">
+  {caption && <figcaption class="label">{caption}</figcaption>}
+  <div class="score-head">
+    <Heading class="score-number">
+      <span class="visually-hidden">Kurongeka score: </span>{score.overall}<span class="score-max">/100</span>
+    </Heading>
+    <p class="score-band">{BAND_LABEL[band(score.overall)]}</p>
+  </div>
+  <dl class="pillars">
+    {
+      pillars.map((p) => (
+        <div class="pillar">
+          <dt>{p.label}</dt>
+          <dd>
+            <span class="bar" aria-hidden="true">
+              <span class="bar-fill" style={`--value: ${p.value}%`} />
+            </span>
+            <span class="pillar-value">{p.value}</span>
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+  {footer && <p class="score-footer">{footer}</p>}
+</figure>
+
+<style>
+  .score-card {
+    display: grid;
+    gap: var(--space-5);
+    padding: var(--space-6);
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .score-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+  }
+
+  .score-number {
+    font-family: var(--font-display);
+    font-size: clamp(3.5rem, 2.8rem + 3vw, 5rem);
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  .score-max {
+    font-size: 0.35em;
+    letter-spacing: 0;
+    color: var(--color-text-muted);
+    margin-left: 0.15em;
+  }
+
+  .score-band {
+    font-weight: var(--weight-semibold);
+  }
+
+  .pillars {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .pillar {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .pillar dt {
+    font-size: var(--text-small);
+    color: var(--color-text-muted);
+  }
+
+  .pillar dd {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .bar {
+    flex: 1;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--color-border);
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    display: block;
+    height: 100%;
+    width: var(--value);
+    background: var(--color-text);
+    border-radius: inherit;
+  }
+
+  .pillar-value {
+    width: 2ch;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--weight-semibold);
+  }
+
+  .score-footer {
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+    font-size: var(--text-small);
+    color: var(--color-text-muted);
+  }
+</style>

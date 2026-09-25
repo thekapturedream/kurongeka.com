@@ -1,0 +1,54 @@
+---
+import PageIntro from '@/components/layout/PageIntro.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { site } from '@/config/site';
+
+export const prerender = true;
+const updated = '25 September 2026';
+---
+
+<BaseLayout title="Terms" description="Terms for using the Kurongeka website and how our services are agreed.">
+  <PageIntro eyebrow="Legal" title="Terms" lead={`Last updated ${updated}.`} />
+  <section class="section">
+    <div class="container">
+      <div class="prose">
+        <h2>This website</h2>
+        <p>
+          This website is operated by Kapture for the Kurongeka service. The information on it is general and may change.
+          Scores from the Kurongeka Check are based only on your answers, and are a guide, not professional advice.
+        </p>
+
+        <h2>Prices</h2>
+        <p>
+          Prices shown are for guidance and may change. The price that applies to you is the fixed price on the
+          invoice or proposal you accept. Third-party costs, such as your Wix premium plan, domain renewals and payment
+          processing fees, are billed by those providers unless your proposal says otherwise.
+        </p>
+
+        <h2>Our services</h2>
+        <p>
+          Launch packages and Run plans are agreed in writing before work starts. The scope, price, payment terms and
+          launch date in your proposal or invoice form the agreement between us. Launch packages are invoiced 50% to
+          start and 50% at launch. Run plans are billed monthly and can be cancelled at any time.
+        </p>
+
+        <h2>Ownership</h2>
+        <p>
+          Once paid for, your website, domain and content belong to your business. We may show your finished site in
+          our portfolio or directory only with your permission.
+        </p>
+
+        <h2>Contact</h2>
+        <p>
+          Questions about these terms: <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .section {
+    padding-block: var(--space-8) var(--section-pad);
+  }
+</style>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>.m{fill:#0a0e0f}@media (prefers-color-scheme:dark){.m{fill:#fff}}</style>
+  <circle class="m" cx="32" cy="32" r="14"/>
+  <circle class="m" cx="32" cy="6" r="4"/>
+  <circle cx="50.4" cy="13.6" r="4" fill="#FFCC00"/>
+  <circle class="m" cx="58" cy="32" r="4"/>
+  <circle class="m" cx="50.4" cy="50.4" r="4"/>
+  <circle class="m" cx="32" cy="58" r="4"/>
+  <circle class="m" cx="13.6" cy="50.4" r="4"/>
+  <circle class="m" cx="6" cy="32" r="4"/>
+  <circle class="m" cx="13.6" cy="13.6" r="4"/>
+</svg>

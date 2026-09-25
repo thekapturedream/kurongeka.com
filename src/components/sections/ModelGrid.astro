@@ -1,0 +1,124 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import StatusMessage from '@/components/ui/StatusMessage.astro';
+import { whatsappUrl } from '@/config/site';
+import { workingDays } from '@/lib/domain/format';
+import type { BusinessModel } from '@/lib/domain/types';
+
+interface Props {
+  models: BusinessModel[];
+  failed?: boolean;
+  limit?: number;
+}
+const { models, failed = false, limit } = Astro.props;
+const shown = limit ? models.slice(0, limit) : models;
+---
+
+{
+  shown.length === 0 ? (
+    <StatusMessage kind={failed ? 'error' : 'empty'} title={failed ? 'Business types are not loading right now' : 'Business types are coming soon'}>
+      <p>
+        Tell us what you do on <a href={whatsappUrl('Hi Kurongeka, can you help my type of business?')}>WhatsApp</a>{' '}
+        and we will show you what a launch looks like.
+      </p>
+    </StatusMessage>
+  ) : (
+    <ul class="models" role="list">
+      {shown.map((model) => (
+        <li class="model">
+          <a href={`/business-types/${model.slug}`} class="model-link">
+            <span class="label">{model.category}</span>
+            <span class="h4 model-title">{model.title}</span>
+            <span class="model-summary">{model.summary}</span>
+            <span class="model-meta small">
+              {model.launchDays !== null && <span>About {workingDays(model.launchDays)}</span>}
+              {model.recommendedPackage && <span>{model.recommendedPackage.title}</span>}
+            </span>
+            <Icon name="arrow-right" size="md" class="model-arrow" />
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .models {
+    display: grid;
+    list-style: none;
+    padding: 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .model {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .model-link {
+    position: relative;
+    display: grid;
+    gap: var(--space-2);
+    height: 100%;
+    padding: var(--space-6) var(--space-7) var(--space-6) 0;
+    text-decoration: none;
+    transition: background-color var(--duration) var(--ease-out);
+  }
+
+  .model-title {
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
+  }
+
+  .model-summary {
+    color: var(--color-text-muted);
+    font-size: var(--text-small);
+  }
+
+  .model-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    margin-top: var(--space-2);
+    color: var(--color-text-muted);
+  }
+
+  .model-meta span + span::before {
+    content: '';
+    display: inline-block;
+    width: 3px;
+    height: 3px;
+    margin-right: var(--space-4);
+    vertical-align: middle;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .model-link :global(.model-arrow) {
+    position: absolute;
+    right: 0;
+    top: var(--space-6);
+    transition: transform var(--duration) var(--ease-out);
+  }
+
+  .model-link:hover :global(.model-arrow) {
+    transform: translateX(4px);
+  }
+
+  .model-link:hover .model-title {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  @media (min-width: 768px) {
+    .models {
+      grid-template-columns: repeat(2, 1fr);
+      column-gap: var(--space-7);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .models {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

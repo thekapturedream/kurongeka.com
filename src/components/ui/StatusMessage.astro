@@ -1,0 +1,32 @@
+---
+/** Empty and error states for data-driven sections. Never exposes technical detail. */
+interface Props {
+  kind?: 'empty' | 'error';
+  title: string;
+}
+const { kind = 'empty', title } = Astro.props;
+---
+
+<div class:list={['status', `status-${kind}`]} role={kind === 'error' ? 'status' : undefined}>
+  <p class="h4">{title}</p>
+  <div class="status-body"><slot /></div>
+</div>
+
+<style>
+  .status {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-6);
+    border: 1px dashed var(--color-line-strong);
+    border-radius: var(--radius-md);
+    max-width: 40rem;
+  }
+
+  .status-body {
+    color: var(--color-text-muted);
+  }
+
+  .status-body :global(a) {
+    color: var(--color-text);
+  }
+</style>

@@ -1,0 +1,137 @@
+---
+import Button from '@/components/ui/Button.astro';
+import StatusMessage from '@/components/ui/StatusMessage.astro';
+import CtaBand from '@/components/sections/CtaBand.astro';
+import PageIntro from '@/components/layout/PageIntro.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { cachePage } from '@/lib/http';
+import { breadcrumbLd } from '@/lib/seo';
+import { getDirectoryListings } from '@/lib/services/catalog';
+
+const listings = await getDirectoryListings();
+cachePage(Astro, { ok: listings.ok });
+const empty = listings.data.length === 0;
+---
+
+<BaseLayout
+  title="Directory"
+  description="Businesses launched with Kurongeka, listed with the owner's consent."
+  noindex={empty}
+  jsonLd={[breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'Directory', path: '/directory' }])]}
+>
+  <PageIntro
+    eyebrow="Directory"
+    title="Businesses launched with Kurongeka."
+    lead="Real businesses run by real people. Every listing is added with the owner's consent after launch."
+  />
+
+  <section class="section">
+    <div class="container">
+      {
+        !listings.ok ? (
+          <StatusMessage kind="error" title="The directory is not loading right now">
+            <p>Please try again in a moment.</p>
+          </StatusMessage>
+        ) : empty ? (
+          <StatusMessage title="The directory opens with our first launches">
+            <p>
+              Businesses we launch can choose to be listed here, with a link to their site and WhatsApp. Launching soon?
+              Your business could be one of the first.
+            </p>
+            <p>
+              <Button href="/check" variant="text" icon="arrow-right" track="cta_directory_check">
+                Take the free check
+              </Button>
+            </p>
+          </StatusMessage>
+        ) : (
+          <ul class="listings" role="list">
+            {listings.data.map((listing) => (
+              <li class="listing">
+                <a href={`/directory/${listing.slug}`} class="listing-link">
+                  {listing.logoUrl ? (
+                    <img src={listing.logoUrl} alt="" width="64" height="64" loading="lazy" class="listing-logo" />
+                  ) : (
+                    <span class="listing-logo listing-initial" aria-hidden="true">
+                      {listing.businessName.charAt(0)}
+                    </span>
+                  )}
+                  <span class="listing-text">
+                    <span class="h4">{listing.businessName}</span>
+                    <span class="small muted">
+                      {[listing.category, [listing.city, listing.country].filter(Boolean).join(', ')]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  .section {
+    padding-block: var(--space-8) var(--section-pad);
+  }
+
+  .listings {
+    display: grid;
+    list-style: none;
+    padding: 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .listing {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .listing-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-5) 0;
+    text-decoration: none;
+  }
+
+  .listing-link:hover .h4 {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .listing-logo {
+    width: 4rem;
+    height: 4rem;
+    flex-shrink: 0;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    object-fit: cover;
+  }
+
+  .listing-initial {
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: var(--weight-semibold);
+    background: var(--color-paper-alt);
+  }
+
+  .listing-text {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  @media (min-width: 768px) {
+    .listings {
+      grid-template-columns: repeat(2, 1fr);
+      column-gap: var(--space-7);
+    }
+  }
+</style>

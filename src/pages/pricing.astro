@@ -1,0 +1,92 @@
+---
+import SectionHeader from '@/components/ui/SectionHeader.astro';
+import CtaBand from '@/components/sections/CtaBand.astro';
+import FaqList from '@/components/sections/FaqList.astro';
+import PackageCards from '@/components/sections/PackageCards.astro';
+import PlanCards from '@/components/sections/PlanCards.astro';
+import PageIntro from '@/components/layout/PageIntro.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { formatPrice } from '@/lib/domain/format';
+import { cachePage } from '@/lib/http';
+import { breadcrumbLd, faqLd, launchServicesLd } from '@/lib/seo';
+import { getFaqs, getLaunchPackages, getRunPlans } from '@/lib/services/catalog';
+
+const [packages, plans, faqs] = await Promise.all([getLaunchPackages(), getRunPlans(), getFaqs()]);
+cachePage(Astro, { ok: packages.ok && plans.ok && faqs.ok });
+
+const pricingFaqs = faqs.data.filter((f) => ['pricing', 'payments', 'run', 'launch'].includes(f.topic));
+const lowest = packages.data
+  .map((p) => p.price)
+  .filter((p): p is number => p !== null)
+  .sort((a, b) => a - b)[0];
+const description = `Fixed-price launch packages${lowest !== undefined ? ` from ${formatPrice(lowest)}` : ''}, and optional monthly Run plans. You own your site, domain and data.`;
+---
+
+<BaseLayout
+  title="Pricing"
+  description={description}
+  jsonLd={[
+    breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'Pricing', path: '/pricing' }]),
+    ...launchServicesLd(packages.data),
+    faqLd(pricingFaqs),
+  ]}
+>
+  <PageIntro
+    eyebrow="Pricing"
+    title="Launch once. Run it your way."
+    lead="A fixed, one-off price to launch, invoiced 50% to start and 50% at launch. Then run it yourself, or add a monthly Run plan. No hidden fees and no long contracts."
+  />
+
+  <section class="section" aria-labelledby="launch-title">
+    <div class="container stack" style="--stack-gap: var(--space-7)">
+      <SectionHeader id="launch-title" title="Launch packages" lead="All prices are in pounds sterling." />
+      <PackageCards packages={packages.data} failed={!packages.ok} />
+    </div>
+  </section>
+
+  <section class="section surface-alt" aria-labelledby="run-title">
+    <div class="container stack" style="--stack-gap: var(--space-7)">
+      <SectionHeader
+        id="run-title"
+        title="Run plans"
+        lead="Optional monthly care after launch. Cancel any time. Your Wix premium plan is billed by Wix, in your name, at its published price."
+      />
+      <PlanCards plans={plans.data} failed={!plans.ok} />
+    </div>
+  </section>
+
+  {
+    pricingFaqs.length > 0 && (
+      <section class="section" aria-labelledby="pricing-faq-title">
+        <div class="container faq-grid">
+          <SectionHeader id="pricing-faq-title" title="Pricing questions" />
+          <FaqList faqs={pricingFaqs} />
+        </div>
+      </section>
+    )
+  }
+
+  <CtaBand
+    title="Not sure which package?"
+    body="Take the free check. We recommend a package from your answers, and confirm the price on a short call before you pay anything."
+    track="cta_pricing_band"
+  />
+</BaseLayout>
+
+<style>
+  .section {
+    padding-block: var(--section-pad);
+  }
+
+  .faq-grid {
+    display: grid;
+    gap: var(--space-7);
+  }
+
+  @media (min-width: 1024px) {
+    .faq-grid {
+      grid-template-columns: 5fr 7fr;
+      gap: var(--space-9);
+    }
+  }
+</style>

@@ -1,0 +1,41 @@
+---
+import Button from '@/components/ui/Button.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+export const prerender = true;
+---
+
+<BaseLayout title="Page not found" description="This page does not exist." noindex>
+  <section class="not-found">
+    <div class="container">
+      <p class="label">404</p>
+      <h1>This page is not properly arranged.</h1>
+      <p class="lead">It may have moved, or the link may be wrong. These will get you back on track.</p>
+      <div class="actions">
+        <Button href="/" size="lg">Go to the home page</Button>
+        <Button href="/check" variant="secondary" size="lg">Take the free check</Button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .not-found {
+    padding-block: var(--section-pad);
+  }
+
+  .not-found .container {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  h1 {
+    max-width: 16ch;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+</style>

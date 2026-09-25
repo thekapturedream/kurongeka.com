@@ -1,0 +1,249 @@
+---
+import { nav } from '@/config/site';
+import Button from '@/components/ui/Button.astro';
+import Icon from '@/components/ui/Icon.astro';
+import Mark from '@/components/ui/Mark.astro';
+
+interface Props {
+  tone?: 'light' | 'ink';
+}
+const { tone = 'light' } = Astro.props;
+const current = Astro.url.pathname;
+const isCurrent = (href: string) => current === href || current.startsWith(`${href}/`);
+---
+
+<header class:list={['site-header', tone === 'ink' && 'surface-ink']}>
+  <div class="container header-inner">
+    <a href="/" class="brand" aria-label="Kurongeka, home">
+      <Mark size={26} />
+      <span class="wordmark">kurongeka</span>
+    </a>
+
+    <nav class="nav-desktop" aria-label="Main">
+      <ul>
+        {
+          nav.map((item) => (
+            <li>
+              <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <Button href="/check" variant={tone === 'ink' ? 'accent' : 'primary'} track="cta_header_check" class="header-cta">
+        Free check
+      </Button>
+
+      <details class="nav-mobile" data-mobile-nav>
+        <summary aria-label="Menu">
+          <Icon name="menu" size="md" class="icon-open" />
+          <Icon name="close" size="md" class="icon-close" />
+        </summary>
+        <div class="drawer surface-ink">
+          <nav aria-label="Main">
+            <ul>
+              <li><a href="/" aria-current={current === '/' ? 'page' : undefined}>Home</a></li>
+              {
+                nav.map((item) => (
+                  <li>
+                    <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+                      {item.label}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </nav>
+          <Button href="/check" variant="accent" size="lg" block track="cta_menu_check">
+            Take the free check
+          </Button>
+        </div>
+      </details>
+    </div>
+  </div>
+</header>
+
+<script>
+  const menu = document.querySelector<HTMLDetailsElement>('[data-mobile-nav]');
+  if (menu) {
+    const close = () => {
+      menu.open = false;
+    };
+    menu.addEventListener('toggle', () => {
+      document.documentElement.classList.toggle('menu-open', menu.open);
+    });
+    menu.querySelectorAll('a').forEach((link) => link.addEventListener('click', close));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && menu.open) {
+        close();
+        menu.querySelector('summary')?.focus();
+      }
+    });
+    window.matchMedia('(min-width: 1024px)').addEventListener('change', (e) => {
+      if (e.matches) close();
+    });
+  }
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    height: var(--header-height);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    text-decoration: none;
+    color: var(--color-text);
+    margin-right: auto;
+  }
+
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
+    font-size: 1.375rem;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+    padding-bottom: 0.1em;
+  }
+
+  .nav-desktop {
+    display: none;
+  }
+
+  .nav-desktop ul {
+    display: flex;
+    gap: var(--space-6);
+    list-style: none;
+    padding: 0;
+  }
+
+  .nav-desktop a {
+    font-size: var(--text-small);
+    font-weight: var(--weight-medium);
+    text-decoration: none;
+    color: var(--color-text-muted);
+    padding-block: var(--space-2);
+    border-bottom: 2px solid transparent;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  .nav-desktop a:hover,
+  .nav-desktop a[aria-current='page'] {
+    color: var(--color-text);
+  }
+
+  .nav-desktop a[aria-current='page'] {
+    border-bottom-color: currentColor;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .header-actions :global(.header-cta) {
+    display: none;
+  }
+
+  .nav-mobile summary {
+    list-style: none;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+
+  .nav-mobile summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .nav-mobile :global(.icon-close),
+  .nav-mobile[open] :global(.icon-open) {
+    display: none;
+  }
+
+  .nav-mobile[open] :global(.icon-close) {
+    display: block;
+  }
+
+  .nav-mobile:not([open]) .drawer {
+    display: none;
+  }
+
+  .drawer {
+    position: fixed;
+    inset: var(--header-height) 0 0 0;
+    z-index: var(--z-drawer);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-7);
+    padding: var(--space-6) var(--gutter) calc(var(--space-6) + env(safe-area-inset-bottom));
+    overflow-y: auto;
+  }
+
+  .drawer ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .drawer li + li {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .drawer a:not(:global(.btn)) {
+    display: block;
+    padding: var(--space-4) 0;
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+
+  .drawer a[aria-current='page'] {
+    color: var(--color-yellow);
+  }
+
+  :global(html.menu-open) {
+    overflow: hidden;
+  }
+
+  @media (min-width: 360px) {
+    .header-actions :global(.header-cta) {
+      display: inline-flex;
+      flex-shrink: 0;
+      white-space: nowrap;
+      padding-inline: var(--space-4);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .nav-desktop {
+      display: block;
+    }
+    .nav-mobile {
+      display: none;
+    }
+  }
+</style>

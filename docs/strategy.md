@@ -32,8 +32,8 @@ There is also a lot of ready inventory: about twenty vertical "Studio" template 
 
 ### Who it is for
 
-1. Owner-run businesses in Zimbabwe and the region (clinics, salons, restaurants, tour operators, garages, contractors, churches, schools, retailers) that need to be found, look credible and get paid.
-2. Diaspora-owned businesses in the UK, and diaspora investors setting up businesses at home. They pay in pounds and value reliability.
+1. Owner-run businesses in Zimbabwe and the region, served remotely from the UK (clinics, salons, restaurants, tour operators, garages, contractors, churches, schools, retailers) that need to be found, look credible and get paid.
+2. UK small businesses, and diaspora-owned businesses in the UK and investors setting up businesses at home. They pay in pounds and value reliability.
 
 ### Why this wins
 
@@ -115,11 +115,18 @@ WhatsApp-first, because that is how the market buys.
 
 **Weekly scorecard:** checks completed, calls held, launches sold, Run attach rate, MRR, days from deposit to launch.
 
-## Decisions for Rodney
+## Decisions
+
+Made on 25 September 2026:
+
+1. **Base:** Kurongeka is run from the United Kingdom. Terms follow the law of England and Wales; privacy follows UK GDPR.
+2. **Prices:** approved as listed above, in GBP.
+3. **Roles of the systems:** Wix is the back office (admin, CRM, CMS, members, community). Every customer-facing tool is custom.
+4. **Go live:** kurongeka.com now serves this build.
+
+Still open:
 
 1. Approve the positioning: Kurongeka = productised launch and run; Kapture = studio.
-2. Approve the prices above (GBP), or adjust them in Wix (CMS for launches, Pricing Plans for Run).
-3. Choose the operating entity and payout account for Kurongeka invoices (UK or Zimbabwe), which the Terms page must name.
-4. Approve the repository clean-up in `docs/estate.md` (archive, not delete).
-5. Approve buying a Wix premium plan for the kurongeka.com Wix site (needed to take payments and sell Run plans).
-6. Approve the production cut-over of kurongeka.com to this build.
+2. The registered company name for invoices and the Terms page, if it is not trading as Kapture.
+3. Approve the repository and Vercel clean-up in `docs/estate.md` (archive, not delete).
+4. Buy a Wix premium plan for the kurongeka.com Wix site when ready to take payments and sell Run plans online.

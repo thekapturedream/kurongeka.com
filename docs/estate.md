@@ -8,12 +8,13 @@ Sources searched: GitHub (all 39 repos in `thekapturedream`), Vercel (team Kaptu
 
 | Asset | What it is | Recommendation |
 |---|---|---|
-| GitHub `thekapturedream/kurongeka.com` | **This repo.** New Astro + Wix Headless build on branch `claude/kind-gauss-m1rcch`. | Keep. The single source for kurongeka.com. |
-| GitHub `thekapturedream/kurongeka` (private) | Old brand-audit portal (single 480 KB HTML file), patent log, Supabase schema. **Currently deployed to kurongeka.com.** | Archive after cut-over (not before: Vercel deploys from it). |
+| GitHub `thekapturedream/kurongeka.com` | **This repo.** Astro + Wix Headless build on branch `claude/kind-gauss-m1rcch`. **Live on kurongeka.com since 25 September 2026.** Its `main` branch still holds the old single HTML file. | Keep. Merge the branch into `main` so `main` is the live code. |
+| GitHub `thekapturedream/kurongeka` (private) | Old brand-audit portal (single 480 KB HTML file), patent log, Supabase schema. No longer served. | Archive. |
 | GitHub `thekapturedream/kurongeka-os` (private) | Internal multi-site command centre (static JS). | Archive. Staff use the Wix Dashboard. |
-| Vercel `kurongeka.com` | Serves kurongeka.com and www from the `kurongeka` repo. Domains verified. | Re-point to this repo at cut-over (Settings > Git), set Root and build to Astro defaults. |
+| Vercel `kurongeka-web` (new) | Builds this repo (Astro, London region). Serves www.kurongeka.com through an alias. | Keep. In Vercel > kurongeka.com > Settings > Domains, move `kurongeka.com` (redirect to www, 308) and `www.kurongeka.com` to this project so future deploys go live automatically. |
+| Vercel `kurongeka.com` (old) | Still owns the kurongeka.com domains and redirects the apex to www. Every build fails with "Resource provisioning failed" because its linked Supabase store is suspended, and it emails a failure on each push. | After moving the domains, delete it (or disconnect Supabase and Git). |
 | Vercel `kurongeka-os` | kurongeka-os.vercel.app. | Delete after archiving the repo. |
-| Supabase `kurongeka.com` (via Vercel Marketplace) | Paused since May 2026. | Delete once confirmed empty. |
+| Supabase `kurongeka.com` (via Vercel Marketplace) | Suspended since May 2026. Also connected to the **Borderless Love** project, so do not delete the store without checking that project. | Disconnect from the kurongeka.com project. |
 
 The other 36 repositories and 43 Vercel projects belong to other ventures and clients (Franjipanji, Kapture Aero, Air Zimbabwe, Borderless Love, Tura, and more). **They are not part of Kurongeka and should not be deleted.**
 
@@ -34,6 +35,21 @@ Set up on the `kurongeka.com` Wix site today:
 - CMS collections: LaunchPackages, BusinessModels (9 seeded), Faqs (10 seeded), DirectoryListings (empty).
 - Pricing Plans: Run Care £39, Run Grow £119, Run Partner £319 (monthly). Slugs are `run-care-1`, `run-grow-1` and `run-partner-1` because they replaced earlier plans that are now deleted; rename in the dashboard if you like.
 - Site payment currency is GBP. The one old Wix Stores product on this site ("Starlink V2") now shows its old number in pounds; review or delete it.
+
+## The old portal's tools, rebuilt
+
+The previous kurongeka.com (the `kurongeka` repo) had a client cockpit, brand tools and demo data. What carried over:
+
+| Old portal | Now |
+|---|---|
+| Brand audit (web, search, social) with hard-coded demo scores | Free **website check** that fetches the real page and scores search, trust and speed |
+| Brand name suggestor (random word pairs) | **Name and domain check** against the real registries, plus Companies House and trade mark links |
+| Palette generator (10 vibe presets) | **Brand colours**: the same presets, your own colour, WCAG contrast checks, CSS export |
+| Brand manual email signature section | **Email signature** builder that copies into Gmail, Outlook and Apple Mail |
+| Client cockpit with a shared demo login | **Client accounts** on Wix Members, with launch progress from the Wix CMS |
+| Onboarding "what do you already have" and discovery-call booking | **Launch brief** in the account, and **Book a free call** on /contact |
+| Supplier micro-sites and directory | **Directory** with an application form; listings published from the Wix CMS |
+| Logo maker, tagline generator, paid mockups, swag and banner store, patent log | Not carried over: random or demo output, or not part of Kurongeka's offer. The swag and banner range belongs with Kapture. |
 
 ## Domains and email
 

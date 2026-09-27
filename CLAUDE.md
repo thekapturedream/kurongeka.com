@@ -10,7 +10,7 @@ Kurongeka ("to be properly arranged", Shona) is a productised launch-and-run ser
 - **Wix is the only backend.** No other database (no Supabase, Postgres, KV, Blob or browser storage as a record) and no other auth (no passwords, sessions or user tables of our own). Accounts are Wix Members; records are Wix CMS, Forms, Contacts and Pricing Plans. The `kurongeka-web` Vercel project has no environment variables and needs none.
 - Prices, packages, business models and FAQs live in Wix, not in code. Change them in the Wix Dashboard.
 - No invented proof: no testimonials, stats, awards, client logos or "most popular" claims unless real and approved.
-- **Type:** Wix Madefor Display Bold (700) for headlines, figures and emphasis; Wix Madefor Text Regular (400) for body copy, buttons, navigation and labels. Only these two cuts are loaded (and preloaded) in `BaseLayout`; never use another weight or `medium`/`semibold`.
+- **Type:** Wix Madefor Display Bold (700) for headlines, figures and emphasis; Wix Madefor Text Regular (400) for body copy, buttons, navigation and labels. Only these two cuts are declared (`src/lib/fonts.ts`: Latin preloaded, Latin Extended on demand); never use another weight or `medium`/`semibold`, and do not import Fontsource CSS (its subset files lack `unicode-range`).
 - **Findability first.** The home page opens on "What does your business need?" with search and one tile per solution. New offers become a Solution in Wix, not a new homepage section.
 - Yellow (#FFCC00) only on ink surfaces. Sentence case. No emoji.
 - Kapture Web Build Standard applies (user-level instructions).

@@ -1,6 +1,6 @@
 import { site } from '@/config/site';
 import { CURRENCY } from '@/lib/domain/format';
-import type { BusinessModel, Faq, LaunchPackage } from '@/lib/domain/types';
+import type { BusinessModel, Faq, LaunchPackage, RunPlan, Solution } from '@/lib/domain/types';
 
 type JsonLd = Record<string, unknown>;
 
@@ -32,6 +32,11 @@ export function websiteLd(): JsonLd {
     url: site.url,
     name: site.name,
     publisher: { '@id': ORG_ID },
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: { '@type': 'EntryPoint', urlTemplate: `${site.url}/find?q={search_term_string}` },
+      'query-input': 'required name=search_term_string',
+    },
   };
 }
 
@@ -89,5 +94,28 @@ export function businessModelLd(model: BusinessModel, path: string): JsonLd {
       ? { '@type': 'BusinessAudience', audienceType: model.idealFor.join(', ') }
       : undefined,
     ...(model.recommendedPackage ? { offers: offer(model.recommendedPackage) } : {}),
+  };
+}
+
+/** A solution is a service; its price is the cheapest launch package or monthly plan that delivers it. */
+export function solutionLd(solution: Solution, path: string, runPlans: RunPlan[]): JsonLd {
+  const cheapestPlan = [...runPlans].sort((a, b) => a.price - b.price)[0];
+  const offers =
+    solution.offer === 'run'
+      ? cheapestPlan
+        ? [{ '@type': 'Offer', price: cheapestPlan.price, priceCurrency: cheapestPlan.currency }]
+        : []
+      : solution.fromPackage
+        ? offer(solution.fromPackage)
+        : [];
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: solution.seoTitle || solution.title,
+    description: solution.seoDescription || solution.summary,
+    url: new URL(path, site.url).toString(),
+    provider: { '@id': ORG_ID },
+    areaServed: ['GB', 'ZW', 'ZA'],
+    ...(offers.length ? { offers } : {}),
   };
 }

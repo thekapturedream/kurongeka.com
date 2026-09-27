@@ -10,6 +10,8 @@ Kurongeka ("to be properly arranged", Shona) is a productised launch-and-run ser
 - **Wix is the only backend.** No other database (no Supabase, Postgres, KV, Blob or browser storage as a record) and no other auth (no passwords, sessions or user tables of our own). Accounts are Wix Members; records are Wix CMS, Forms, Contacts and Pricing Plans. The `kurongeka-web` Vercel project has no environment variables and needs none.
 - Prices, packages, business models and FAQs live in Wix, not in code. Change them in the Wix Dashboard.
 - No invented proof: no testimonials, stats, awards, client logos or "most popular" claims unless real and approved.
+- **Type:** Wix Madefor Display Bold (700) for headlines, figures and emphasis; Wix Madefor Text Regular (400) for body copy, buttons, navigation and labels. Only these two cuts are loaded (and preloaded) in `BaseLayout`; never use another weight or `medium`/`semibold`.
+- **Findability first.** The home page opens on "What does your business need?" with search and one tile per solution. New offers become a Solution in Wix, not a new homepage section.
 - Yellow (#FFCC00) only on ink surfaces. Sentence case. No emoji.
 - Kapture Web Build Standard applies (user-level instructions).
 
@@ -22,12 +24,14 @@ Kurongeka ("to be properly arranged", Shona) is a productised launch-and-run ser
 - **Accounts:** custom log in, sign-up, email code, reset and log out on Wix Members (`src/lib/auth/`). Wix returns a session token; the server exchanges it for member tokens (PKCE, server-side hop, browser fallback via `/account/callback`) and keeps them in the HTTP-only `kg_session` cookie. `memberSession().persist()` saves renewed tokens and ends dead sessions.
 - **Client portal:** `/account` reads the member's own items from CMS `Projects` (read SITE_MEMBER_AUTHOR, insert SITE_MEMBER, update/remove ADMIN) and their Pricing Plans orders. `/account/brief` creates a project and sends a "Launch brief" enquiry so staff are notified.
 - **Leads:** `/check` → `POST /api/check` → Wix form "Kurongeka Check" (`e7b244fb-…`). Everything else (free calls, questions, website fixes, directory applications, launch briefs) → Wix form "Kurongeka enquiry" (`12c98587-2471-4c55-b003-1ffb0ec99ae5`), labelled by `topic`. Each submission uses a fresh visitor identity so different people are not merged.
+- **Solutions and search:** `/solutions` and `/solutions/[slug]` render the Wix `Solutions` collection (price from the referenced cheapest `LaunchPackages` item, or the cheapest Run plan when `offer` is `run`). Search logic is pure and shared by server and browser (`src/lib/domain/search.ts`, unit tested); the index is built from solutions, business models, tools and key pages (`src/lib/domain/search-index.ts`, `src/lib/services/search.ts`). `/find?q=` renders results without JavaScript (noindex); `src/components/finder/Finder.astro` + `src/scripts/finder.ts` add instant suggestions.
 - **Free tools** (`/tools`): website check (`src/lib/services/website-check.ts`: SSRF-safe fetch, public hosts only, re-checked redirects, size and time limits; analysis in `src/lib/domain/website-check.ts`), name and domain check (public RDAP: Nominet, Verisign, PIR), brand colours (WCAG maths in `src/lib/domain/colour.ts`, runs in the browser), email signature (browser only).
 
 ## Wix data (Dashboard is the control centre)
 
 | Content | Where staff manage it |
 |---|---|
+| Solutions (title, summary, intro, what's included, search keywords, icon, `offer` launch/run, `fromPackage` reference, related tool) | CMS > Solutions. Drives the home tiles, `/solutions` pages and search |
 | Launch packages (title, `priceGbp`, delivery days, inclusions) | CMS > LaunchPackages |
 | Business models | CMS > BusinessModels (`recommendedPackage` references LaunchPackages) |
 | FAQs (`topic`: general, pricing, launch, run, payments) | CMS > Faqs |

@@ -1,0 +1,45 @@
+---
+/** A wrapping row of plain links, such as every business type. */
+interface Props {
+  links: { label: string; href: string }[];
+  label?: string;
+}
+const { links, label } = Astro.props;
+---
+
+<ul class="chips-list" role="list" aria-label={label}>
+  {
+    links.map((link) => (
+      <li>
+        <a href={link.href}>{link.label}</a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .chips-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    list-style: none;
+    padding: 0;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    font-size: var(--text-small);
+    color: var(--color-text);
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+
+  a:hover {
+    border-color: var(--color-text);
+  }
+</style>

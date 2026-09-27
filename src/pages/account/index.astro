@@ -306,7 +306,8 @@ const PLAN_STATUS: Record<MemberPlan['status'], string> = {
     flex-shrink: 0;
     border-radius: 50%;
     border: 1px solid var(--color-line-strong);
-    font-weight: var(--weight-semibold);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
     font-variant-numeric: tabular-nums;
   }
 
@@ -318,7 +319,8 @@ const PLAN_STATUS: Record<MemberPlan['status'], string> = {
 
   .stage.current {
     color: var(--color-text);
-    font-weight: var(--weight-semibold);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
   }
 
   .stage.current .stage-dot {
@@ -339,7 +341,8 @@ const PLAN_STATUS: Record<MemberPlan['status'], string> = {
 
   .facts dt {
     font-size: var(--text-caption);
-    font-weight: var(--weight-semibold);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
     color: var(--color-text-muted);
   }
 
@@ -374,7 +377,8 @@ const PLAN_STATUS: Record<MemberPlan['status'], string> = {
   }
 
   .plan-name {
-    font-weight: var(--weight-semibold);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
   }
 
   @media (min-width: 768px) {

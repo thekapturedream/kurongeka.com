@@ -24,12 +24,19 @@ export const site = {
   social: [{ label: 'Instagram', handle: '@kurongekadotcom', url: 'https://www.instagram.com/kurongekadotcom' }],
 } as const;
 
+/** Main navigation: the four places people go to find something. */
 export const nav = [
-  { label: 'How it works', href: '/how-it-works' },
+  { label: 'Solutions', href: '/solutions' },
   { label: 'Business types', href: '/business-types' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'Free tools', href: '/tools' },
+] as const;
+
+/** Secondary pages, in the mobile menu and footer. */
+export const secondaryNav = [
+  { label: 'How it works', href: '/how-it-works' },
   { label: 'About', href: '/about' },
+  { label: 'Contact', href: '/contact' },
 ] as const;
 
 export function whatsappUrl(message?: string): string {

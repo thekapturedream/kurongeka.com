@@ -1,0 +1,120 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import type { Solution } from '@/lib/domain/types';
+
+/** Icon tiles, one per solution: the fastest way from "I need…" to the right page. */
+interface Props {
+  solutions: Solution[];
+  exclude?: string;
+  label?: string;
+}
+const { solutions, exclude, label = 'Solutions' } = Astro.props;
+const shown = solutions.filter((s) => s.slug !== exclude);
+---
+
+{
+  shown.length > 0 && (
+    <div class="tiles-wrap">
+    <ul class="tiles" role="list" aria-label={label} style={`--tile-count: ${shown.length}`}>
+      {shown.map((s) => (
+        <li>
+          <a class="tile" href={`/solutions/${s.slug}`} data-track="solution_tile" data-track-param-solution={s.slug}>
+            <span class="tile-icon">
+              <Icon name={s.icon} size="lg" />
+            </span>
+            <span class="tile-title">{s.title}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    </div>
+  )
+}
+
+<style>
+  .tiles-wrap {
+    container-type: inline-size;
+  }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+    list-style: none;
+    padding: 0;
+  }
+
+  .tile {
+    display: grid;
+    align-content: start;
+    gap: var(--space-3);
+    height: 100%;
+    min-height: 7rem;
+    padding: var(--space-4) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-alt);
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: var(--text-small);
+    line-height: var(--leading-snug);
+    transition:
+      transform var(--duration) var(--ease-out),
+      border-color var(--duration) var(--ease-out),
+      background-color var(--duration) var(--ease-out);
+  }
+
+  .tile-icon {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--radius-sm);
+    background: var(--color-bg);
+    transition:
+      color var(--duration) var(--ease-out),
+      transform var(--duration) var(--ease-out);
+  }
+
+  .tile:hover {
+    border-color: var(--color-text);
+    transform: translateY(-2px);
+  }
+
+  .tile:hover .tile-icon {
+    transform: scale(1.06);
+  }
+
+  :global(.surface-ink) .tile:hover .tile-icon,
+  :global(.surface-ink) .tile:focus-visible .tile-icon {
+    color: var(--color-yellow);
+  }
+
+  :global(.surface-ink) .tile:hover {
+    border-color: var(--color-ink-muted);
+  }
+
+  @container (min-width: 34rem) {
+    .tiles {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: var(--space-3);
+    }
+    .tile {
+      padding: var(--space-5) var(--space-4);
+      min-height: 8.5rem;
+    }
+  }
+
+  @container (min-width: 64rem) {
+    .tiles {
+      grid-template-columns: repeat(var(--tile-count), minmax(0, 1fr));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tile:hover,
+    .tile:hover .tile-icon {
+      transform: none;
+    }
+  }
+</style>

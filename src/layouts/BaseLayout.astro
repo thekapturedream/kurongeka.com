@@ -1,6 +1,12 @@
 ---
-import '@fontsource-variable/wix-madefor-display';
-import '@fontsource-variable/wix-madefor-text';
+// Two cuts only: Display Bold for headlines, Text Regular for everything else.
+// Latin and Latin Extended cover our markets; browsers fetch Latin Extended only when a page needs it.
+import '@fontsource/wix-madefor-display/latin-700.css';
+import '@fontsource/wix-madefor-display/latin-ext-700.css';
+import '@fontsource/wix-madefor-text/latin-400.css';
+import '@fontsource/wix-madefor-text/latin-ext-400.css';
+import displayBold from '@fontsource/wix-madefor-display/files/wix-madefor-display-latin-700-normal.woff2?url';
+import textRegular from '@fontsource/wix-madefor-text/files/wix-madefor-text-latin-400-normal.woff2?url';
 import '@/styles/base.css';
 import Footer from '@/components/layout/Footer.astro';
 import Header from '@/components/layout/Header.astro';
@@ -38,6 +44,8 @@ const structured = jsonLd.filter((item): item is Record<string, unknown> => item
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <link rel="preload" href={displayBold} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={textRegular} as="font" type="font/woff2" crossorigin />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />

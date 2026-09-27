@@ -1,7 +1,8 @@
 /*
  * Kurongeka design tokens.
  * Kapture-owned property: ink, white and Kapture yellow (#FFCC00, from the Kapture logo files),
- * Wix Madefor Display for headings, Wix Madefor Text for body.
+ * Type: Wix Madefor Display Bold for headlines and figures, Wix Madefor Text Regular for body copy,
+ * buttons and navigation. Only those two cuts are loaded (see BaseLayout), so never use other weights.
  * Rule: yellow sits on ink only. Never yellow text or yellow fills on white.
  * Breakpoints (for reference; media queries can't read custom properties):
  *   sm 480px · md 768px · lg 1024px · xl 1280px
@@ -35,8 +36,8 @@
   --color-focus: var(--color-ink);
 
   /* Typography */
-  --font-display: 'Wix Madefor Display Variable', 'Wix Madefor Display', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-text: 'Wix Madefor Text Variable', 'Wix Madefor Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Wix Madefor Display', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-text: 'Wix Madefor Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   --text-display: clamp(2.75rem, 1.55rem + 5.2vw, 5.75rem);
   --text-h1: clamp(2.25rem, 1.55rem + 3vw, 4rem);
@@ -54,14 +55,13 @@
   --leading-snug: 1.35;
   --leading-body: 1.6;
 
-  --tracking-display: -0.035em;
-  --tracking-heading: -0.022em;
+  --tracking-display: -0.04em;
+  --tracking-heading: -0.025em;
   --tracking-body: 0;
   --tracking-label: 0.01em;
 
+  /* Two cuts only: Text 400 and Display 700. */
   --weight-regular: 400;
-  --weight-medium: 500;
-  --weight-semibold: 600;
   --weight-bold: 700;
 
   --measure: 62ch;
@@ -112,6 +112,7 @@
   --control-height-lg: 3.5rem;
   --icon-sm: 1rem;
   --icon-md: 1.25rem;
+  --icon-lg: 1.75rem;
   --focus-ring: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-focus);
 }
 

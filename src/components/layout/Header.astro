@@ -1,5 +1,5 @@
 ---
-import { nav } from '@/config/site';
+import { nav, secondaryNav } from '@/config/site';
 import Button from '@/components/ui/Button.astro';
 import Icon from '@/components/ui/Icon.astro';
 import Mark from '@/components/ui/Mark.astro';
@@ -34,6 +34,10 @@ const isCurrent = (href: string) => current === href || current.startsWith(`${hr
     </nav>
 
     <div class="header-actions">
+      <a href="/find" class="header-icon" aria-current={isCurrent('/find') ? 'page' : undefined}>
+        <Icon name="search" size="md" />
+        <span class="visually-hidden">Search</span>
+      </a>
       <a href="/account" class="header-login" aria-current={isCurrent('/account') ? 'page' : undefined}>Log in</a>
       <Button href="/check" variant={tone === 'ink' ? 'accent' : 'primary'} track="cta_header_check" class="header-cta">
         Free check
@@ -45,9 +49,13 @@ const isCurrent = (href: string) => current === href || current.startsWith(`${hr
           <Icon name="close" size="md" class="icon-close" />
         </summary>
         <div class="drawer surface-ink">
+          <form class="drawer-search" action="/find" method="get" role="search">
+            <label for="drawer-q" class="visually-hidden">Search</label>
+            <Icon name="search" size="md" />
+            <input id="drawer-q" name="q" type="search" placeholder="What do you need?" autocomplete="off" enterkeyhint="search" />
+          </form>
           <nav aria-label="Main">
-            <ul>
-              <li><a href="/" aria-current={current === '/' ? 'page' : undefined}>Home</a></li>
+            <ul class="drawer-primary">
               {
                 nav.map((item) => (
                   <li>
@@ -57,16 +65,22 @@ const isCurrent = (href: string) => current === href || current.startsWith(`${hr
                   </li>
                 ))
               }
-              <li><a href="/contact" aria-current={isCurrent('/contact') ? 'page' : undefined}>Contact</a></li>
+            </ul>
+            <ul class="drawer-secondary">
+              {
+                secondaryNav.map((item) => (
+                  <li>
+                    <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+                      {item.label}
+                    </a>
+                  </li>
+                ))
+              }
             </ul>
           </nav>
           <div class="drawer-actions">
-            <Button href="/check" variant="accent" size="lg" block track="cta_menu_check">
-              Take the free check
-            </Button>
-            <Button href="/account" variant="secondary" size="lg" block icon="user" iconPosition="start">
-              Client log in
-            </Button>
+            <Button href="/check" variant="accent" size="lg" block track="cta_menu_check">Take the free check</Button>
+            <Button href="/account" variant="secondary" size="lg" block icon="user" iconPosition="start">Client log in</Button>
           </div>
         </div>
       </details>
@@ -108,7 +122,7 @@ const isCurrent = (href: string) => current === href || current.startsWith(`${hr
   .header-inner {
     display: flex;
     align-items: center;
-    gap: var(--space-6);
+    gap: var(--space-4);
     height: var(--header-height);
   }
 
@@ -118,14 +132,13 @@ const isCurrent = (href: string) => current === href || current.startsWith(`${hr
     gap: var(--space-2);
     text-decoration: none;
     color: var(--color-text);
-    margin-right: auto;
   }
 
   .wordmark {
     font-family: var(--font-display);
-    font-weight: var(--weight-semibold);
+    font-weight: var(--weight-bold);
     font-size: 1.375rem;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.035em;
     line-height: 1.2;
     padding-bottom: 0.1em;
   }
@@ -141,53 +154,71 @@ const isCurrent = (href: string) => current === href || current.startsWith(`${hr
     padding: 0;
   }
 
-  .nav-desktop a {
+  .nav-desktop a,
+  .header-login {
+    position: relative;
     font-size: var(--text-small);
-    font-weight: var(--weight-medium);
     text-decoration: none;
     color: var(--color-text-muted);
     padding-block: var(--space-2);
-    border-bottom: 2px solid transparent;
+    white-space: nowrap;
     transition: color var(--duration-fast) var(--ease-out);
   }
 
+  .nav-desktop a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--duration) var(--ease-out);
+  }
+
   .nav-desktop a:hover,
-  .nav-desktop a[aria-current='page'] {
+  .nav-desktop a[aria-current='page'],
+  .header-login:hover,
+  .header-login[aria-current='page'] {
     color: var(--color-text);
   }
 
-  .nav-desktop a[aria-current='page'] {
-    border-bottom-color: currentColor;
+  .nav-desktop a:hover::after,
+  .nav-desktop a[aria-current='page']::after {
+    transform: scaleX(1);
   }
 
   .header-actions {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--space-1);
+    margin-left: auto;
   }
 
-  .header-actions :global(.header-cta) {
+  /* On small phones search lives at the top of the menu instead. */
+  .header-icon {
     display: none;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+  }
+
+  .header-icon:hover,
+  .header-icon[aria-current='page'] {
+    background: var(--color-bg-alt);
   }
 
   .header-login {
     display: none;
-    font-size: var(--text-small);
-    font-weight: var(--weight-semibold);
-    text-decoration: none;
-    padding: var(--space-2) var(--space-1);
-    white-space: nowrap;
+    padding-inline: var(--space-3);
   }
 
-  .header-login:hover,
-  .header-login[aria-current='page'] {
-    text-decoration: underline;
-    text-underline-offset: 0.3em;
-  }
-
-  .drawer-actions {
-    display: grid;
-    gap: var(--space-3);
+  .header-actions :global(.header-cta) {
+    display: none;
   }
 
   .nav-mobile summary {
@@ -223,10 +254,34 @@ const isCurrent = (href: string) => current === href || current.startsWith(`${hr
     z-index: var(--z-drawer);
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    gap: var(--space-7);
-    padding: var(--space-6) var(--gutter) calc(var(--space-6) + env(safe-area-inset-bottom));
+    gap: var(--space-6);
+    padding: var(--space-5) var(--gutter) calc(var(--space-6) + env(safe-area-inset-bottom));
     overflow-y: auto;
+  }
+
+  .drawer-search {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 0 var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--color-paper);
+    color: var(--color-ink);
+  }
+
+  .drawer-search input {
+    flex: 1;
+    min-width: 0;
+    height: 3.25rem;
+    border: 0;
+    background: transparent;
+    color: var(--color-ink);
+    outline: none;
+  }
+
+  .drawer-search:focus-within {
+    outline: 2px solid var(--color-yellow);
+    outline-offset: 3px;
   }
 
   .drawer ul {
@@ -234,22 +289,42 @@ const isCurrent = (href: string) => current === href || current.startsWith(`${hr
     padding: 0;
   }
 
-  .drawer li + li {
+  .drawer-primary li + li {
     border-top: 1px solid var(--color-border);
   }
 
-  .drawer a:not(:global(.btn)) {
+  .drawer-primary a {
     display: block;
     padding: var(--space-4) 0;
     font-family: var(--font-display);
     font-size: 1.75rem;
-    font-weight: var(--weight-semibold);
-    letter-spacing: -0.02em;
+    font-weight: var(--weight-bold);
+    letter-spacing: -0.025em;
+    text-decoration: none;
+  }
+
+  .drawer-secondary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    margin-top: var(--space-4);
+  }
+
+  .drawer-secondary a {
+    display: inline-block;
+    padding-block: var(--space-2);
+    color: var(--color-text-muted);
     text-decoration: none;
   }
 
   .drawer a[aria-current='page'] {
     color: var(--color-yellow);
+  }
+
+  .drawer-actions {
+    display: grid;
+    gap: var(--space-3);
+    margin-top: auto;
   }
 
   :global(html.menu-open) {
@@ -265,7 +340,19 @@ const isCurrent = (href: string) => current === href || current.startsWith(`${hr
     }
   }
 
+  @media (min-width: 480px) {
+    .header-icon {
+      display: grid;
+    }
+  }
+
   @media (min-width: 1024px) {
+    .header-inner {
+      gap: var(--space-7);
+    }
+    .header-actions {
+      gap: var(--space-2);
+    }
     .nav-desktop {
       display: block;
     }
@@ -274,15 +361,6 @@ const isCurrent = (href: string) => current === href || current.startsWith(`${hr
     }
     .header-login {
       display: inline-block;
-    }
-  }
-
-  @media (min-width: 1024px) and (max-width: 1199px) {
-    .header-inner {
-      gap: var(--space-5);
-    }
-    .nav-desktop ul {
-      gap: var(--space-5);
     }
   }
 </style>

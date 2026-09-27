@@ -1,0 +1,241 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import type { SearchEntry } from '@/lib/domain/search';
+
+/**
+ * Search box for solutions, business types, tools and pages.
+ * Works without JavaScript (GET /find). With JavaScript, suggestions appear as you type.
+ */
+interface Props {
+  index: SearchEntry[];
+  id?: string;
+  query?: string;
+  size?: 'md' | 'lg';
+  /** Sits on an ink surface: the button turns yellow. */
+  onInk?: boolean;
+  autofocus?: boolean;
+  placeholder?: string;
+}
+
+const {
+  index,
+  id = 'finder',
+  query = '',
+  size = 'md',
+  onInk = false,
+  autofocus = false,
+  placeholder = 'Try “logo” or “bookings”',
+} = Astro.props;
+
+// Keep the embedded JSON inert inside <script>.
+const json = JSON.stringify(index).replace(/</g, '\\u003c');
+---
+
+<form
+  class:list={['finder', `finder-${size}`, onInk && 'finder-on-ink']}
+  action="/find"
+  method="get"
+  role="search"
+  data-finder
+>
+  <label for={`${id}-q`} class="visually-hidden">Search solutions, business types and free tools</label>
+  <div class="finder-field">
+    <Icon name="search" size="md" class="finder-icon" />
+    <input
+      id={`${id}-q`}
+      class="finder-input"
+      type="search"
+      name="q"
+      value={query}
+      placeholder={placeholder}
+      autocomplete="off"
+      autocapitalize="off"
+      spellcheck="false"
+      enterkeyhint="search"
+      maxlength="80"
+      aria-controls={`${id}-panel`}
+      autofocus={autofocus}
+      data-finder-input
+    />
+    <button type="submit" class="finder-submit">Search</button>
+  </div>
+  <div id={`${id}-panel`} class="finder-panel" hidden data-finder-panel></div>
+  <p class="visually-hidden" role="status" aria-live="polite" data-finder-status></p>
+  <script type="application/json" data-finder-index set:html={json} />
+</form>
+
+<script>
+  import { initFinders } from '@/scripts/finder';
+  initFinders();
+</script>
+
+<style>
+  .finder {
+    position: relative;
+    width: 100%;
+  }
+
+  .finder-field {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding-left: var(--space-4);
+    background: var(--color-paper);
+    color: var(--color-ink);
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-1);
+    transition:
+      border-color var(--duration-fast) var(--ease-out),
+      box-shadow var(--duration-fast) var(--ease-out);
+  }
+
+  .finder-on-ink .finder-field {
+    border-color: transparent;
+  }
+
+  .finder-field:hover {
+    border-color: var(--color-ink);
+  }
+
+  .finder-field:focus-within {
+    border-color: var(--color-ink);
+    box-shadow: var(--shadow-2);
+  }
+
+  .finder-on-ink .finder-field:focus-within {
+    outline: 2px solid var(--color-yellow);
+    outline-offset: 3px;
+  }
+
+  .finder-field :global(.finder-icon) {
+    color: var(--color-muted);
+  }
+
+  .finder-input {
+    /* Zero base width: the input fills the space left by the button instead of forcing its own. */
+    flex: 1 1 0;
+    width: 0;
+    min-width: 0;
+    height: 3.25rem;
+    border: 0;
+    background: transparent;
+    color: var(--color-ink);
+    font-size: 1rem;
+    outline: none;
+  }
+
+  .finder-input::placeholder {
+    color: var(--color-muted);
+    opacity: 1;
+  }
+
+  /* The browser's blue clear button clashes with the brand; clearing the text is enough. */
+  .finder-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .finder-submit {
+    flex-shrink: 0;
+    align-self: stretch;
+    margin: var(--space-1);
+    padding: 0 var(--space-5);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-size: 1rem;
+    transition: background-color var(--duration-fast) var(--ease-out);
+  }
+
+  .finder-submit:hover {
+    background: #262b2d;
+  }
+
+  .finder-lg .finder-input {
+    height: 4rem;
+    font-size: 1.125rem;
+  }
+
+  .finder-lg .finder-submit {
+    padding: 0 var(--space-6);
+    font-size: 1.0625rem;
+  }
+
+  /* Suggestions */
+  .finder-panel {
+    position: absolute;
+    z-index: var(--z-header);
+    top: calc(100% + var(--space-2));
+    left: 0;
+    right: 0;
+    padding: var(--space-2);
+    background: var(--color-paper);
+    color: var(--color-ink);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-2);
+    max-height: min(26rem, 60vh);
+    overflow-y: auto;
+  }
+
+  .finder-panel :global(ul) {
+    list-style: none;
+    padding: 0;
+  }
+
+  .finder-panel :global(.finder-result) {
+    display: grid;
+    gap: 0.125rem;
+    padding: var(--space-3);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--color-ink);
+    outline-offset: -2px;
+  }
+
+  .finder-panel :global(.finder-result:hover),
+  .finder-panel :global(.finder-result:focus-visible) {
+    background: var(--color-paper-alt);
+  }
+
+  .finder-panel :global(.finder-result-title) {
+    line-height: 1.3;
+  }
+
+  .finder-panel :global(.finder-result-meta) {
+    font-size: var(--text-caption);
+    color: var(--color-muted);
+  }
+
+  .finder-panel :global(.finder-all) {
+    display: block;
+    margin-top: var(--space-1);
+    padding: var(--space-3);
+    border-top: 1px solid var(--color-line);
+    font-size: var(--text-small);
+    color: var(--color-ink);
+  }
+
+  .finder-panel :global(.finder-empty) {
+    padding: var(--space-3);
+    font-size: var(--text-small);
+    color: var(--color-muted);
+  }
+
+  .finder-panel :global(.finder-empty a) {
+    color: var(--color-ink);
+  }
+
+  @media (max-width: 479px) {
+    .finder-submit,
+    .finder-lg .finder-submit {
+      padding: 0 var(--space-4);
+    }
+    .finder-lg .finder-input {
+      height: 3.5rem;
+      font-size: 1rem;
+    }
+  }
+</style>

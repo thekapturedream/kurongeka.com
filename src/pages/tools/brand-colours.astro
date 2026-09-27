@@ -373,7 +373,7 @@ const style = `--p-ink: ${palette.ink}; --p-accent: ${palette.accent}; --p-surfa
 
   .preset-name {
     font-size: var(--text-small);
-    font-weight: var(--weight-medium);
+    font-weight: var(--weight-regular);
     line-height: 1.25;
   }
 
@@ -441,7 +441,8 @@ const style = `--p-ink: ${palette.ink}; --p-accent: ${palette.accent}; --p-surfa
   }
 
   .swatch-name {
-    font-weight: var(--weight-semibold);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
   }
 
   .swatch-hex {
@@ -462,7 +463,7 @@ const style = `--p-ink: ${palette.ink}; --p-accent: ${palette.accent}; --p-surfa
     border: 1px solid var(--color-line-strong);
     border-radius: var(--radius-sm);
     background: var(--color-paper);
-    font-weight: var(--weight-semibold);
+    font-weight: var(--weight-regular);
     font-size: var(--text-small);
   }
 
@@ -489,14 +490,15 @@ const style = `--p-ink: ${palette.ink}; --p-accent: ${palette.accent}; --p-surfa
 
   .preview-eyebrow {
     font-size: var(--text-caption);
-    font-weight: var(--weight-semibold);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
     color: var(--p-muted);
   }
 
   .preview-title {
     font-family: var(--font-display);
     font-size: var(--text-h3);
-    font-weight: var(--weight-semibold);
+    font-weight: var(--weight-bold);
     letter-spacing: var(--tracking-heading);
     line-height: var(--leading-snug);
   }
@@ -513,7 +515,6 @@ const style = `--p-ink: ${palette.ink}; --p-accent: ${palette.accent}; --p-surfa
     border-radius: var(--radius-sm);
     background: var(--p-accent);
     color: var(--p-on-accent);
-    font-weight: var(--weight-semibold);
   }
 
   .preview-dark {
@@ -526,7 +527,8 @@ const style = `--p-ink: ${palette.ink}; --p-accent: ${palette.accent}; --p-surfa
 
   .preview-highlight {
     color: var(--p-accent);
-    font-weight: var(--weight-semibold);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
   }
 
   .contrast {
@@ -553,11 +555,12 @@ const style = `--p-ink: ${palette.ink}; --p-accent: ${palette.accent}; --p-surfa
   .contrast thead th {
     font-size: var(--text-caption);
     color: var(--color-text-muted);
-    font-weight: var(--weight-semibold);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
   }
 
   .contrast tbody th {
-    font-weight: var(--weight-medium);
+    font-weight: var(--weight-regular);
   }
 
   .sample {
@@ -567,7 +570,8 @@ const style = `--p-ink: ${palette.ink}; --p-accent: ${palette.accent}; --p-surfa
     height: 2rem;
     border-radius: var(--radius-sm);
     border: 1px solid rgb(10 14 15 / 0.12);
-    font-weight: var(--weight-semibold);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
   }
 
   .ratio {
@@ -580,7 +584,8 @@ const style = `--p-ink: ${palette.ink}; --p-accent: ${palette.accent}; --p-surfa
     padding: 0.15rem var(--space-2);
     border-radius: var(--radius-sm);
     font-size: var(--text-caption);
-    font-weight: var(--weight-semibold);
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
     white-space: nowrap;
   }
 

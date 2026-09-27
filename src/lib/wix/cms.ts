@@ -1,4 +1,4 @@
-import type { BusinessModel, DirectoryListing, Faq, LaunchPackage } from '@/lib/domain/types';
+import { SOLUTION_ICONS, type BusinessModel, type DirectoryListing, type Faq, type LaunchPackage, type Solution, type SolutionIcon } from '@/lib/domain/types';
 import { wixRead } from './client';
 import { imageUrl } from './media';
 
@@ -8,6 +8,7 @@ export const COLLECTIONS = {
   businessModels: 'BusinessModels',
   faqs: 'Faqs',
   directory: 'DirectoryListings',
+  solutions: 'Solutions',
 } as const;
 
 type RawItem = Record<string, unknown> & { _id: string };
@@ -76,6 +77,28 @@ function toBusinessModel(item: RawItem): BusinessModel {
   };
 }
 
+const isIcon = (value: string): value is SolutionIcon => (SOLUTION_ICONS as readonly string[]).includes(value);
+
+function toSolution(item: RawItem): Solution {
+  const pkg = item['fromPackage'];
+  const icon = str(item['icon']);
+  return {
+    id: item._id,
+    slug: str(item['slug']),
+    title: str(item['title']),
+    summary: str(item['summary']),
+    intro: str(item['intro']),
+    includes: list(item['includes']),
+    keywords: list(item['keywords']),
+    icon: isIcon(icon) ? icon : SOLUTION_ICONS[0],
+    offer: str(item['offer']) === 'run' ? 'run' : 'launch',
+    fromPackage: pkg && typeof pkg === 'object' && '_id' in pkg ? toLaunchPackage(pkg as RawItem) : null,
+    relatedTool: str(item['relatedTool']) || null,
+    seoTitle: str(item['seoTitle']),
+    seoDescription: str(item['seoDescription']),
+  };
+}
+
 function toFaq(item: RawItem): Faq {
   return { id: item._id, question: str(item['question']), answer: str(item['answer']), topic: str(item['topic']) };
 }
@@ -106,6 +129,11 @@ export async function fetchLaunchPackages(): Promise<LaunchPackage[]> {
 export async function fetchBusinessModels(): Promise<BusinessModel[]> {
   const items = await queryItems(COLLECTIONS.businessModels, { includeReferences: ['recommendedPackage'] });
   return items.map(toBusinessModel).filter((m) => m.slug && m.title);
+}
+
+export async function fetchSolutions(): Promise<Solution[]> {
+  const items = await queryItems(COLLECTIONS.solutions, { includeReferences: ['fromPackage'] });
+  return items.map(toSolution).filter((s) => s.slug && s.title);
 }
 
 export async function fetchFaqs(): Promise<Faq[]> {

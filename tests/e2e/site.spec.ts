@@ -7,6 +7,11 @@ import { expect, test, type Page } from '@playwright/test';
 
 const PAGES = [
   '/',
+  '/solutions',
+  '/solutions/website',
+  '/solutions/monthly-care',
+  '/find',
+  '/find?q=website',
   '/how-it-works',
   '/business-types',
   '/pricing',
@@ -47,6 +52,7 @@ test.describe('pages', () => {
   test('unknown pages return 404', async ({ page }) => {
     expect((await page.goto('/this-does-not-exist'))?.status()).toBe(404);
     expect((await page.goto('/business-types/this-does-not-exist'))?.status()).toBe(404);
+    expect((await page.goto('/solutions/this-does-not-exist'))?.status()).toBe(404);
   });
 
   test('pricing shows launch packages and monthly plans from Wix', async ({ page }) => {
@@ -218,6 +224,47 @@ test.describe('Client accounts', () => {
   });
 });
 
+test.describe('Finding things', () => {
+  test('the home page opens on solutions: search plus one tile per solution', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('What does your business need?');
+    await expect(page.getByRole('searchbox', { name: /search solutions/i })).toBeVisible();
+    const tiles = page.getByRole('list', { name: 'Popular solutions' }).getByRole('link');
+    expect(await tiles.count()).toBeGreaterThanOrEqual(6);
+    await tiles.first().click();
+    await expect(page).toHaveURL(/\/solutions\/[a-z-]+$/);
+    await expect(page.getByText(/^From £/).first()).toBeVisible();
+  });
+
+  test('suggests solutions and business types as you type, with keyboard selection', async ({ page }) => {
+    await page.goto('/');
+    const box = page.getByRole('searchbox', { name: /search solutions/i });
+    await box.fill('website for my salon');
+    const panel = page.locator('[data-finder-panel]').first();
+    await expect(panel).toBeVisible();
+    await expect(panel.getByRole('link', { name: /A website/ })).toBeVisible();
+    await expect(panel.getByRole('link', { name: /Salons/ })).toBeVisible();
+    await box.press('ArrowDown');
+    await expect(panel.getByRole('link').first()).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+  });
+
+  test('searching sends you to grouped results, and helps when nothing matches', async ({ page }) => {
+    await page.goto('/find?q=bookings');
+    await expect(page.getByRole('heading', { name: 'Solutions' })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Online bookings/ })).toBeVisible();
+    await page.goto('/find?q=zzqx');
+    await expect(page.getByRole('heading', { name: /Nothing matched/ })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Take the free check' }).first()).toBeVisible();
+  });
+
+  test('search result pages are not indexed', async ({ page }) => {
+    await page.goto('/find?q=logo');
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+  });
+});
+
 test.describe('Navigation', () => {
   test('header links to the tools and the client login', async ({ page, isMobile }) => {
     await page.goto('/');
@@ -226,9 +273,14 @@ test.describe('Navigation', () => {
       const header = page.getByRole('banner');
       await expect(header.getByRole('link', { name: 'Client log in' })).toBeVisible();
       await expect(header.getByRole('link', { name: 'Free tools' })).toBeVisible();
+      await expect(header.getByRole('searchbox', { name: 'Search' })).toBeVisible();
     } else {
       await expect(page.locator('.header-login')).toBeVisible();
-      await expect(page.getByRole('navigation', { name: 'Main' }).first().getByRole('link', { name: 'Free tools' })).toBeVisible();
+      const main = page.getByRole('navigation', { name: 'Main' }).first();
+      for (const name of ['Solutions', 'Business types', 'Pricing', 'Free tools']) {
+        await expect(main.getByRole('link', { name })).toBeVisible();
+      }
+      await expect(page.getByRole('banner').getByRole('link', { name: 'Search' })).toBeVisible();
     }
   });
 });

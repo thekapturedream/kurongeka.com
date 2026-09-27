@@ -85,7 +85,7 @@ h3,
 h4,
 .display {
   font-family: var(--font-display);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-heading);
   line-height: var(--leading-heading);
   text-wrap: balance;
@@ -95,7 +95,6 @@ h4,
   font-size: var(--text-display);
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-display);
-  font-weight: var(--weight-semibold);
 }
 
 h1,
@@ -146,13 +145,20 @@ p {
 .label {
   font-family: var(--font-text);
   font-size: var(--text-label);
-  font-weight: var(--weight-semibold);
+  font-weight: var(--weight-regular);
   letter-spacing: var(--tracking-label);
   color: var(--color-text-muted);
 }
 
 .muted {
   color: var(--color-text-muted);
+}
+
+/* Emphasis uses the headline cut, so only two font files are ever needed. */
+strong,
+b {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
 }
 
 .accent-dot {
@@ -283,7 +289,8 @@ a:hover {
 }
 
 .field-label {
-  font-weight: var(--weight-semibold);
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
   font-size: var(--text-small);
 }
 
@@ -295,7 +302,6 @@ a:hover {
 .field-error {
   font-size: var(--text-caption);
   color: var(--color-error);
-  font-weight: var(--weight-medium);
 }
 
 .input,
@@ -440,7 +446,6 @@ a:hover {
 }
 
 .option-label {
-  font-weight: var(--weight-medium);
   line-height: var(--leading-snug);
 }
 
@@ -509,7 +514,6 @@ a:hover {
   gap: var(--space-2);
   padding: var(--space-4) var(--space-5);
   border-radius: var(--radius-md);
-  font-weight: var(--weight-medium);
 }
 
 .notice-error,

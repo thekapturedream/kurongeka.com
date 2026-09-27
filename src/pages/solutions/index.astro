@@ -1,0 +1,68 @@
+---
+import Finder from '@/components/finder/Finder.astro';
+import PageIntro from '@/components/layout/PageIntro.astro';
+import CtaBand from '@/components/sections/CtaBand.astro';
+import SolutionCards from '@/components/solutions/SolutionCards.astro';
+import LinkChips from '@/components/ui/LinkChips.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { cachePage } from '@/lib/http';
+import { breadcrumbLd } from '@/lib/seo';
+import { getBusinessModels, getRunPlans, getSolutions } from '@/lib/services/catalog';
+import { getSearchIndex } from '@/lib/services/search';
+
+const [solutions, plans, models, index] = await Promise.all([getSolutions(), getRunPlans(), getBusinessModels(), getSearchIndex()]);
+cachePage(Astro, { ok: solutions.ok && plans.ok });
+---
+
+<BaseLayout
+  title="Solutions"
+  description="Websites, logos and brands, online bookings, payments, online shops, Google and Maps, domains and email, company profiles and monthly care, at fixed prices."
+  jsonLd={[breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'Solutions', path: '/solutions' }])]}
+>
+  <PageIntro
+    title="Everything your business needs online."
+    lead="Pick what you need. Each one comes in a fixed-price package, built and launched by Kapture."
+  >
+    <div class="intro-finder">
+      <Finder index={index.data} id="solutions" />
+    </div>
+  </PageIntro>
+
+  <section class="section" aria-label="All solutions">
+    <div class="container">
+      <SolutionCards solutions={solutions.data} runPlans={plans.data} failed={!solutions.ok} />
+    </div>
+  </section>
+
+  {
+    models.data.length > 0 && (
+      <section class="section section-types" aria-labelledby="types-title">
+        <div class="container">
+          <h2 id="types-title" class="h3">Or start from your type of business</h2>
+          <LinkChips links={models.data.map((m) => ({ label: m.title, href: `/business-types/${m.slug}` }))} />
+        </div>
+      </section>
+    )
+  }
+
+  <CtaBand title="Not sure what you need?" body="Take the free check. Seven questions, about two minutes, and we will recommend the right place to start." />
+</BaseLayout>
+
+<style>
+  .intro-finder {
+    max-width: 40rem;
+  }
+
+  .section {
+    padding-block: var(--space-8);
+  }
+
+  .section-types {
+    padding-bottom: var(--section-pad);
+  }
+
+  .section-types h2 {
+    margin-bottom: var(--space-5);
+  }
+
+</style>

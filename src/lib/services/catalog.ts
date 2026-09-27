@@ -1,9 +1,10 @@
-import type { BusinessModel, DirectoryListing, Faq, LaunchPackage, RunPlan } from '@/lib/domain/types';
+import type { BusinessModel, DirectoryListing, Faq, LaunchPackage, RunPlan, Solution } from '@/lib/domain/types';
 import {
   fetchBusinessModels,
   fetchDirectoryListings,
   fetchFaqs,
   fetchLaunchPackages,
+  fetchSolutions,
 } from '@/lib/wix/cms';
 import { fetchRunPlans } from '@/lib/wix/plans';
 import { cached } from './cache';
@@ -26,11 +27,17 @@ export const getLaunchPackages = () => load<LaunchPackage[]>('launch-packages', 
 export const getBusinessModels = () => load<BusinessModel[]>('business-models', [], fetchBusinessModels);
 export const getFaqs = () => load<Faq[]>('faqs', [], fetchFaqs);
 export const getRunPlans = () => load<RunPlan[]>('run-plans', [], fetchRunPlans);
+export const getSolutions = () => load<Solution[]>('solutions', [], fetchSolutions);
 export const getDirectoryListings = () => load<DirectoryListing[]>('directory', [], fetchDirectoryListings);
 
 export async function getBusinessModel(slug: string): Promise<Loaded<BusinessModel | null>> {
   const models = await getBusinessModels();
   return { ok: models.ok, data: models.data.find((m) => m.slug === slug) ?? null };
+}
+
+export async function getSolution(slug: string): Promise<Loaded<Solution | null>> {
+  const solutions = await getSolutions();
+  return { ok: solutions.ok, data: solutions.data.find((s) => s.slug === slug) ?? null };
 }
 
 export async function getDirectoryListing(slug: string): Promise<Loaded<DirectoryListing | null>> {

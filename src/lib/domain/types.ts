@@ -31,6 +31,30 @@ export interface BusinessModel {
   seoDescription: string;
 }
 
+/** Icons a solution can use. Staff pick one in the Wix CMS; unknown values fall back to the first. */
+export const SOLUTION_ICONS = ['globe', 'pen', 'calendar', 'card', 'bag', 'pin', 'at', 'file', 'refresh'] as const;
+export type SolutionIcon = (typeof SOLUTION_ICONS)[number];
+
+/**
+ * Something a visitor comes looking for ("a website", "online bookings"), mapped to what we sell.
+ * `launch` solutions are priced by their cheapest launch package; `run` solutions by the Run plans.
+ */
+export interface Solution {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  intro: string;
+  includes: string[];
+  keywords: string[];
+  icon: SolutionIcon;
+  offer: 'launch' | 'run';
+  fromPackage: LaunchPackage | null;
+  relatedTool: string | null;
+  seoTitle: string;
+  seoDescription: string;
+}
+
 export interface Faq {
   id: string;
   question: string;

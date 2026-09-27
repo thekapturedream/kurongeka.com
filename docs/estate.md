@@ -11,14 +11,14 @@ Sources searched: GitHub (all 39 repos in `thekapturedream`), Vercel (team Kaptu
 | GitHub `thekapturedream/kurongeka.com` | **This repo.** Astro + Wix Headless build on branch `claude/kind-gauss-m1rcch`. **Live on kurongeka.com since 25 September 2026.** Its `main` branch still holds the old single HTML file. | Keep. Merge the branch into `main` so `main` is the live code. |
 | GitHub `thekapturedream/kurongeka` (private) | Old brand-audit portal (single 480 KB HTML file), patent log, Supabase schema. No longer served. | Archive. |
 | GitHub `thekapturedream/kurongeka-os` (private) | Internal multi-site command centre (static JS). | Archive. Staff use the Wix Dashboard. |
-| Vercel `kurongeka-web` (new) | Builds this repo (Astro, London region). Serves www.kurongeka.com through an alias. | Keep. In Vercel > kurongeka.com > Settings > Domains, move `kurongeka.com` (redirect to www, 308) and `www.kurongeka.com` to this project so future deploys go live automatically. |
-| Vercel `kurongeka.com` (old) | Still owns the kurongeka.com domains and redirects the apex to www. Every build fails with "Resource provisioning failed" because its linked Supabase store is suspended, and it emails a failure on each push. | After moving the domains, delete it (or disconnect Supabase and Git). |
-| Vercel `kurongeka-os` | kurongeka-os.vercel.app. | Delete after archiving the repo. |
-| Supabase `kurongeka.com` (via Vercel Marketplace) | Suspended since May 2026. Also connected to the **Borderless Love** project, so do not delete the store without checking that project. | Disconnect from the kurongeka.com project. |
+| Vercel `kurongeka-web` (new) | Builds this repo (Astro, London region). Serves www.kurongeka.com and the apex redirect through aliases. No environment variables, no databases. | Keep. Move the two domains onto it (below) so future deploys go live automatically. |
+| Vercel `kurongeka.com` (old) | **Paused 26 September 2026.** It served the old portal (browser-side logins, demo password) and holds the Supabase connection (16 Supabase and Postgres secrets). It still owns the domain records, but both domains now point at kurongeka-web. | Delete the project. That also removes its Supabase secrets and connection. Then add the domains to kurongeka-web. |
+| Vercel `kurongeka-os` | **Paused 26 September 2026.** Command centre with its own logins, a local password vault and a GitHub token stored in the browser. | Delete after archiving the repo. Staff use the Wix Dashboard. |
+| Supabase store "kurongeka.com" (via Vercel Marketplace) | Suspended. Kurongeka no longer uses it. It is also connected to **Borderless Love** (`borderless_*` variables), so the store itself is not Kurongeka's to delete. | Deleting the old Vercel project disconnects Kurongeka. Rename the store "borderless-love" if Borderless Love keeps it. |
 
 The other 36 repositories and 43 Vercel projects belong to other ventures and clients (Franjipanji, Kapture Aero, Air Zimbabwe, Borderless Love, Tura, and more). **They are not part of Kurongeka and should not be deleted.**
 
-Nothing has been deleted or archived. That needs explicit approval, and archiving is recommended over deleting because it is reversible.
+Nothing has been deleted or archived. The two old Vercel projects are paused, which is reversible (Project > Settings > Unpause). Deleting and archiving need explicit approval; archiving is recommended over deleting because it is reversible.
 
 ## Wix
 
@@ -72,8 +72,8 @@ One set of links lives in `src/config/site.ts` and feeds the footer and the Orga
 
 ## Security: act on these
 
-1. **The live kurongeka.com publishes the client login pattern** (`{client}@thekapture.com / kap-{client}-2026`) and a demo password in its page source, and its "auth" runs in the browser. Anyone can work out client logins. Replace the live site (this build) and change any password that follows the pattern.
-2. **The live site presents demo content as real.** Behind the publicly advertised demo login, it shows a fictional client founder ("Pearce Vusumuzi") and a press item attributing "Kapture wins Best Boutique Agency, Africa Brand Awards" to a real outlet (New Zimbabwe). Invented coverage credited to a real publication is a reputational and legal risk. It disappears at cut-over.
+1. **The old portal published the client login pattern** (`{client}@thekapture.com / kap-{client}-2026`) and a demo password in its page source, and its "auth" ran in the browser. It was replaced on 25 September and taken offline (project paused) on 26 September. Change any password that followed the pattern.
+2. **The old portal presented demo content as real** (a fictional client founder and an award credited to a real outlet). Offline since 26 September.
 3. **A Supabase service-role key is stored in plain text** in the Google Drive file `Kurongeka.md` (for the kapture-logistics Supabase project). Rotate it in Supabase and remove it from the document.
 4. **A classic GitHub token named "kurongeka.com"** with admin scopes (admin:org, admin:enterprise and more) was created in April 2026 and is expiring. Revoke it; use fine-grained tokens scoped to single repositories.
 5. The Wix Studio premium plan on kurongeka.com lapsed in November 2025 after repeated card failures. Check the card on the Wix account before buying the new plan.

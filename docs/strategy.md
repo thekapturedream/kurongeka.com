@@ -123,6 +123,7 @@ Made on 25 September 2026:
 2. **Prices:** approved as listed above, in GBP.
 3. **Roles of the systems:** Wix is the back office (admin, CRM, CMS, members, community). Every customer-facing tool is custom.
 4. **Go live:** kurongeka.com now serves this build.
+5. **Wix is the only backend** (26 September): no other databases or logins. The old portal and Kurongeka OS, which had their own, are offline, and Supabase is no longer used.
 
 Still open:
 

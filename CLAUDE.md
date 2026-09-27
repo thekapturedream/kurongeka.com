@@ -7,6 +7,7 @@ Kurongeka ("to be properly arranged", Shona) is a productised launch-and-run ser
 - **All prices are in GBP (£).** Launch packages, Run plans, copy, structured data and examples. Never show USD. The currency constant is `CURRENCY` in `src/lib/domain/format.ts`; format with `formatPrice()`. The Wix site currency is GBP. Prices are approved as they are in Wix.
 - **The business is UK-based.** UK phone and WhatsApp (+44 7352 144677), GB default country, England and Wales law, UK GDPR and the ICO. Southern Africa is a market, not the base.
 - **Wix is the back office; the apps are custom.** Wix does admin, CRM (contacts, forms), CMS, members and community. Every customer-facing feature is custom code in this repo talking to Wix through `src/lib/wix/`. Do not send visitors to Wix-designed pages.
+- **Wix is the only backend.** No other database (no Supabase, Postgres, KV, Blob or browser storage as a record) and no other auth (no passwords, sessions or user tables of our own). Accounts are Wix Members; records are Wix CMS, Forms, Contacts and Pricing Plans. The `kurongeka-web` Vercel project has no environment variables and needs none.
 - Prices, packages, business models and FAQs live in Wix, not in code. Change them in the Wix Dashboard.
 - No invented proof: no testimonials, stats, awards, client logos or "most popular" claims unless real and approved.
 - Yellow (#FFCC00) only on ink surfaces. Sentence case. No emoji.
@@ -54,13 +55,16 @@ Optional overrides only; defaults in `astro.config.mjs`: `WIX_CLIENT_ID`, `WIX_C
 ## Deployment
 
 - Vercel team Kapture (`team_ALuRt7rxrmv2cVKG1K66Mc96`), project **kurongeka-web** (`prj_sDb4GmV5N3F8Krlo4yhURKtLyPQt`), linked to this repo, region `lhr1`. Production went live on 25 September 2026.
-- `www.kurongeka.com` is attached to the live kurongeka-web deployment as an **alias**, because the domain still belongs to the old project **kurongeka.com** (`prj_yZb86tfJj8liceEjcijPjka78ZZz`), which cannot build (its suspended Supabase store fails every deployment). Until the domains are moved in the Vercel dashboard, re-assign the alias after each production deploy. The apex redirects to www from the old project.
-- Deploy: `create_deployment` (target production) for the commit, check it, then `assign_alias` www.kurongeka.com to it. Roll back by aliasing to the previous deployment.
+- `www.kurongeka.com` and `kurongeka.com` are attached to the live kurongeka-web deployment as **aliases** (the apex alias redirects to www). The domain records still belong to the old project **kurongeka.com** (`prj_yZb86tfJj8liceEjcijPjka78ZZz`), which is **paused** (it served the old portal with browser-side logins and holds the Supabase connection). Until the domains are moved in the Vercel dashboard, re-assign both aliases after each production deploy.
+- Deploy: `create_deployment` (target production) for the commit, check it, then `assign_alias` www.kurongeka.com to it, and kurongeka.com to it with `redirect: www.kurongeka.com`. Roll back by aliasing to the previous deployment.
+- `kurongeka-os` (`prj_QIhOcuzW6rIk4xLacyxAg60CJtg7`), the old command centre with its own logins, is **paused**. Staff use the Wix Dashboard. Do not unpause either old project.
 - Only publish when asked (publish, deploy, release, go live).
 
 ## Known constraints
 
 - Wix site is on the free plan: no online payments or Wix-hosted checkout until a premium plan is bought.
 - Wix Forms spam filtering drops some submissions (for example `@example.com` emails); test with realistic data and delete test leads, members and contacts afterwards.
+- Wix files each form submission under an existing contact matched by email, then by phone. Use a different phone number for every test lead, or test leads merge into one contact.
+- Signing up with an email that is already a Wix contact (for example after the Kurongeka Check) makes Wix send a 6-digit code; `/account/verify` takes it. New emails sign in straight away.
 - Wix Bookings cannot confirm bookings made by visitors, so "Book a free call" is a request that staff confirm.
 - Directory is empty until the first consented listing; the page is `noindex` while empty.
